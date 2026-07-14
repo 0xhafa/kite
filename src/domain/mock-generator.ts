@@ -147,6 +147,26 @@ function selectRepairTemplate(input: RepairModelInput): MockActivityTemplate {
   });
 }
 
+function extractLessonActivities(content: string) {
+  return content
+    .split(/\n(?=Atividade\s*\d+\s*:)/i)
+    .map((section) => section.trim())
+    .filter((section) => /^Atividade\s*\d+\s*:/i.test(section))
+    .map((section) => {
+      const text = section
+        .replace(/^Atividade\s*\d+\s*:\s*/i, "")
+        .replace(/\n\s*[-–]\s*Ficha de atividade impressa\.?\s*$/i, "")
+        .trim();
+
+      const [title, ...description] = text.split("\n");
+
+      return {
+        title: title.trim(),
+        description: description.join("\n").trim() || title.trim(),
+      };
+    });
+}
+
 export function generateMockBatch(input: GenerationModelInput): GenerationModelOutput {
   const inputResult = generationModelInputSchema.safeParse(input);
 
@@ -169,7 +189,7 @@ export function generateMockBatch(input: GenerationModelInput): GenerationModelO
     ...new Set(parsedInput.applicableRules.map((rule) => rule.ruleId)),
   ];
   const lesson = parsedInput.curriculum.lesson;
-
+  const lessonActivities = extractLessonActivities(lesson.content);
   const planActivities = distribution.map(({ slotIndex, durationMinutes }) => {
     const template = MOCK_ACTIVITY_TEMPLATES[slotIndex];
 
@@ -186,8 +206,10 @@ export function generateMockBatch(input: GenerationModelInput): GenerationModelO
 
     return {
       slotIndex,
-      title: template.title,
-      description: `A criança ${template.instruction} para explorar ${lesson.content}, conforme o objetivo curricular: ${lesson.specificObjective}.`,
+      title: lessonActivities[slotIndex]?.title ?? template.title,
+      description:
+         lessonActivities[slotIndex]?.description ??
+         `A criança ${template.instruction} para trabalhar ${lesson.specificObjective}.`,
       durationMinutes,
       consideredRuleIds,
     };
