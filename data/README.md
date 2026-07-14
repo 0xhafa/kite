@@ -25,8 +25,9 @@ em `docs/architecture/curriculum-json-contract.md`.
 
 ## Catálogo de regras
 
-`data/rules.json` é o seed versionado das 28 regras iniciais documentadas em
-`docs/research/rule-catalog.md`. Cada entrada usa o contrato tipado de regra do
+`data/rules.json` é o seed versionado das 32 regras documentadas em
+`docs/research/rule-catalog.md`: 28 regras iniciais e quatro regras estruturais
+da validação determinística. Cada entrada usa o contrato tipado de regra do
 domínio; antes do uso, o catálogo deve passar por `loadRuleCatalog`.
 
 Somente entradas com status `active` podem compor novos lotes. Regras `draft`

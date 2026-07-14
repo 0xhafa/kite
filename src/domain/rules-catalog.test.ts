@@ -33,14 +33,18 @@ const documentedRuleIds = [
   "EDIT-002",
   "GOV-001",
   "VAL-001",
+  "DET-001",
+  "DET-002",
+  "DET-003",
+  "DET-004",
 ];
 
 describe("catálogo de regras", () => {
-  it("carrega as 28 regras versionadas com os IDs documentados", () => {
+  it("carrega as 32 regras versionadas com os IDs documentados", () => {
     const catalog = loadRuleCatalog(rulesData);
 
-    expect(catalog.version).toBe(1);
-    expect(catalog.rules).toHaveLength(28);
+    expect(catalog.version).toBe(2);
+    expect(catalog.rules).toHaveLength(32);
     expect(catalog.rules.map((rule) => rule.id)).toEqual(documentedRuleIds);
     expect(catalog.rules.every((rule) => rule.version === 1)).toBe(true);
     expect(catalog.rules.every((rule) => rule.applicability.mode.length > 0)).toBe(true);
@@ -85,7 +89,7 @@ describe("catálogo de regras", () => {
 
     expect(selectedIds).not.toContain("PED-001");
     expect(selectedIds).not.toContain("PED-002");
-    expect(selectedIds).toHaveLength(26);
+    expect(selectedIds).toHaveLength(30);
   });
 
   it("recusa IDs duplicados e aponta a segunda ocorrência", () => {

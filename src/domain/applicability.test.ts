@@ -103,6 +103,25 @@ describe("motor de aplicabilidade", () => {
       validationCriterion: lexicalRule.validationCriterion,
     });
   });
+
+  it("reserva regras estruturais ao contexto de validação determinística", () => {
+    const generationInputs = selectApplicableRuleInputs(catalog, {
+      signals: ["multiple_activities"],
+    });
+    const deterministicDecisions = evaluateRuleCatalogApplicability(catalog, {
+      signals: [
+        "deterministic_validation",
+        "deterministic_validation_multiple_activities",
+      ],
+    });
+
+    expect(generationInputs.some((input) => input.ruleId.startsWith("DET-"))).toBe(false);
+    expect(
+      deterministicDecisions
+        .filter((decision) => decision.ruleId.startsWith("DET-"))
+        .map((decision) => decision.applicability),
+    ).toEqual(["applicable", "applicable", "applicable", "applicable"]);
+  });
 });
 
 function getRule(ruleId: string) {

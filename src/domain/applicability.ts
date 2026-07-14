@@ -35,6 +35,9 @@ const signalDescriptions: Record<RuleApplicabilitySignal, string> = {
   has_editorial_template: "template editorial configurado",
   uses_review_feedback: "processamento de feedback de revisão",
   validates_rules: "validação de regras",
+  deterministic_validation: "etapa de validação determinística",
+  deterministic_validation_multiple_activities:
+    "etapa de validação determinística de lote com múltiplas atividades",
 };
 
 export const activityApplicabilityContextSchema = z

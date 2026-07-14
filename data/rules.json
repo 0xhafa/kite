@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "rules": [
     {
       "id": "CUR-001",
@@ -391,6 +391,70 @@
       "applicability": { "mode": "conditional", "signals": ["validates_rules"] },
       "generationInstruction": "Não presuma conformidade por a regra estar no prompt; produza conteúdo verificável que permita localizar evidência na atividade.",
       "validationCriterion": "Todo resultado com status passed inclui evidência específica, explicação curta, versão da regra e identificação do avaliador.",
+      "severity": "blocking",
+      "origin": "editorial",
+      "status": "active"
+    },
+    {
+      "id": "DET-001",
+      "version": 1,
+      "title": "Atender ao schema persistível da atividade",
+      "description": "Toda atividade deve atender ao contrato estrutural necessário para ser armazenada e vinculada ao lote correto.",
+      "applicabilityCondition": "Aplica-se durante a validação determinística de atividades.",
+      "applicability": {
+        "mode": "conditional",
+        "signals": ["deterministic_validation"]
+      },
+      "generationInstruction": "Preencha os campos tipados da atividade e preserve a identidade e o vínculo com o lote.",
+      "validationCriterion": "A atividade é aceita por activitySchema e seu batchId corresponde ao lote avaliado.",
+      "severity": "blocking",
+      "origin": "editorial",
+      "status": "active"
+    },
+    {
+      "id": "DET-002",
+      "version": 1,
+      "title": "Preencher campos textuais obrigatórios",
+      "description": "Título e descrição são campos obrigatórios e devem conter texto não vazio.",
+      "applicabilityCondition": "Aplica-se durante a validação determinística de atividades.",
+      "applicability": {
+        "mode": "conditional",
+        "signals": ["deterministic_validation"]
+      },
+      "generationInstruction": "Forneça título e descrição não vazios para cada atividade.",
+      "validationCriterion": "Os campos title e description existem e contêm texto após normalização de espaços.",
+      "severity": "blocking",
+      "origin": "editorial",
+      "status": "active"
+    },
+    {
+      "id": "DET-003",
+      "version": 1,
+      "title": "Entregar a quantidade configurada de atividades",
+      "description": "O lote deve conter exatamente a quantidade de atividades solicitada na configuração.",
+      "applicabilityCondition": "Aplica-se durante a validação determinística de lotes.",
+      "applicability": {
+        "mode": "conditional",
+        "signals": ["deterministic_validation"]
+      },
+      "generationInstruction": "Entregue uma atividade para cada posição solicitada no lote.",
+      "validationCriterion": "A quantidade de atividades encontrada é igual a requestedActivityCount.",
+      "severity": "blocking",
+      "origin": "editorial",
+      "status": "active"
+    },
+    {
+      "id": "DET-004",
+      "version": 1,
+      "title": "Evitar duplicações literais no lote",
+      "description": "Títulos e descrições não devem se repetir literalmente entre atividades do mesmo lote.",
+      "applicabilityCondition": "Aplica-se durante a validação determinística de lotes com mais de uma atividade.",
+      "applicability": {
+        "mode": "conditional",
+        "signals": ["deterministic_validation_multiple_activities"]
+      },
+      "generationInstruction": "Não repita literalmente títulos ou descrições entre as atividades do lote.",
+      "validationCriterion": "Título e descrição normalizados são distintos dos campos correspondentes nas demais atividades comparáveis.",
       "severity": "blocking",
       "origin": "editorial",
       "status": "active"

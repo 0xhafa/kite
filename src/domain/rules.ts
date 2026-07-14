@@ -50,6 +50,8 @@ export const ruleApplicabilitySignalSchema = z.enum([
   "has_editorial_template",
   "uses_review_feedback",
   "validates_rules",
+  "deterministic_validation",
+  "deterministic_validation_multiple_activities",
 ]);
 
 export const ruleApplicabilityDefinitionSchema = z.discriminatedUnion("mode", [
