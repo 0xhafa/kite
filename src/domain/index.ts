@@ -11,5 +11,6 @@ export * from "./review";
 export * from "./review-session";
 export * from "./rules";
 export * from "./rules-catalog";
+export * from "./semantic-validator";
 export * from "./shared";
 export * from "./usage";
