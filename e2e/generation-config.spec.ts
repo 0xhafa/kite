@@ -43,7 +43,9 @@ test("configura duração, quantidade e distribuição antes da geração", asyn
   await confirmButton.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("Configuração validada e pronta")).toBeVisible();
-  await expect(page.getByText(/4 atividades em 26 minutos/)).toBeVisible();
+  await expect(page.getByTestId("submitted-config-summary")).toContainText(
+    "4 atividades em 26 minutos",
+  );
 
   await page.getByRole("button", { name: "Voltar ao currículo" }).click();
   await expect(page.getByRole("button", { name: /Aula 1/ }).first()).toHaveAttribute(

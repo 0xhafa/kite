@@ -225,7 +225,10 @@ export function GenerationConfigForm({ lesson, onBack }: GenerationConfigFormPro
             tone="soft"
           >
             <p className="font-black">Configuração validada e pronta</p>
-            <p className="mt-1 text-sm font-medium text-muted">
+            <p
+              className="mt-1 text-sm font-medium text-muted"
+              data-testid="submitted-config-summary"
+            >
               {submittedConfig.requestedActivityCount} atividades em {" "}
               {submittedConfig.requestedDurationMinutes} minutos foram registradas no contrato
               da geração.
