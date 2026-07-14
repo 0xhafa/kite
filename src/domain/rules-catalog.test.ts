@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import rulesData from "../../data/rules.json";
-import { loadRuleCatalog, selectActiveRules } from "./rules-catalog";
+import { ruleSchema } from "./rules";
+import { catalogRuleSchema, loadRuleCatalog, selectActiveRules } from "./rules-catalog";
 
 const documentedRuleIds = [
   "CUR-001",
@@ -42,6 +43,7 @@ describe("catálogo de regras", () => {
     expect(catalog.rules).toHaveLength(28);
     expect(catalog.rules.map((rule) => rule.id)).toEqual(documentedRuleIds);
     expect(catalog.rules.every((rule) => rule.version === 1)).toBe(true);
+    expect(catalog.rules.every((rule) => rule.applicability.mode.length > 0)).toBe(true);
   });
 
   it("mantém regras acadêmicas e editoriais distinguíveis pela origem", () => {
@@ -51,6 +53,17 @@ describe("catálogo de regras", () => {
     expect(rulesById.get("PED-002")?.origin).toBe("direct");
     expect(rulesById.get("AGE-001")?.origin).toBe("pedagogical_inference");
     expect(rulesById.get("PLAY-002")?.origin).toBe("editorial");
+  });
+
+  it("separa explicitamente o descritor do catálogo do contrato persistido", () => {
+    const catalogRule = structuredClone(rulesData.rules[0]);
+    const persistedRule = Object.fromEntries(
+      Object.entries(catalogRule).filter(([field]) => field !== "applicability"),
+    );
+
+    expect(catalogRuleSchema.safeParse(catalogRule).success).toBe(true);
+    expect(ruleSchema.safeParse(catalogRule).success).toBe(false);
+    expect(ruleSchema.safeParse(persistedRule).success).toBe(true);
   });
 
   it("não seleciona regras arquivadas ou em rascunho para novos lotes", () => {

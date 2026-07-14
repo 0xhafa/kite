@@ -1,12 +1,23 @@
 import { z } from "zod";
 
-import { ruleSchema, type Rule } from "./rules";
+import { ruleApplicabilityDefinitionSchema, ruleSchema } from "./rules";
 import { positiveIntegerSchema } from "./shared";
+
+/**
+ * O catálogo é a fonte versionada do descritor estruturado de aplicabilidade.
+ * `ruleSchema` permanece o contrato estrito da fronteira de persistência já
+ * existente, que armazena a condição textual e não aceita campos descartáveis.
+ */
+export const catalogRuleSchema = ruleSchema
+  .extend({
+    applicability: ruleApplicabilityDefinitionSchema,
+  })
+  .strict();
 
 export const ruleCatalogSchema = z
   .object({
     version: positiveIntegerSchema,
-    rules: z.array(ruleSchema).min(1),
+    rules: z.array(catalogRuleSchema).min(1),
   })
   .strict()
   .superRefine((catalog, context) => {
@@ -36,6 +47,8 @@ export function loadRuleCatalog(input: unknown): RuleCatalog {
 }
 
 /** Seleciona somente regras ativas, elegíveis para compor novos lotes. */
-export function selectActiveRules(catalog: RuleCatalog): Rule[] {
+export function selectActiveRules(catalog: RuleCatalog): CatalogRule[] {
   return catalog.rules.filter((rule) => rule.status === "active");
 }
+
+export type CatalogRule = z.infer<typeof catalogRuleSchema>;

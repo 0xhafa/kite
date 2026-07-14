@@ -3,6 +3,7 @@ export * from "./curriculum-adapter";
 export * from "./curriculum-navigation";
 export * from "./generation";
 export * from "./generation-config";
+export * from "./applicability";
 export * from "./model-contracts";
 export * from "./mock-generator";
 export * from "./review";

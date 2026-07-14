@@ -195,7 +195,7 @@ describe("repositórios libSQL", () => {
       location: "p. 10",
       verificationStatus: "verified",
     });
-    await traceability.saveRule({
+    const persistedRule = {
       id: "PED-001",
       version: 1,
       title: "Ação explícita",
@@ -206,7 +206,14 @@ describe("repositórios libSQL", () => {
       severity: "blocking",
       origin: "editorial",
       status: "active",
-    });
+    };
+    await expect(
+      traceability.saveRule({
+        ...persistedRule,
+        applicability: { mode: "always" },
+      }),
+    ).rejects.toThrow();
+    await traceability.saveRule(persistedRule);
     await traceability.saveRuleSupport({
       ruleId: "PED-001",
       ruleVersion: 1,

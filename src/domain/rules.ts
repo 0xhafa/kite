@@ -34,6 +34,48 @@ export const evidenceClaimSchema = z
 export const ruleSeveritySchema = z.enum(["blocking", "advisory"]);
 export const ruleOriginSchema = z.enum(["direct", "pedagogical_inference", "editorial"]);
 export const ruleStatusSchema = z.enum(["draft", "active", "retired"]);
+export const ruleApplicabilitySignalSchema = z.enum([
+  "introduces_new_phoneme",
+  "relates_sound_and_letter",
+  "produces_phoneme",
+  "uses_words",
+  "uses_images",
+  "full_phonemic_synthesis",
+  "initial_sound_or_syllable_analysis",
+  "named_game",
+  "multiple_activities",
+  "uses_approved_references",
+  "conceptual_closing",
+  "uses_oral_text",
+  "has_editorial_template",
+  "uses_review_feedback",
+  "validates_rules",
+]);
+
+export const ruleApplicabilityDefinitionSchema = z.discriminatedUnion("mode", [
+  z
+    .object({
+      mode: z.literal("always"),
+    })
+    .strict(),
+  z
+    .object({
+      mode: z.literal("conditional"),
+      signals: z.array(ruleApplicabilitySignalSchema).min(1),
+    })
+    .strict()
+    .superRefine((definition, context) => {
+      const uniqueSignals = new Set(definition.signals);
+
+      if (uniqueSignals.size !== definition.signals.length) {
+        context.addIssue({
+          code: "custom",
+          message: "Uma condição de aplicabilidade não pode repetir sinais.",
+          path: ["signals"],
+        });
+      }
+    }),
+]);
 
 export const ruleSchema = z
   .object({
@@ -234,6 +276,8 @@ export type EvidenceClaim = z.infer<typeof evidenceClaimSchema>;
 export type RuleSeverity = z.infer<typeof ruleSeveritySchema>;
 export type RuleOrigin = z.infer<typeof ruleOriginSchema>;
 export type RuleStatus = z.infer<typeof ruleStatusSchema>;
+export type RuleApplicabilitySignal = z.infer<typeof ruleApplicabilitySignalSchema>;
+export type RuleApplicabilityDefinition = z.infer<typeof ruleApplicabilityDefinitionSchema>;
 export type Rule = z.infer<typeof ruleSchema>;
 export type RuleSupportType = z.infer<typeof ruleSupportTypeSchema>;
 export type RuleSupport = z.infer<typeof ruleSupportSchema>;
