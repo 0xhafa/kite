@@ -335,7 +335,7 @@ function ActivityCard({
         >
           {item.activity.title}
         </h2>
-        <p className="mt-4 max-w-3xl font-medium leading-7 text-muted">
+        <p className="mt-4 max-w-3xl whitespace-pre-line font-medium leading-7 text-muted">
           {item.activity.description}
         </p>
 
