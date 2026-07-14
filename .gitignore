@@ -34,3 +34,4 @@ next-env.d.ts
 /.ralph/
 /scripts/*loop*
 /scripts/*ralph*
+.vercel
