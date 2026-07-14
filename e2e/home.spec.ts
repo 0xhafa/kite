@@ -12,3 +12,13 @@ test("exibe a página inicial e a identidade do Kite", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText("Nenhum lote gerado ainda")).toBeVisible();
 });
+
+test("mantém o início utilizável em tela pequena", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  await expect(page.getByRole("link", { name: "Começar planejamento" })).toBeVisible();
+
+  const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(documentWidth).toBeLessThanOrEqual(390);
+});

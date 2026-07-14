@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import fixture from "../../data/curriculum.fixture.json";
-import { adaptCurriculum } from "./curriculum-adapter";
+import { adaptCurriculum, CurriculumAdapterError } from "./curriculum-adapter";
 
 describe("adaptador curricular", () => {
   it("valida a fixture e preserva a ordem canônica", () => {
@@ -27,6 +27,7 @@ describe("adaptador curricular", () => {
       adaptCurriculum(invalid);
       throw new Error("a fixture inválida deveria falhar");
     } catch (error) {
+      expect(error).toBeInstanceOf(CurriculumAdapterError);
       expect(error).toMatchObject({
         issues: [
           expect.objectContaining({
@@ -37,6 +38,12 @@ describe("adaptador curricular", () => {
           }),
         ],
       });
+      expect((error as Error).message).toContain(
+        "O JSON curricular é inválido. Revise 1 problema estrutural.",
+      );
+      expect((error as Error).message).toContain(
+        "themes[0].skills[0].objectives[0].weeks[1].lessons[0].content",
+      );
     }
   });
 
@@ -49,6 +56,7 @@ describe("adaptador curricular", () => {
       adaptCurriculum(invalid);
       throw new Error("uma fixture com ID duplicado deveria falhar");
     } catch (error) {
+      expect(error).toBeInstanceOf(CurriculumAdapterError);
       expect(error).toMatchObject({
         issues: [
           expect.objectContaining({
@@ -59,6 +67,10 @@ describe("adaptador curricular", () => {
           }),
         ],
       });
+      expect((error as Error).message).toContain("ID duplicado");
+      expect((error as Error).message).toContain(
+        "themes[0].skills[0].objectives[0].weeks[1].lessons[1].id",
+      );
     }
   });
 });

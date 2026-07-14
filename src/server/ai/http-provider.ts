@@ -35,11 +35,16 @@ export type AiProviderErrorCode =
   | "invalid_response";
 
 const errorMessages = {
-  invalid_input: "A entrada enviada ao provedor de IA não atende ao contrato.",
-  http_error: "O provedor de IA recusou a solicitação.",
-  network_error: "Não foi possível se comunicar com o provedor de IA.",
-  timeout: "O provedor de IA excedeu o tempo limite configurado.",
-  invalid_response: "A resposta do provedor de IA não atende ao contrato.",
+  invalid_input:
+    "Não foi possível enviar os dados ao provedor de IA. Revise a seleção e tente novamente.",
+  http_error:
+    "O provedor de IA recusou a solicitação. Tente novamente; se o erro continuar, verifique a configuração do provedor.",
+  network_error:
+    "Não foi possível se comunicar com o provedor de IA. Verifique a conexão e tente novamente.",
+  timeout:
+    "O provedor de IA demorou mais que o esperado. Tente novamente em instantes.",
+  invalid_response:
+    "O provedor de IA retornou uma resposta inválida. Tente novamente; se o erro continuar, verifique o modelo configurado.",
 } as const satisfies Record<AiProviderErrorCode, string>;
 
 export class AiProviderError extends Error {

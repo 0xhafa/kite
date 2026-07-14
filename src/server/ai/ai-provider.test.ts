@@ -365,6 +365,8 @@ describe("adaptador HTTP estruturado", () => {
     await expect(provider.generate(createGenerationInput())).rejects.toMatchObject({
       code: "http_error",
       statusCode: 429,
+      message:
+        "O provedor de IA recusou a solicitação. Tente novamente; se o erro continuar, verifique a configuração do provedor.",
     });
   });
 
@@ -378,7 +380,8 @@ describe("adaptador HTTP estruturado", () => {
       name: "AiProviderError",
       code: "network_error",
       operation: "generation",
-      message: "Não foi possível se comunicar com o provedor de IA.",
+      message:
+        "Não foi possível se comunicar com o provedor de IA. Verifique a conexão e tente novamente.",
     });
   });
 
@@ -398,6 +401,8 @@ describe("adaptador HTTP estruturado", () => {
     await expect(provider.generate(createGenerationInput())).rejects.toMatchObject({
       code: "timeout",
       operation: "generation",
+      message:
+        "O provedor de IA demorou mais que o esperado. Tente novamente em instantes.",
     });
   });
 

@@ -45,9 +45,22 @@ test("mantém as decisões acessíveis em tela pequena", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await generateReviewBatch(page);
 
-  await expect(page.getByRole("button", { name: "Aprovar" })).toBeVisible();
+  const approveButton = page.getByRole("button", { name: "Aprovar" });
+  const detailsButton = page.getByRole("button", { name: "Detalhes" });
+
+  await expect(approveButton).toBeVisible();
   await expect(page.getByRole("button", { name: "Rejeitar e gerar nova versão" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Detalhes" })).toBeVisible();
+  await expect(detailsButton).toBeVisible();
+
+  await detailsButton.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog", { name: "Detalhes da validação" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(detailsButton).toBeFocused();
+
+  await approveButton.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Ouvidos atentos" })).toBeFocused();
 
   const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(documentWidth).toBeLessThanOrEqual(390);
