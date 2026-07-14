@@ -4,6 +4,7 @@ export * from "./curriculum-navigation";
 export * from "./generation";
 export * from "./generation-config";
 export * from "./model-contracts";
+export * from "./mock-generator";
 export * from "./review";
 export * from "./rules";
 export * from "./shared";
