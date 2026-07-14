@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { brandAssets } from "@/lib/brand";
 
@@ -59,15 +60,18 @@ export default function Home() {
               decisão pedagógica em cada etapa.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
-              <a
+              <Link
                 className="rounded-2xl border-2 border-[#202a3f] bg-[#28334a] px-6 py-3.5 font-extrabold text-white shadow-[0_4px_0_#151c2b] transition-transform hover:-translate-y-0.5 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#65a9df]"
+                href="/planejar"
+              >
+                Começar planejamento
+              </Link>
+              <a
+                className="rounded-2xl px-4 py-3.5 font-extrabold text-[#526078] underline decoration-2 underline-offset-4 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#65a9df]"
                 href="#como-funciona"
               >
                 Conhecer o fluxo
               </a>
-              <span className="rounded-2xl bg-[#edf3fb] px-5 py-3.5 text-sm font-bold text-[#526078]">
-                Duração padrão: 25 minutos
-              </span>
             </div>
           </div>
 
@@ -122,10 +126,15 @@ export default function Home() {
               <div>
                 <p className="font-black">Nenhum lote gerado ainda</p>
                 <p className="mt-1 text-sm font-medium text-[#69768c]">
-                  A configuração curricular será adicionada nas próximas etapas da POC.
+                  Comece selecionando uma aula do currículo de Fonemas.
                 </p>
               </div>
-              <span className="text-sm font-extrabold text-[#2da98b]">Estado inicial</span>
+              <Link
+                className="text-sm font-extrabold text-[#187b68] underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
+                href="/planejar"
+              >
+                Selecionar aula
+              </Link>
             </div>
           </div>
         </section>
