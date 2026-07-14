@@ -6,6 +6,7 @@ export * from "./generation-config";
 export * from "./model-contracts";
 export * from "./mock-generator";
 export * from "./review";
+export * from "./review-session";
 export * from "./rules";
 export * from "./shared";
 export * from "./usage";
