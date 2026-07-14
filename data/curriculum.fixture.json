@@ -1,0 +1,58 @@
+{
+  "version": "1.0-fixture",
+  "themes": [
+    {
+      "id": "fonemas",
+      "name": "Fonemas",
+      "skills": [
+        {
+          "id": "fixture-habilidade-01",
+          "name": "Reconhece sons iniciais",
+          "objectives": [
+            {
+              "id": "fixture-objetivo-01",
+              "name": "Relacionar sons e letras",
+              "weeks": [
+                {
+                  "id": "fixture-semana-01",
+                  "number": 1,
+                  "title": "Semana 1",
+                  "lessons": [
+                    {
+                      "id": "fixture-aula-01",
+                      "number": 1,
+                      "specificObjective": "Escutar o som inicial de palavras.",
+                      "content": "Jogo de escuta com palavras conhecidas.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                },
+                {
+                  "id": "fixture-semana-02",
+                  "number": 2,
+                  "title": "Semana 2",
+                  "lessons": [
+                    {
+                      "id": "fixture-aula-02",
+                      "number": 1,
+                      "specificObjective": "Relacionar o som inicial à letra.",
+                      "content": "Classificação de imagens por letra inicial.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fixture-aula-03",
+                      "number": 2,
+                      "specificObjective": "Revisar sons e letras iniciais.",
+                      "content": "Trilha de revisão dos sons trabalhados.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 export * from "./curriculum";
+export * from "./curriculum-adapter";
 export * from "./generation";
 export * from "./model-contracts";
 export * from "./review";
