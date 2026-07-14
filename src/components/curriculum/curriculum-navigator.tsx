@@ -71,7 +71,13 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
   }
 
   if (step === "configuration" && selectedLesson) {
-    return <GenerationConfigForm lesson={selectedLesson} onBack={() => setStep("curriculum")} />;
+    return (
+      <GenerationConfigForm
+        lesson={selectedLesson}
+        onBack={() => setStep("curriculum")}
+        selection={selection}
+      />
+    );
   }
 
   return (

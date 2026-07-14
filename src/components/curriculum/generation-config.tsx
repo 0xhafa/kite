@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 
+import { generateBatchAction } from "@/app/actions";
 import { Badge, Button, Card } from "@/components/ui";
 import type { Lesson } from "@/domain/curriculum";
+import type { CurriculumSelection } from "@/domain/curriculum-navigation";
 import {
   DEFAULT_ACTIVITY_COUNT,
   DEFAULT_DURATION_MINUTES,
@@ -13,13 +16,12 @@ import {
   MIN_DURATION_MINUTES,
   estimateActivityDistribution,
   generationConfigSchema,
-  serializeGenerationConfig,
-  type GenerationConfig,
 } from "@/domain/generation-config";
 
 type GenerationConfigFormProps = {
   lesson: Lesson;
   onBack: () => void;
+  selection: CurriculumSelection;
 };
 
 function numberFromInput(value: string) {
@@ -48,12 +50,14 @@ function getDurationError(duration: number, activityCount: number) {
   }
 }
 
-export function GenerationConfigForm({ lesson, onBack }: GenerationConfigFormProps) {
+export function GenerationConfigForm({ lesson, onBack, selection }: GenerationConfigFormProps) {
+  const router = useRouter();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [durationMinutes, setDurationMinutes] = useState(String(DEFAULT_DURATION_MINUTES));
   const [activityCount, setActivityCount] = useState(String(DEFAULT_ACTIVITY_COUNT));
   const [durationTouched, setDurationTouched] = useState(false);
-  const [submittedConfig, setSubmittedConfig] = useState<GenerationConfig | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [isGenerating, startGeneration] = useTransition();
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -74,12 +78,12 @@ export function GenerationConfigForm({ lesson, onBack }: GenerationConfigFormPro
 
   function updateDuration(value: string) {
     setDurationMinutes(value);
-    setSubmittedConfig(null);
+    setGenerationError(null);
   }
 
   function updateActivityCount(value: string) {
     setActivityCount(value);
-    setSubmittedConfig(null);
+    setGenerationError(null);
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -90,7 +94,17 @@ export function GenerationConfigForm({ lesson, onBack }: GenerationConfigFormPro
       return;
     }
 
-    setSubmittedConfig(serializeGenerationConfig(validation.data));
+    setGenerationError(null);
+    startGeneration(async () => {
+      const result = await generateBatchAction({ selection, config: validation.data });
+
+      if (!result.ok) {
+        setGenerationError(result.message);
+        return;
+      }
+
+      router.push(`/revisar?lote=${encodeURIComponent(result.data.batchId)}`);
+    });
   }
 
   return (
@@ -216,32 +230,52 @@ export function GenerationConfigForm({ lesson, onBack }: GenerationConfigFormPro
           )}
         </Card>
 
-        {submittedConfig ? (
+        {isGenerating ? (
           <Card
             aria-live="polite"
+            aria-busy="true"
             className="mt-6"
             padding="sm"
             raised={false}
             tone="soft"
           >
-            <p className="font-black">Configuração validada e pronta</p>
-            <p
-              className="mt-1 text-sm font-medium text-muted"
-              data-testid="submitted-config-summary"
-            >
-              {submittedConfig.requestedActivityCount} atividades em {" "}
-              {submittedConfig.requestedDurationMinutes} minutos foram registradas no contrato
-              da geração.
+            <p className="font-black">Gerando e validando o lote</p>
+            <p className="mt-1 text-sm font-medium text-muted">
+              As atividades, os relatórios e o consumo de tokens serão salvos antes da revisão.
             </p>
           </Card>
         ) : null}
 
+        {generationError ? (
+          <Card
+            className="mt-6 border-danger text-danger"
+            padding="sm"
+            raised={false}
+            role="alert"
+            tone="outlined"
+          >
+            <p className="font-black">Não foi possível gerar o lote</p>
+            <p className="mt-1 text-sm font-medium">{generationError}</p>
+          </Card>
+        ) : null}
+
         <div className="mt-8 flex flex-col-reverse gap-3 border-t-2 border-border pt-6 sm:flex-row">
-          <Button className="sm:w-auto" onClick={onBack} size="lg" variant="secondary">
+          <Button
+            className="sm:w-auto"
+            disabled={isGenerating}
+            onClick={onBack}
+            size="lg"
+            variant="secondary"
+          >
             Voltar ao currículo
           </Button>
-          <Button className="sm:flex-1" disabled={!validation.success} size="lg" type="submit">
-            Confirmar configuração
+          <Button
+            className="sm:flex-1"
+            disabled={!validation.success || isGenerating}
+            size="lg"
+            type="submit"
+          >
+            {isGenerating ? "Gerando atividades…" : "Confirmar e gerar atividades"}
           </Button>
         </div>
       </form>

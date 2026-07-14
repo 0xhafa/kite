@@ -5,13 +5,9 @@ import {
   ActivityReview,
   type ActivityReviewLoadState,
 } from "@/components/review/activity-review";
-import { generateMockBatch } from "@/domain/mock-generator";
-import { reviewBatchItemsSchema } from "@/domain/review-session";
-import {
-  type ModelRun,
-  aggregateBatchTokenUsage,
-  normalizeTokenUsage,
-} from "@/domain/usage";
+import type { ReviewSessionDecisionHistory } from "@/domain/review-session";
+import type { BatchTokenUsage } from "@/domain/usage";
+import { loadReviewBatch } from "@/server/generation/integrated-flow";
 
 export const metadata: Metadata = {
   title: "Revisar atividades | Kite",
@@ -22,15 +18,48 @@ type ReviewPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-const demoItems = createDemoReviewItems();
-const demoBatchUsage = createDemoBatchUsage();
+function firstParameter(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
 
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const parameters = await searchParams;
-  const requestedState = Array.isArray(parameters.estado)
-    ? parameters.estado[0]
-    : parameters.estado;
-  const reviewState = getReviewState(requestedState);
+  const requestedState = firstParameter(parameters.estado);
+  const batchId = firstParameter(parameters.lote);
+  let reviewState: ActivityReviewLoadState;
+  let usage: BatchTokenUsage | null = null;
+  let decisionHistory: ReviewSessionDecisionHistory = {};
+
+  if (requestedState === "carregando") {
+    reviewState = { status: "loading" };
+  } else if (requestedState === "erro") {
+    reviewState = {
+      status: "error",
+      message: "O lote não pôde ser carregado. Volte ao planejamento e tente novamente.",
+    };
+  } else if (requestedState === "vazio" || !batchId) {
+    reviewState = { status: "ready", items: [] };
+  } else {
+    try {
+      const reviewBatch = await loadReviewBatch(batchId);
+
+      if (!reviewBatch) {
+        reviewState = {
+          status: "error",
+          message: "O lote informado não existe ou não possui atividades disponíveis.",
+        };
+      } else {
+        reviewState = { status: "ready", items: reviewBatch.items };
+        usage = reviewBatch.usage;
+        decisionHistory = reviewBatch.decisionHistory;
+      }
+    } catch {
+      reviewState = {
+        status: "error",
+        message: "Não foi possível reconstruir o lote persistido e seus relatórios.",
+      };
+    }
+  }
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
@@ -57,195 +86,12 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8 sm:py-14" id="conteudo">
         <ActivityReview
+          batchId={batchId}
+          decisionHistory={decisionHistory}
           state={reviewState}
-          usage={
-            reviewState.status === "ready" && reviewState.items.length > 0
-              ? demoBatchUsage
-              : null
-          }
+          usage={usage}
         />
       </main>
     </div>
-  );
-}
-
-function getReviewState(requestedState: string | undefined): ActivityReviewLoadState {
-  switch (requestedState) {
-    case "carregando":
-      return { status: "loading" };
-    case "erro":
-      return {
-        status: "error",
-        message: "O lote de demonstração não pôde ser carregado. Volte ao planejamento e tente novamente.",
-      };
-    case "vazio":
-      return { status: "ready", items: [] };
-    default:
-      return { status: "ready", items: demoItems };
-  }
-}
-
-function createDemoBatchUsage() {
-  const batchId = "lote-demonstracao-1";
-  const runs: ModelRun[] = [
-    createDemoModelRun({
-      id: "execucao-geracao-1",
-      batchId,
-      stage: "generate",
-      rawUsage: { prompt_tokens: 410, completion_tokens: 240 },
-    }),
-    ...[1, 2, 3].map((position) =>
-      createDemoModelRun({
-        id: `execucao-validacao-${position}`,
-        batchId,
-        activityId: `atividade-demonstracao-${position}`,
-        stage: "validate",
-        rawUsage: { input_tokens: 105, output_tokens: 35 },
-      }),
-    ),
-    createDemoModelRun({
-      id: "execucao-reparo-1",
-      batchId,
-      activityId: "atividade-demonstracao-3",
-      stage: "repair",
-      rawUsage: { prompt_tokens: 60, total_tokens: 90 },
-    }),
-  ];
-
-  return aggregateBatchTokenUsage(batchId, runs);
-}
-
-function createDemoModelRun({
-  rawUsage,
-  ...overrides
-}: Pick<ModelRun, "id" | "batchId" | "stage" | "rawUsage"> &
-  Partial<Pick<ModelRun, "activityId">>): ModelRun {
-  return {
-    provider: "mock",
-    model: "mock-observavel-1",
-    status: "completed",
-    normalizedInput: {},
-    inputHash: `hash-${overrides.id}`,
-    promptTemplateId: `prompt-${overrides.stage}`,
-    promptVersion: "1.0",
-    renderedPrompt: "Prompt de demonstração registrado no servidor.",
-    validatedResponse: {},
-    ruleSetVersion: "1.0",
-    cacheKey: `cache-${overrides.id}`,
-    tokenUsage: normalizeTokenUsage(rawUsage),
-    latencyMilliseconds: 120,
-    createdAt: "2026-07-14T16:30:00-03:00",
-    ...overrides,
-    rawUsage,
-  };
-}
-
-function createDemoReviewItems() {
-  const batchId = "lote-demonstracao-1";
-  const generationRunId = "execucao-mock-1";
-  const generatedBatch = generateMockBatch({
-    curriculum: {
-      themeId: "fonemas",
-      curriculumVersion: "fixture-1.0",
-      skillId: "identificacao-sonora",
-      objectiveId: "som-inicial",
-      objectiveName: "Identificar sons iniciais",
-      weekId: "semana-1",
-      lesson: {
-        id: "aula-1",
-        number: 1,
-        specificObjective: "Identificar o som inicial das palavras",
-        content: "som inicial /f/",
-      },
-    },
-    progressionContext: ["A turma já comparou sons presentes no ambiente."],
-    totalDurationMinutes: 25,
-    activityCount: 3,
-    applicableRules: [
-      {
-        ruleId: "acao-observavel",
-        ruleVersion: 1,
-        applicabilityReason: "A atividade precisa explicitar a ação da criança.",
-        generationInstruction: "Descrever a proposta com um verbo observável.",
-        validationCriterion: "A descrição informa uma ação observável da criança.",
-      },
-    ],
-    preservedActivities: [],
-    localFeedback: [],
-    editorialTemplateVersion: "generation-1",
-  });
-
-  return reviewBatchItemsSchema.parse(
-    generatedBatch.activities.map((proposal, index) => {
-      const activityId = `atividade-demonstracao-${index + 1}`;
-      const validationStatus = index === 0 ? "passed" : index === 1 ? "needs_review" : "failed";
-
-      return {
-        activity: {
-          id: activityId,
-          batchId,
-          logicalActivityId: `atividade-logica-${index + 1}`,
-          slotIndex: proposal.slotIndex,
-          title: proposal.title,
-          description: proposal.description,
-          durationMinutes: proposal.durationMinutes,
-          status: "draft",
-          version: 1,
-          generationRunId,
-        },
-        ruleReferences: [
-          {
-            ruleId: "acao-observavel",
-            ruleVersion: 1,
-            title: "Ação observável da criança",
-            origin: "pedagogical_inference",
-            sources: [
-              {
-                id: "fonte-diretrizes-kite",
-                title: "Diretrizes pedagógicas da POC Kite",
-                authors: ["Equipe Kite"],
-                publicationYear: 2026,
-                locator: "Critério de demonstração: ação observável da criança",
-              },
-            ],
-          },
-        ],
-        validationReport: {
-          activityId,
-          activityVersion: 1,
-          results: [
-            {
-              id: `resultado-demonstracao-${index + 1}`,
-              activityId,
-              activityVersion: 1,
-              ruleId: "acao-observavel",
-              ruleVersion: 1,
-              applicability: "applicable",
-              status: validationStatus,
-              evidence:
-                validationStatus === "passed"
-                  ? "A descrição usa o verbo observável “observa”."
-                  : validationStatus === "needs_review"
-                    ? "A descrição explicita uma ação, mas não define como observar a resposta da criança."
-                    : "A ação principal aparece de forma genérica e sem um comportamento verificável.",
-              explanation:
-                validationStatus === "passed"
-                  ? "A ação esperada da criança está explícita na descrição."
-                  : validationStatus === "needs_review"
-                    ? "A ação está descrita, mas sua adequação precisa de decisão pedagógica."
-                    : "A descrição precisa tornar a ação principal mais verificável.",
-              confidence: validationStatus === "needs_review" ? 0.62 : 0.9,
-              evaluatorOrigin: "system",
-              evaluatorId: "validador-mock-1",
-            },
-          ],
-          summary: {
-            blockingFailures: validationStatus === "failed" ? 1 : 0,
-            needsHumanReview: validationStatus === "needs_review" ? 1 : 0,
-          },
-          createdAt: "2026-07-14T13:20:10-03:00",
-        },
-      };
-    }),
   );
 }

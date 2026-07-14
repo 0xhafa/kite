@@ -1,0 +1,433 @@
+import { randomUUID } from "node:crypto";
+
+import rulesData from "../../../data/rules.json";
+import { selectApplicableRuleInputs } from "@/domain/applicability";
+import type { Curriculum, Lesson } from "@/domain/curriculum";
+import type { CurriculumSelection } from "@/domain/curriculum-navigation";
+import { validateActivityGroupDeterministically } from "@/domain/deterministic-validation";
+import {
+  activityGroupSchema,
+  applyActivityRegeneration,
+  generationBatchSchema,
+  type Activity,
+  type ActivityGroup,
+} from "@/domain/generation";
+import {
+  generationConfigSchema,
+  type GenerationConfig,
+} from "@/domain/generation-config";
+import { generateMockBatch, generateMockRepair } from "@/domain/mock-generator";
+import type {
+  ApplicableRuleInput,
+  CurriculumLessonContext,
+} from "@/domain/model-contracts";
+import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
+import type { ValidationModelResult, ValidationReport } from "@/domain/rules";
+import { loadRuleCatalog } from "@/domain/rules-catalog";
+import {
+  modelRunSchema,
+  normalizeTokenUsage,
+  type ModelRun,
+} from "@/domain/usage";
+
+export type CompleteCurriculumSelection = {
+  themeId: string;
+  skillId: string;
+  objectiveId: string;
+  weekId: string;
+  lessonId: string;
+};
+
+export type GenerationPipelineInput = {
+  curriculum: Curriculum;
+  selection: CompleteCurriculumSelection;
+  config: GenerationConfig;
+};
+
+export type PipelineOptions = {
+  createId?: (prefix: string) => string;
+  now?: () => string;
+};
+
+export type InitialGenerationArtifacts = {
+  batch: ReturnType<typeof generationBatchSchema.parse>;
+  group: ActivityGroup;
+  reports: ValidationReport[];
+  generationRun: ModelRun;
+  validationRuns: ModelRun[];
+  curriculumContext: CurriculumLessonContext;
+  applicableRules: ApplicableRuleInput[];
+};
+
+export type RegenerationPipelineInput = {
+  group: ActivityGroup;
+  currentActivity: Activity;
+  currentReport: ValidationReport;
+  curriculumContext: CurriculumLessonContext;
+  applicableRules: ApplicableRuleInput[];
+  feedback?: string;
+  promptVersion: string;
+  ruleSetVersion: string;
+};
+
+export type RegenerationArtifacts = {
+  replacement: Activity;
+  report: ValidationReport;
+  repairRun: ModelRun;
+  validationRun: ModelRun;
+};
+
+const catalog = loadRuleCatalog(rulesData);
+const catalogRulesByKey = new Map(
+  catalog.rules.map((rule) => [`${rule.id}:${rule.version}`, rule]),
+);
+const promptVersion = "mock-generation-1";
+const ruleSetVersion = `rules-${catalog.version}`;
+const traceabilitySource = {
+  id: "kite-rule-catalog",
+  title: "Catálogo versionado de regras pedagógicas do Kite",
+  authors: ["Equipe Kite"],
+  publicationYear: 2026,
+  locator: `Catálogo ${ruleSetVersion}`,
+};
+
+function defaultCreateId(prefix: string): string {
+  return `${prefix}-${randomUUID()}`;
+}
+
+function createRuntime(options: PipelineOptions) {
+  return {
+    createId: options.createId ?? defaultCreateId,
+    now: options.now ?? (() => new Date().toISOString()),
+  };
+}
+
+export function resolveCurriculumContext(
+  curriculum: Curriculum,
+  selection: CompleteCurriculumSelection,
+): CurriculumLessonContext {
+  const theme = curriculum.themes.find(({ id }) => id === selection.themeId);
+  const skill = theme?.skills.find(({ id }) => id === selection.skillId);
+  const objective = skill?.objectives.find(({ id }) => id === selection.objectiveId);
+  const week = objective?.weeks.find(({ id }) => id === selection.weekId);
+  const lesson = week?.lessons.find(({ id }) => id === selection.lessonId);
+
+  if (!theme || !skill || !objective || !week || !lesson) {
+    throw new Error("A seleção curricular não corresponde a uma aula do currículo vigente.");
+  }
+
+  return {
+    themeId: theme.id,
+    curriculumVersion: curriculum.version,
+    skillId: skill.id,
+    objectiveId: objective.id,
+    objectiveName: objective.name,
+    weekId: week.id,
+    lesson,
+  };
+}
+
+function getProgressionContext(
+  curriculum: Curriculum,
+  selection: CompleteCurriculumSelection,
+  lesson: Lesson,
+): string[] {
+  const context = resolveCurriculumContext(curriculum, selection);
+  const theme = curriculum.themes.find(({ id }) => id === context.themeId)!;
+  const skill = theme.skills.find(({ id }) => id === context.skillId)!;
+  const objective = skill.objectives.find(({ id }) => id === context.objectiveId)!;
+  const week = objective.weeks.find(({ id }) => id === context.weekId)!;
+
+  return week.lessons
+    .filter((candidate) => candidate.number < lesson.number)
+    .map((candidate) => candidate.content);
+}
+
+function applicableRulesFor(activityCount: number): ApplicableRuleInput[] {
+  const signals = [
+    "uses_words",
+    "uses_images",
+    "has_editorial_template",
+    ...(activityCount > 1 ? (["multiple_activities"] as const) : []),
+  ] as const;
+
+  return selectApplicableRuleInputs(catalog, { signals: [...signals] });
+}
+
+function stableHash(value: unknown): string {
+  const text = JSON.stringify(value);
+  let hash = 2_166_136_261;
+
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16_777_619);
+  }
+
+  return (hash >>> 0).toString(36);
+}
+
+function createCompletedRun(input: {
+  id: string;
+  batchId: string;
+  activityId?: string;
+  stage: "generate" | "validate" | "repair";
+  normalizedInput: unknown;
+  validatedResponse: unknown;
+  rawUsage: Record<string, number>;
+  createdAt: string;
+  promptVersion: string;
+  ruleSetVersion: string;
+}): ModelRun {
+  return modelRunSchema.parse({
+    id: input.id,
+    batchId: input.batchId,
+    ...(input.activityId ? { activityId: input.activityId } : {}),
+    stage: input.stage,
+    provider: "mock",
+    model: "kite-mock-v1",
+    status: "completed",
+    normalizedInput: input.normalizedInput,
+    inputHash: stableHash(input.normalizedInput),
+    promptTemplateId: `mock-${input.stage}`,
+    promptVersion: input.promptVersion,
+    renderedPrompt: `Execução mock estruturada da etapa ${input.stage}.`,
+    validatedResponse: input.validatedResponse,
+    ruleSetVersion: input.ruleSetVersion,
+    cacheKey: `${input.stage}:${input.batchId}:${input.activityId ?? "batch"}:${stableHash(input.normalizedInput)}`,
+    rawUsage: input.rawUsage,
+    tokenUsage: normalizeTokenUsage(input.rawUsage),
+    latencyMilliseconds: 1,
+    createdAt: input.createdAt,
+  });
+}
+
+export function createInitialGenerationArtifacts(
+  input: GenerationPipelineInput,
+  options: PipelineOptions = {},
+): InitialGenerationArtifacts {
+  const runtime = createRuntime(options);
+  const config = generationConfigSchema.parse(input.config);
+  const curriculumContext = resolveCurriculumContext(input.curriculum, input.selection);
+  const applicableRules = applicableRulesFor(config.requestedActivityCount);
+  const createdAt = runtime.now();
+  const batchId = runtime.createId("batch");
+  const generationRunId = runtime.createId("run-generate");
+  const modelInput = {
+    curriculum: curriculumContext,
+    progressionContext: getProgressionContext(
+      input.curriculum,
+      input.selection,
+      curriculumContext.lesson,
+    ),
+    totalDurationMinutes: config.requestedDurationMinutes,
+    activityCount: config.requestedActivityCount,
+    applicableRules,
+    preservedActivities: [],
+    localFeedback: [],
+    editorialTemplateVersion: promptVersion,
+  };
+  const generated = generateMockBatch(modelInput);
+  const activities = generated.activities.map((proposal) => ({
+    id: runtime.createId(`activity-${proposal.slotIndex + 1}-v1`),
+    batchId,
+    logicalActivityId: runtime.createId(`logical-${proposal.slotIndex + 1}`),
+    slotIndex: proposal.slotIndex,
+    title: proposal.title,
+    description: proposal.description,
+    durationMinutes: proposal.durationMinutes,
+    status: "draft" as const,
+    version: 1,
+    generationRunId,
+  }));
+  const group = activityGroupSchema.parse({
+    batchId,
+    requestedDurationMinutes: config.requestedDurationMinutes,
+    requestedActivityCount: config.requestedActivityCount,
+    activities,
+  });
+  const reports = validateActivityGroupDeterministically(group, { createdAt });
+  const generationRun = createCompletedRun({
+    id: generationRunId,
+    batchId,
+    stage: "generate",
+    normalizedInput: modelInput,
+    validatedResponse: generated,
+    rawUsage: {
+      input_tokens: 180 + config.requestedActivityCount * 20,
+      output_tokens: 120 + config.requestedActivityCount * 40,
+    },
+    createdAt,
+    promptVersion,
+    ruleSetVersion,
+  });
+  const validationRuns = reports.map((report) =>
+    createCompletedRun({
+      id: runtime.createId(`run-validate-${report.activityId}`),
+      batchId,
+      activityId: report.activityId,
+      stage: "validate",
+      normalizedInput: { activityId: report.activityId, activityVersion: report.activityVersion },
+      validatedResponse: report,
+      rawUsage: { input_tokens: 70, output_tokens: 20 },
+      createdAt,
+      promptVersion,
+      ruleSetVersion,
+    }),
+  );
+
+  return {
+    batch: generationBatchSchema.parse({
+      id: batchId,
+      lessonId: curriculumContext.lesson.id,
+      themeId: curriculumContext.themeId,
+      curriculumVersion: curriculumContext.curriculumVersion,
+      requestedDurationMinutes: config.requestedDurationMinutes,
+      requestedActivityCount: config.requestedActivityCount,
+      normalizedParameters: {
+        durationMinutes: config.requestedDurationMinutes,
+        activityCount: config.requestedActivityCount,
+        selection: input.selection,
+      },
+      status: "ready_for_review",
+      createdAt,
+      promptVersion,
+      ruleSetVersion,
+      cacheKey: `mock:${batchId}`,
+    }),
+    group,
+    reports,
+    generationRun,
+    validationRuns,
+    curriculumContext,
+    applicableRules,
+  };
+}
+
+function repairFailures(report: ValidationReport): ValidationModelResult[] {
+  const failures = report.results.filter(
+    (result) => result.status !== "passed" && result.status !== "not_applicable",
+  );
+
+  if (failures.length > 0) {
+    return failures.map(({ ruleId, ruleVersion, status, evidence, explanation, confidence }) => ({
+      ruleId,
+      ruleVersion,
+      status,
+      ...(evidence ? { evidence } : {}),
+      explanation,
+      confidence,
+    }));
+  }
+
+  const fallback = report.results[0];
+  if (!fallback) {
+    throw new Error("A atividade rejeitada precisa possuir resultados de validação.");
+  }
+
+  return [{
+    ruleId: fallback.ruleId,
+    ruleVersion: fallback.ruleVersion,
+    status: "needs_review",
+    explanation: "A revisão humana rejeitou a versão atual e solicitou uma alternativa.",
+    confidence: 1,
+  }];
+}
+
+export function createRegenerationArtifacts(
+  input: RegenerationPipelineInput,
+  options: PipelineOptions = {},
+): RegenerationArtifacts {
+  const runtime = createRuntime(options);
+  const createdAt = runtime.now();
+  const repairRunId = runtime.createId("run-repair");
+  const repairInput = {
+    currentActivity: input.currentActivity,
+    requiredDurationMinutes: input.currentActivity.durationMinutes,
+    validationFailures: repairFailures(input.currentReport),
+    ...(input.feedback?.trim() ? { feedback: input.feedback.trim() } : {}),
+    preservedActivities: input.group.activities.filter(
+      (activity) => activity.id !== input.currentActivity.id,
+    ),
+    curriculum: input.curriculumContext,
+    applicableRules: input.applicableRules,
+  };
+  const generated = generateMockRepair(repairInput);
+  const replacement: Activity = {
+    id: runtime.createId(`activity-${input.currentActivity.slotIndex + 1}-v${input.currentActivity.version + 1}`),
+    batchId: input.currentActivity.batchId,
+    logicalActivityId: input.currentActivity.logicalActivityId,
+    slotIndex: input.currentActivity.slotIndex,
+    title: generated.activity.title,
+    description: generated.activity.description,
+    durationMinutes: input.currentActivity.durationMinutes,
+    status: "draft",
+    version: input.currentActivity.version + 1,
+    replacesActivityId: input.currentActivity.id,
+    generationRunId: repairRunId,
+  };
+  const updatedGroup = applyActivityRegeneration({ group: input.group, replacement });
+  const report = validateActivityGroupDeterministically(updatedGroup, { createdAt }).find(
+    (candidate) => candidate.activityId === replacement.id,
+  );
+
+  if (!report) {
+    throw new Error("A atividade substituta não recebeu relatório de validação.");
+  }
+
+  return {
+    replacement,
+    report,
+    repairRun: createCompletedRun({
+      id: repairRunId,
+      batchId: input.group.batchId,
+      activityId: input.currentActivity.id,
+      stage: "repair",
+      normalizedInput: repairInput,
+      validatedResponse: generated,
+      rawUsage: { input_tokens: 110, output_tokens: 70 },
+      createdAt,
+      promptVersion: input.promptVersion,
+      ruleSetVersion: input.ruleSetVersion,
+    }),
+    validationRun: createCompletedRun({
+      id: runtime.createId(`run-validate-${replacement.id}`),
+      batchId: input.group.batchId,
+      activityId: replacement.id,
+      stage: "validate",
+      normalizedInput: { activityId: replacement.id, activityVersion: replacement.version },
+      validatedResponse: report,
+      rawUsage: { input_tokens: 70, output_tokens: 20 },
+      createdAt,
+      promptVersion: input.promptVersion,
+      ruleSetVersion: input.ruleSetVersion,
+    }),
+  };
+}
+
+export function createReviewItem(
+  activity: Activity,
+  report: ValidationReport,
+): ActivityReviewItem {
+  const ruleReferences: ReviewRuleReference[] = report.results.map((result) => {
+    const rule = catalogRulesByKey.get(`${result.ruleId}:${result.ruleVersion}`);
+    if (!rule) {
+      throw new Error(`A regra ${result.ruleId}:${result.ruleVersion} não existe no catálogo.`);
+    }
+
+    return {
+      ruleId: rule.id,
+      ruleVersion: rule.version,
+      title: rule.title,
+      origin: rule.origin,
+      sources: [traceabilitySource],
+    };
+  });
+
+  return { activity, validationReport: report, ruleReferences };
+}
+
+export function isCompleteSelection(
+  selection: CurriculumSelection,
+): selection is CompleteCurriculumSelection {
+  return Object.values(selection).every((value) => typeof value === "string" && value.length > 0);
+}

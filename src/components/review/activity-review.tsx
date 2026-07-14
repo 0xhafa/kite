@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import {
+  approveActivityAction,
+  rejectAndRegenerateActivityAction,
+} from "@/app/actions";
 import { Badge, Button, Card, Modal, Progress } from "@/components/ui";
 import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
 import {
@@ -9,6 +13,7 @@ import {
   decideCurrentReviewItem,
   getCurrentReviewItem,
   getReviewProgress,
+  type ReviewSessionDecisionHistory,
 } from "@/domain/review-session";
 import type { ValidationStatus } from "@/domain/rules";
 import type { BatchTokenUsage } from "@/domain/usage";
@@ -21,6 +26,8 @@ export type ActivityReviewLoadState =
   | { status: "ready"; items: readonly ActivityReviewItem[] };
 
 export type ActivityReviewProps = {
+  batchId?: string;
+  decisionHistory?: ReviewSessionDecisionHistory;
   state: ActivityReviewLoadState;
   usage?: BatchTokenUsage | null;
 };
@@ -30,7 +37,12 @@ type DecisionFeedback = {
   tone: "success" | "danger";
 };
 
-export function ActivityReview({ state, usage = null }: ActivityReviewProps) {
+export function ActivityReview({
+  batchId,
+  decisionHistory = {},
+  state,
+  usage = null,
+}: ActivityReviewProps) {
   if (state.status === "loading") {
     return <ReviewLoadingState />;
   }
@@ -48,20 +60,34 @@ export function ActivityReview({ state, usage = null }: ActivityReviewProps) {
     );
   }
 
-  return <ReadyActivityReview items={state.items} usage={usage} />;
+  return (
+    <ReadyActivityReview
+      batchId={batchId ?? state.items[0].activity.batchId}
+      decisionHistory={decisionHistory}
+      items={state.items}
+      usage={usage}
+    />
+  );
 }
 
 function ReadyActivityReview({
+  batchId,
+  decisionHistory,
   items,
   usage,
 }: {
+  batchId: string;
+  decisionHistory: ReviewSessionDecisionHistory;
   items: readonly ActivityReviewItem[];
   usage: BatchTokenUsage | null;
 }) {
-  const [session, setSession] = useState(() => createReviewSession(items));
+  const [session, setSession] = useState(() => createReviewSession(items, decisionHistory));
+  const [currentUsage, setCurrentUsage] = useState(usage);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [decisionFeedback, setDecisionFeedback] = useState<DecisionFeedback | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionPending, setActionPending] = useState(false);
   const activityHeadingRef = useRef<HTMLHeadingElement>(null);
   const completionHeadingRef = useRef<HTMLHeadingElement>(null);
   const closeDetails = useCallback(() => setDetailsOpen(false), []);
@@ -76,25 +102,78 @@ function ReadyActivityReview({
     }
   }, [currentItem]);
 
-  function decide(decision: "approved" | "rejected") {
+  async function approve() {
     if (!currentItem) {
       return;
     }
 
     const title = currentItem.activity.title;
+    setActionError(null);
+    setActionPending(true);
+    const result = await approveActivityAction({
+      batchId,
+      activityId: currentItem.activity.id,
+      activityVersion: currentItem.activity.version,
+      feedback,
+    });
+    setActionPending(false);
+
+    if (!result.ok) {
+      setActionError(result.message);
+      return;
+    }
+
     setSession((currentSession) =>
-      decideCurrentReviewItem(currentSession, decision, feedback),
+      decideCurrentReviewItem(currentSession, "approved", feedback),
     );
     setDecisionFeedback({
-      message:
-        decision === "approved"
-          ? `“${title}” foi aprovada.`
-          : `“${title}” foi rejeitada.`,
-      tone: decision === "approved" ? "success" : "danger",
+      message: `“${title}” foi aprovada.`,
+      tone: "success",
     });
     setFeedback("");
     setDetailsOpen(false);
   }
+
+  async function rejectAndRegenerate() {
+    if (!currentItem) return;
+
+    const rejectedItem = currentItem;
+    setActionError(null);
+    setActionPending(true);
+    const result = await rejectAndRegenerateActivityAction({
+      batchId,
+      activityId: rejectedItem.activity.id,
+      activityVersion: rejectedItem.activity.version,
+      feedback,
+    });
+    setActionPending(false);
+
+    if (!result.ok) {
+      setActionError(result.message);
+      return;
+    }
+
+    setSession((currentSession) => {
+      const nextItems = currentSession.items.map((item) =>
+        item.activity.id === rejectedItem.activity.id ? result.data.item : item,
+      );
+      const nextHistory = { ...currentSession.decisionHistory };
+      delete nextHistory[rejectedItem.activity.id];
+      return createReviewSession(nextItems, nextHistory);
+    });
+    setCurrentUsage(result.data.usage);
+    setDecisionFeedback({
+      message: `“${rejectedItem.activity.title}” foi rejeitada e substituída apenas nesta posição.`,
+      tone: "danger",
+    });
+    setFeedback("");
+    setDetailsOpen(false);
+  }
+
+  const totalDurationMinutes = session.items.reduce(
+    (total, item) => total + item.activity.durationMinutes,
+    0,
+  );
 
   return (
     <section aria-labelledby="titulo-revisao">
@@ -112,11 +191,11 @@ function ReadyActivityReview({
           </p>
         </div>
         <p className="font-extrabold text-muted">
-          {progress.reviewed} de {progress.total} revisadas
+          {progress.reviewed} de {progress.total} revisadas · {totalDurationMinutes} min
         </p>
       </div>
 
-      <BatchUsageSummary usage={usage} />
+      <BatchUsageSummary usage={currentUsage} />
 
       <Card className="mt-7" padding="sm" raised={false} tone="outlined">
         <Progress
@@ -136,7 +215,7 @@ function ReadyActivityReview({
         </ul>
       </Card>
 
-      {decisionFeedback && currentItem ? (
+      {decisionFeedback ? (
         <div
           className={`mt-5 rounded-md px-4 py-3 text-sm font-extrabold ${
             decisionFeedback.tone === "success"
@@ -145,18 +224,25 @@ function ReadyActivityReview({
           }`}
           role="status"
         >
-          {decisionFeedback.message} A próxima proposta está pronta para revisão.
+          {decisionFeedback.message}
+        </div>
+      ) : null}
+
+      {actionError ? (
+        <div className="mt-5 rounded-md bg-danger-soft px-4 py-3 text-sm font-extrabold text-danger" role="alert">
+          {actionError}
         </div>
       ) : null}
 
       {currentItem ? (
         <ActivityCard
+          busy={actionPending}
           feedback={feedback}
           item={currentItem}
-          onApprove={() => decide("approved")}
+          onApprove={approve}
           onFeedbackChange={setFeedback}
           onOpenDetails={() => setDetailsOpen(true)}
-          onReject={() => decide("rejected")}
+          onReject={rejectAndRegenerate}
           position={progress.reviewed + 1}
           titleRef={activityHeadingRef}
           total={progress.total}
@@ -199,6 +285,7 @@ function ProgressCount({
 }
 
 function ActivityCard({
+  busy,
   feedback,
   item,
   onApprove,
@@ -209,6 +296,7 @@ function ActivityCard({
   titleRef,
   total,
 }: {
+  busy: boolean;
   feedback: string;
   item: ActivityReviewItem;
   onApprove: () => void;
@@ -226,9 +314,14 @@ function ActivityCard({
     <Card className="mt-6 overflow-hidden" padding="none">
       <article aria-labelledby={`atividade-${item.activity.id}`} className="p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-extrabold uppercase tracking-[0.08em] text-muted">
-            Atividade {position} de {total}
-          </p>
+          <div>
+            <p className="text-sm font-extrabold uppercase tracking-[0.08em] text-muted">
+              Atividade {position} de {total}
+            </p>
+            <p className="mt-1 text-xs font-bold text-muted" data-testid="current-activity-version">
+              Versão {item.activity.version}
+            </p>
+          </div>
           <span className="rounded-pill bg-brand-soft px-3 py-2 text-sm font-black text-brand-strong">
             {item.activity.durationMinutes} min
           </span>
@@ -270,6 +363,7 @@ function ActivityCard({
         <textarea
           aria-describedby={feedbackHelpId}
           className="mt-3 min-h-24 w-full resize-y rounded-md border-2 border-border bg-surface px-4 py-3 font-medium text-ink outline-none transition-colors placeholder:text-muted focus:border-focus focus:ring-2 focus:ring-focus/20"
+          disabled={busy}
           id={`feedback-${item.activity.id}`}
           onChange={(event) => onFeedbackChange(event.target.value)}
           placeholder="Ex.: simplificar a instrução ou manter como está"
@@ -277,14 +371,14 @@ function ActivityCard({
         />
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Button fullWidth onClick={onReject} size="lg" variant="danger">
-            Rejeitar
+          <Button disabled={busy} fullWidth onClick={onReject} size="lg" variant="danger">
+            {busy ? "Salvando…" : "Rejeitar e gerar nova versão"}
           </Button>
-          <Button fullWidth onClick={onOpenDetails} size="lg" variant="secondary">
+          <Button disabled={busy} fullWidth onClick={onOpenDetails} size="lg" variant="secondary">
             Detalhes
           </Button>
-          <Button fullWidth onClick={onApprove} size="lg">
-            Aprovar
+          <Button disabled={busy} fullWidth onClick={onApprove} size="lg">
+            {busy ? "Salvando…" : "Aprovar"}
           </Button>
         </div>
       </div>
