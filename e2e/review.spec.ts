@@ -4,8 +4,26 @@ test("revisa uma atividade principal por vez e exibe o progresso do lote", async
   await page.goto("/revisar");
 
   await expect(page.getByRole("heading", { name: "Olhar de investigador" })).toBeFocused();
+  const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
+  await expect(usageSummary.getByText("Total", { exact: true }).locator("..")).toContainText(
+    "1.160",
+  );
+  await expect(
+    usageSummary.getByText("Geração", { exact: true }).locator(".."),
+  ).toContainText("650");
+  await expect(
+    usageSummary.getByText("Validação", { exact: true }).locator(".."),
+  ).toContainText("420");
+  await expect(
+    usageSummary.getByText("Reparos", { exact: true }).locator(".."),
+  ).toContainText("90");
+  await expect(
+    usageSummary.getByText("Chamadas", { exact: true }).locator(".."),
+  ).toContainText("5");
   await expect(page.getByText("Atividade 1 de 3")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Olhar de investigador" }),
+  ).toHaveCount(1);
   await expect(page.getByText("9 min", { exact: true })).toBeVisible();
   await expect(page.getByText("Validação aprovada", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Aprovar" })).toBeVisible();
@@ -87,7 +105,15 @@ test("exibe estados de carregamento, erro e vazio", async ({ page }) => {
   ).toContainText("Não foi possível abrir a revisão");
 
   await page.goto("/revisar?estado=vazio");
-  await expect(page.getByRole("status")).toContainText("Nenhuma atividade para revisar");
+  await expect(page.getByRole("status")).toHaveCount(2);
+  await expect(
+    page.getByRole("status").filter({
+      hasText: "Nenhum consumo de tokens foi registrado para este lote",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Nenhuma atividade para revisar" }),
+  ).toBeVisible();
 });
 
 test("mantém as decisões acessíveis em tela pequena", async ({ page }) => {

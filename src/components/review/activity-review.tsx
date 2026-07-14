@@ -11,6 +11,9 @@ import {
   getReviewProgress,
 } from "@/domain/review-session";
 import type { ValidationStatus } from "@/domain/rules";
+import type { BatchTokenUsage } from "@/domain/usage";
+
+import { BatchUsageSummary } from "./batch-usage-summary";
 
 export type ActivityReviewLoadState =
   | { status: "loading" }
@@ -19,6 +22,7 @@ export type ActivityReviewLoadState =
 
 export type ActivityReviewProps = {
   state: ActivityReviewLoadState;
+  usage?: BatchTokenUsage | null;
 };
 
 type DecisionFeedback = {
@@ -26,7 +30,7 @@ type DecisionFeedback = {
   tone: "success" | "danger";
 };
 
-export function ActivityReview({ state }: ActivityReviewProps) {
+export function ActivityReview({ state, usage = null }: ActivityReviewProps) {
   if (state.status === "loading") {
     return <ReviewLoadingState />;
   }
@@ -36,13 +40,24 @@ export function ActivityReview({ state }: ActivityReviewProps) {
   }
 
   if (state.items.length === 0) {
-    return <ReviewEmptyState />;
+    return (
+      <>
+        <ReviewEmptyState />
+        <BatchUsageSummary usage={usage} />
+      </>
+    );
   }
 
-  return <ReadyActivityReview items={state.items} />;
+  return <ReadyActivityReview items={state.items} usage={usage} />;
 }
 
-function ReadyActivityReview({ items }: { items: readonly ActivityReviewItem[] }) {
+function ReadyActivityReview({
+  items,
+  usage,
+}: {
+  items: readonly ActivityReviewItem[];
+  usage: BatchTokenUsage | null;
+}) {
   const [session, setSession] = useState(() => createReviewSession(items));
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [decisionFeedback, setDecisionFeedback] = useState<DecisionFeedback | null>(null);
@@ -100,6 +115,8 @@ function ReadyActivityReview({ items }: { items: readonly ActivityReviewItem[] }
           {progress.reviewed} de {progress.total} revisadas
         </p>
       </div>
+
+      <BatchUsageSummary usage={usage} />
 
       <Card className="mt-7" padding="sm" raised={false} tone="outlined">
         <Progress

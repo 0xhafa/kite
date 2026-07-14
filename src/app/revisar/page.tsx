@@ -7,6 +7,11 @@ import {
 } from "@/components/review/activity-review";
 import { generateMockBatch } from "@/domain/mock-generator";
 import { reviewBatchItemsSchema } from "@/domain/review-session";
+import {
+  type ModelRun,
+  aggregateBatchTokenUsage,
+  normalizeTokenUsage,
+} from "@/domain/usage";
 
 export const metadata: Metadata = {
   title: "Revisar atividades | Kite",
@@ -18,6 +23,7 @@ type ReviewPageProps = {
 };
 
 const demoItems = createDemoReviewItems();
+const demoBatchUsage = createDemoBatchUsage();
 
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const parameters = await searchParams;
@@ -50,7 +56,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       </header>
 
       <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8 sm:py-14" id="conteudo">
-        <ActivityReview state={reviewState} />
+        <ActivityReview
+          state={reviewState}
+          usage={
+            reviewState.status === "ready" && reviewState.items.length > 0
+              ? demoBatchUsage
+              : null
+          }
+        />
       </main>
     </div>
   );
@@ -70,6 +83,61 @@ function getReviewState(requestedState: string | undefined): ActivityReviewLoadS
     default:
       return { status: "ready", items: demoItems };
   }
+}
+
+function createDemoBatchUsage() {
+  const batchId = "lote-demonstracao-1";
+  const runs: ModelRun[] = [
+    createDemoModelRun({
+      id: "execucao-geracao-1",
+      batchId,
+      stage: "generate",
+      rawUsage: { prompt_tokens: 410, completion_tokens: 240 },
+    }),
+    ...[1, 2, 3].map((position) =>
+      createDemoModelRun({
+        id: `execucao-validacao-${position}`,
+        batchId,
+        activityId: `atividade-demonstracao-${position}`,
+        stage: "validate",
+        rawUsage: { input_tokens: 105, output_tokens: 35 },
+      }),
+    ),
+    createDemoModelRun({
+      id: "execucao-reparo-1",
+      batchId,
+      activityId: "atividade-demonstracao-3",
+      stage: "repair",
+      rawUsage: { prompt_tokens: 60, total_tokens: 90 },
+    }),
+  ];
+
+  return aggregateBatchTokenUsage(batchId, runs);
+}
+
+function createDemoModelRun({
+  rawUsage,
+  ...overrides
+}: Pick<ModelRun, "id" | "batchId" | "stage" | "rawUsage"> &
+  Partial<Pick<ModelRun, "activityId">>): ModelRun {
+  return {
+    provider: "mock",
+    model: "mock-observavel-1",
+    status: "completed",
+    normalizedInput: {},
+    inputHash: `hash-${overrides.id}`,
+    promptTemplateId: `prompt-${overrides.stage}`,
+    promptVersion: "1.0",
+    renderedPrompt: "Prompt de demonstração registrado no servidor.",
+    validatedResponse: {},
+    ruleSetVersion: "1.0",
+    cacheKey: `cache-${overrides.id}`,
+    tokenUsage: normalizeTokenUsage(rawUsage),
+    latencyMilliseconds: 120,
+    createdAt: "2026-07-14T16:30:00-03:00",
+    ...overrides,
+    rawUsage,
+  };
 }
 
 function createDemoReviewItems() {

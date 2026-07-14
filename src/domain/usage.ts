@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  type JsonObject,
   identifierSchema,
   jsonObjectSchema,
   nonEmptyTextSchema,
@@ -30,6 +31,94 @@ export const tokenUsageSchema = z
       });
     }
   });
+
+const tokenUsageAliases = {
+  input: [
+    "input_tokens",
+    "inputTokens",
+    "input_token_count",
+    "inputTokenCount",
+    "prompt_tokens",
+    "promptTokens",
+    "prompt_token_count",
+    "promptTokenCount",
+  ],
+  output: [
+    "output_tokens",
+    "outputTokens",
+    "output_token_count",
+    "outputTokenCount",
+    "completion_tokens",
+    "completionTokens",
+    "completion_token_count",
+    "completionTokenCount",
+  ],
+  other: ["other_tokens", "otherTokens", "other_token_count", "otherTokenCount"],
+  total: ["total_tokens", "totalTokens", "total_token_count", "totalTokenCount"],
+} as const;
+
+const knownTokenUsageKeys = new Set<string>(Object.values(tokenUsageAliases).flat());
+
+function readTokenCount(
+  rawUsage: JsonObject,
+  aliases: readonly string[],
+): number | undefined {
+  for (const alias of aliases) {
+    const value = rawUsage[alias];
+
+    if (typeof value === "number" && Number.isInteger(value) && value >= 0) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function sumAdditionalTokenTypes(rawUsage: JsonObject): number {
+  return Object.entries(rawUsage).reduce((total, [key, value]) => {
+    const isAdditionalTokenType =
+      !knownTokenUsageKeys.has(key) && /(?:tokens?|token_?count)$/iu.test(key);
+
+    return isAdditionalTokenType &&
+      typeof value === "number" &&
+      Number.isInteger(value) &&
+      value >= 0
+      ? total + value
+      : total;
+  }, 0);
+}
+
+export function normalizeTokenUsage(rawUsage?: JsonObject): TokenUsage {
+  if (!rawUsage) {
+    return tokenUsageSchema.parse({
+      inputTokens: 0,
+      outputTokens: 0,
+      otherTokens: 0,
+      totalTokens: 0,
+    });
+  }
+
+  const inputTokens = readTokenCount(rawUsage, tokenUsageAliases.input) ?? 0;
+  const outputTokens = readTokenCount(rawUsage, tokenUsageAliases.output) ?? 0;
+  const explicitOtherTokens = readTokenCount(rawUsage, tokenUsageAliases.other) ?? 0;
+  const reportedTotalTokens = readTokenCount(rawUsage, tokenUsageAliases.total);
+  const additionalTokenTypes = sumAdditionalTokenTypes(rawUsage);
+  const unclassifiedReportedTokens = Math.max(
+    (reportedTotalTokens ?? 0) - inputTokens - outputTokens,
+    0,
+  );
+  const otherTokens = Math.max(
+    explicitOtherTokens + additionalTokenTypes,
+    unclassifiedReportedTokens,
+  );
+
+  return tokenUsageSchema.parse({
+    inputTokens,
+    outputTokens,
+    otherTokens,
+    totalTokens: inputTokens + outputTokens + otherTokens,
+  });
+}
 
 export const modelRunSchema = z
   .object({

@@ -4,6 +4,7 @@ import {
   type ModelRun,
   aggregateBatchTokenUsage,
   modelRunSchema,
+  normalizeTokenUsage,
   tokenUsageSchema,
 } from "./usage";
 
@@ -45,6 +46,52 @@ describe("observabilidade de tokens", () => {
         totalTokens: 30,
       }).success,
     ).toBe(false);
+  });
+
+  it("normaliza aliases do provedor e preserva tokens não classificados", () => {
+    expect(
+      normalizeTokenUsage({
+        prompt_tokens: 80,
+        completion_tokens: 20,
+        total_tokens: 115,
+      }),
+    ).toEqual({
+      inputTokens: 80,
+      outputTokens: 20,
+      otherTokens: 15,
+      totalTokens: 115,
+    });
+  });
+
+  it("soma tipos extras quando o provedor não informa um total", () => {
+    expect(
+      normalizeTokenUsage({
+        inputTokens: 25,
+        outputTokens: 10,
+        reasoning_tokens: 7,
+        audio_token_count: 3,
+      }),
+    ).toEqual({
+      inputTokens: 25,
+      outputTokens: 10,
+      otherTokens: 10,
+      totalTokens: 45,
+    });
+  });
+
+  it("usa zero para tipos ausentes sem interromper o fluxo", () => {
+    expect(normalizeTokenUsage({ input_tokens: 12 })).toEqual({
+      inputTokens: 12,
+      outputTokens: 0,
+      otherTokens: 0,
+      totalTokens: 12,
+    });
+    expect(normalizeTokenUsage()).toEqual({
+      inputTokens: 0,
+      outputTokens: 0,
+      otherTokens: 0,
+      totalTokens: 0,
+    });
   });
 
   it("agrega tokens por etapa e por lote", () => {
