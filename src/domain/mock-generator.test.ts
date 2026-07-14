@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import type { GenerationModelInput } from "./model-contracts";
+import type { Activity } from "./generation";
+import type {
+  GenerationModelInput,
+  RepairModelInput,
+} from "./model-contracts";
 import {
   MockGeneratorSchemaError,
   generateMockBatch,
+  generateMockRepair,
 } from "./mock-generator";
 
 function createInput(
@@ -39,6 +44,57 @@ function createInput(
     preservedActivities: [],
     localFeedback: [],
     editorialTemplateVersion: "generation-1",
+    ...overrides,
+  };
+}
+
+const currentActivity: Activity = {
+  id: "activity-2-v1",
+  batchId: "batch-1",
+  logicalActivityId: "activity-2",
+  slotIndex: 1,
+  title: "Olhar de investigador",
+  description: "A criança observa exemplos do som inicial.",
+  durationMinutes: 15,
+  status: "rejected",
+  version: 1,
+  generationRunId: "run-2",
+};
+
+const preservedActivity: Activity = {
+  id: "activity-1-v1",
+  batchId: "batch-1",
+  logicalActivityId: "activity-1",
+  slotIndex: 0,
+  title: "Ouvidos atentos",
+  description: "A criança escuta sons conhecidos.",
+  durationMinutes: 10,
+  status: "approved",
+  version: 1,
+  generationRunId: "run-1",
+};
+
+function createRepairInput(
+  overrides: Partial<RepairModelInput> = {},
+): RepairModelInput {
+  const generationInput = createInput();
+
+  return {
+    currentActivity,
+    requiredDurationMinutes: currentActivity.durationMinutes,
+    validationFailures: [
+      {
+        ruleId: "PED-001",
+        ruleVersion: 1,
+        status: "failed",
+        explanation: "A dinâmica repete uma atividade do lote.",
+        confidence: 1,
+      },
+    ],
+    feedback: "Propor uma dinâmica diferente.",
+    preservedActivities: [preservedActivity],
+    curriculum: generationInput.curriculum,
+    applicableRules: generationInput.applicableRules,
     ...overrides,
   };
 }
@@ -117,6 +173,71 @@ describe("gerador mock estruturado", () => {
       expect((error as Error).message).toContain(
         "a entrada não atende ao contrato",
       );
+    }
+  });
+});
+
+describe("reparo mock pontual", () => {
+  it("preserva posição e duração sem alterar as atividades preservadas", () => {
+    const input = createRepairInput();
+    const preservedSnapshot = structuredClone(input.preservedActivities);
+    const output = generateMockRepair(input);
+
+    expect(output.activity).toMatchObject({
+      slotIndex: currentActivity.slotIndex,
+      durationMinutes: currentActivity.durationMinutes,
+    });
+    expect(input.preservedActivities).toEqual(preservedSnapshot);
+  });
+
+  it("considera a rejeitada e as preservadas ao escolher outra dinâmica", () => {
+    const output = generateMockRepair(createRepairInput());
+
+    expect(output.activity.title).toBe("Aponte a pista");
+    expect(output.activity.title).not.toBe(currentActivity.title);
+    expect(output.activity.title).not.toBe(preservedActivity.title);
+  });
+
+  it("mantém a duração total do grupo e considera regras sem declarar atendimento", () => {
+    const input = createRepairInput({
+      applicableRules: [
+        ...createInput().applicableRules,
+        ...createInput().applicableRules,
+      ],
+    });
+    const output = generateMockRepair(input);
+    const previousTotal = input.preservedActivities.reduce(
+      (total, activity) => total + activity.durationMinutes,
+      input.currentActivity.durationMinutes,
+    );
+    const repairedTotal = input.preservedActivities.reduce(
+      (total, activity) => total + activity.durationMinutes,
+      output.activity.durationMinutes,
+    );
+
+    expect(repairedTotal).toBe(previousTotal);
+    expect(output.activity.consideredRuleIds).toEqual(["PED-001"]);
+    expect(output.uncertainties).toEqual([]);
+  });
+
+  it("é determinístico", () => {
+    const input = createRepairInput();
+
+    expect(generateMockRepair(input)).toEqual(generateMockRepair(input));
+  });
+
+  it("converte entrada de reparo inválida em erro tipado", () => {
+    const input = createRepairInput({ requiredDurationMinutes: 14 });
+
+    expect(() => generateMockRepair(input)).toThrowError(
+      MockGeneratorSchemaError,
+    );
+
+    try {
+      generateMockRepair(input);
+      throw new Error("A duração inválida deveria falhar.");
+    } catch (error) {
+      expect(error).toMatchObject({ stage: "input" });
     }
   });
 });

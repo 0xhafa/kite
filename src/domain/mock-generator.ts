@@ -7,9 +7,14 @@ import {
 import {
   type GenerationModelInput,
   type GenerationModelOutput,
+  type RepairModelInput,
+  type RepairModelOutput,
   generationModelInputSchema,
   generationModelOutputSchema,
+  repairModelInputSchema,
+  repairModelOutputSchema,
 } from "./model-contracts";
+import type { Activity } from "./generation";
 
 type MockActivityTemplate = {
   primaryChildAction: string;
@@ -105,6 +110,43 @@ function createSchemaError(
   );
 }
 
+function normalizeText(value: string): string {
+  return value.trim().toLocaleLowerCase("pt-BR");
+}
+
+function templateUsageCount(
+  template: MockActivityTemplate,
+  activities: readonly Activity[],
+): number {
+  const normalizedTitle = normalizeText(template.title);
+  const normalizedAction = normalizeText(template.primaryChildAction);
+
+  return activities.filter((activity) => {
+    const title = normalizeText(activity.title);
+    const description = normalizeText(activity.description);
+
+    return (
+      title === normalizedTitle ||
+      description.includes(normalizedTitle) ||
+      description.includes(normalizedAction)
+    );
+  }).length;
+}
+
+function selectRepairTemplate(input: RepairModelInput): MockActivityTemplate {
+  const activitiesToAvoid = [
+    input.currentActivity,
+    ...input.preservedActivities,
+  ];
+
+  return MOCK_ACTIVITY_TEMPLATES.reduce((selected, candidate) => {
+    const selectedUsage = templateUsageCount(selected, activitiesToAvoid);
+    const candidateUsage = templateUsageCount(candidate, activitiesToAvoid);
+
+    return candidateUsage < selectedUsage ? candidate : selected;
+  });
+}
+
 export function generateMockBatch(input: GenerationModelInput): GenerationModelOutput {
   const inputResult = generationModelInputSchema.safeParse(input);
 
@@ -162,6 +204,48 @@ export function generateMockBatch(input: GenerationModelInput): GenerationModelO
 
   if (!outputResult.success) {
     throw createSchemaError("output", outputResult.error);
+  }
+
+  return outputResult.data;
+}
+
+export function generateMockRepair(input: RepairModelInput): RepairModelOutput {
+  const inputResult = repairModelInputSchema.safeParse(input);
+
+  if (!inputResult.success) {
+    throw createSchemaError("input", inputResult.error);
+  }
+
+  const parsedInput = inputResult.data;
+  const template = selectRepairTemplate(parsedInput);
+  const consideredRuleIds = [
+    ...new Set(parsedInput.applicableRules.map((rule) => rule.ruleId)),
+  ];
+  const lesson = parsedInput.curriculum.lesson;
+
+  const outputResult = repairModelOutputSchema.safeParse({
+    activity: {
+      slotIndex: parsedInput.currentActivity.slotIndex,
+      title: template.title,
+      description: `A criança ${template.instruction} para explorar ${lesson.content}, conforme o objetivo curricular: ${lesson.specificObjective}.`,
+      durationMinutes: parsedInput.requiredDurationMinutes,
+      consideredRuleIds,
+    },
+    uncertainties: [],
+  });
+
+  if (!outputResult.success) {
+    throw createSchemaError("output", outputResult.error);
+  }
+
+  if (
+    outputResult.data.activity.slotIndex !== parsedInput.currentActivity.slotIndex ||
+    outputResult.data.activity.durationMinutes !==
+      parsedInput.currentActivity.durationMinutes
+  ) {
+    throw new MockGeneratorSchemaError("output", [
+      "A substituta deve preservar a posição e a duração da atividade atual.",
+    ]);
   }
 
   return outputResult.data;
