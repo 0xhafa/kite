@@ -43,6 +43,22 @@ const report = {
   createdAt: "2026-07-14T12:00:00.000Z",
 };
 
+const ruleReferences = [
+  {
+    ruleId: "PED-001",
+    ruleVersion: 1,
+    title: "Praticar a habilidade prioritária",
+    origin: "pedagogical_inference" as const,
+    sources: [
+      {
+        id: "source-1",
+        title: "Referência pedagógica",
+        authors: ["Equipe pedagógica"],
+      },
+    ],
+  },
+];
+
 describe("rastreabilidade da validação", () => {
   it("não permite declarar uma regra atendida sem evidência", () => {
     const outputWithoutEvidence = {
@@ -62,11 +78,32 @@ describe("rastreabilidade da validação", () => {
   });
 
   it("vincula cada relatório à atividade e versão exibidas", () => {
-    expect(activityReviewItemSchema.parse({ activity, validationReport: report })).toBeDefined();
+    expect(
+      activityReviewItemSchema.parse({ activity, validationReport: report, ruleReferences }),
+    ).toBeDefined();
     expect(
       activityReviewItemSchema.safeParse({
         activity,
         validationReport: { ...report, activityVersion: 2 },
+        ruleReferences,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("exige uma referência tipada para cada regra exibida no relatório", () => {
+    expect(
+      activityReviewItemSchema.safeParse({
+        activity,
+        validationReport: report,
+        ruleReferences: [],
+      }).success,
+    ).toBe(false);
+
+    expect(
+      activityReviewItemSchema.safeParse({
+        activity,
+        validationReport: report,
+        ruleReferences: [{ ...ruleReferences[0], ruleVersion: 2 }],
       }).success,
     ).toBe(false);
   });

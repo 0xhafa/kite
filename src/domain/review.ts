@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 import { activitySchema } from "./generation";
-import { validationReportSchema } from "./rules";
+import {
+  ruleOriginSchema,
+  sourceSchema,
+  validationReportSchema,
+} from "./rules";
 import {
   identifierSchema,
   nonEmptyTextSchema,
@@ -61,13 +65,24 @@ export const feedbackProposalSchema = z
     }
   });
 
+export const reviewRuleReferenceSchema = z
+  .object({
+    ruleId: identifierSchema,
+    ruleVersion: positiveIntegerSchema,
+    title: nonEmptyTextSchema,
+    origin: ruleOriginSchema,
+    sources: z.array(sourceSchema).min(1),
+  })
+  .strict();
+
 export const activityReviewItemSchema = z
   .object({
     activity: activitySchema,
     validationReport: validationReportSchema,
+    ruleReferences: z.array(reviewRuleReferenceSchema),
   })
   .strict()
-  .superRefine(({ activity, validationReport }, context) => {
+  .superRefine(({ activity, validationReport, ruleReferences }, context) => {
     if (validationReport.activityId !== activity.id) {
       context.addIssue({
         code: "custom",
@@ -83,6 +98,42 @@ export const activityReviewItemSchema = z
         path: ["validationReport", "activityVersion"],
       });
     }
+
+    const resultRuleKeys = new Set(
+      validationReport.results.map(({ ruleId, ruleVersion }) => `${ruleId}:${ruleVersion}`),
+    );
+    const referenceRuleKeys = new Set<string>();
+
+    ruleReferences.forEach(({ ruleId, ruleVersion }, index) => {
+      const ruleKey = `${ruleId}:${ruleVersion}`;
+
+      if (referenceRuleKeys.has(ruleKey)) {
+        context.addIssue({
+          code: "custom",
+          message: "Cada versão de regra deve possuir uma única referência na revisão.",
+          path: ["ruleReferences", index, "ruleId"],
+        });
+      }
+      referenceRuleKeys.add(ruleKey);
+
+      if (!resultRuleKeys.has(ruleKey)) {
+        context.addIssue({
+          code: "custom",
+          message: "A referência deve pertencer a um resultado do relatório exibido.",
+          path: ["ruleReferences", index, "ruleId"],
+        });
+      }
+    });
+
+    validationReport.results.forEach(({ ruleId, ruleVersion }, index) => {
+      if (!referenceRuleKeys.has(`${ruleId}:${ruleVersion}`)) {
+        context.addIssue({
+          code: "custom",
+          message: "Todo resultado exibido deve possuir metadados da regra avaliada.",
+          path: ["validationReport", "results", index, "ruleId"],
+        });
+      }
+    });
   });
 
 export type ReviewDecisionType = z.infer<typeof reviewDecisionTypeSchema>;
@@ -90,4 +141,5 @@ export type ReviewDecision = z.infer<typeof reviewDecisionSchema>;
 export type FeedbackScope = z.infer<typeof feedbackScopeSchema>;
 export type FeedbackProposalStatus = z.infer<typeof feedbackProposalStatusSchema>;
 export type FeedbackProposal = z.infer<typeof feedbackProposalSchema>;
+export type ReviewRuleReference = z.infer<typeof reviewRuleReferenceSchema>;
 export type ActivityReviewItem = z.infer<typeof activityReviewItemSchema>;

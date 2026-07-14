@@ -70,7 +70,7 @@ describe("designTokens", () => {
     }
 
     for (const [token, value] of Object.entries(designTokens.spacing)) {
-      expect(globalStyles).toContain(`--spacing-${toKebabCase(token)}: ${value};`);
+      expect(globalStyles).toContain(`--kite-spacing-${toKebabCase(token)}: ${value};`);
     }
 
     for (const [token, value] of Object.entries(designTokens.radii)) {

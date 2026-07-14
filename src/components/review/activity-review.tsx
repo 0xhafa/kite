@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge, Button, Card, Modal, Progress } from "@/components/ui";
-import type { ActivityReviewItem } from "@/domain/review";
+import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
 import {
   createReviewSession,
   decideCurrentReviewItem,
@@ -275,7 +275,7 @@ function ActivityCard({
   );
 }
 
-function ValidationDetailsModal({
+export function ValidationDetailsModal({
   item,
   onClose,
   open,
@@ -304,16 +304,40 @@ function ValidationDetailsModal({
         <ul aria-label="Critérios avaliados" className="mt-6 space-y-3">
           {report.results.map((result) => {
             const status = getCriterionStatusPresentation(result.status);
+            const ruleReference = item.ruleReferences.find(
+              ({ ruleId, ruleVersion }) =>
+                ruleId === result.ruleId && ruleVersion === result.ruleVersion,
+            );
 
             return (
-              <li className="rounded-md border-2 border-border p-4" key={result.id}>
+              <li
+                className={`rounded-md border-2 p-4 ${status.containerClassName}`}
+                data-validation-status={result.status}
+                key={result.id}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-black">Critério {result.ruleId}</span>
+                  <div>
+                    <h3 className="font-black">
+                      {ruleReference?.title ?? `Regra ${result.ruleId}`}
+                    </h3>
+                    <p className="mt-1 text-xs font-bold text-muted">
+                      Regra {result.ruleId} · versão {result.ruleVersion}
+                    </p>
+                  </div>
                   <Badge tone={status.tone}>{status.label}</Badge>
                 </div>
                 <p className="mt-2 text-sm font-medium leading-6 text-muted">
                   {result.explanation}
                 </p>
+                <div className="mt-4 rounded-md bg-surface p-3">
+                  <p className="text-xs font-extrabold uppercase tracking-[0.08em] text-muted">
+                    Evidência
+                  </p>
+                  <p className="mt-1 text-sm font-semibold leading-6">
+                    {result.evidence ?? "Nenhuma evidência foi registrada pelo avaliador."}
+                  </p>
+                </div>
+                {ruleReference ? <RuleTraceability reference={ruleReference} /> : null}
               </li>
             );
           })}
@@ -324,6 +348,41 @@ function ValidationDetailsModal({
         </p>
       )}
     </Modal>
+  );
+}
+
+function RuleTraceability({ reference }: { reference: ReviewRuleReference }) {
+  return (
+    <details className="mt-3 rounded-md bg-surface px-3 py-2">
+      <summary className="cursor-pointer rounded-sm py-1 font-extrabold text-brand-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus">
+        Ver origem e fonte
+      </summary>
+      <dl className="mt-3 space-y-3 border-t-2 border-border pt-3 text-sm">
+        <div>
+          <dt className="font-extrabold">Tipo de origem</dt>
+          <dd className="mt-1 font-medium text-muted">
+            {getRuleOriginLabel(reference.origin)}
+          </dd>
+        </div>
+        <div>
+          <dt className="font-extrabold">
+            {reference.sources.length === 1 ? "Fonte" : "Fontes"}
+          </dt>
+          <dd>
+            <ul className="mt-1 space-y-2 text-muted">
+              {reference.sources.map((source) => (
+                <li className="font-medium leading-6" key={source.id}>
+                  <cite className="font-bold not-italic text-ink">{source.title}</cite>
+                  {` — ${source.authors.join(", ")}`}
+                  {source.publicationYear ? ` (${source.publicationYear})` : ""}
+                  {source.locator ? `. ${source.locator}` : ""}
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      </dl>
+    </details>
   );
 }
 
@@ -444,14 +503,45 @@ function getValidationPresentation(item: ActivityReviewItem) {
 function getCriterionStatusPresentation(status: ValidationStatus) {
   switch (status) {
     case "passed":
-      return { label: "Atendido", tone: "success" as const };
+      return {
+        label: "Atendido",
+        tone: "success" as const,
+        containerClassName: "border-border bg-surface",
+      };
     case "failed":
-      return { label: "Não atendido", tone: "danger" as const };
+      return {
+        label: "Não atendido",
+        tone: "danger" as const,
+        containerClassName: "border-danger bg-danger-soft",
+      };
     case "needs_review":
-      return { label: "Revisar", tone: "warning" as const };
+      return {
+        label: "Revisar",
+        tone: "warning" as const,
+        containerClassName: "border-warning bg-warning-soft",
+      };
     case "not_applicable":
-      return { label: "Não aplicável", tone: "neutral" as const };
+      return {
+        label: "Não aplicável",
+        tone: "neutral" as const,
+        containerClassName: "border-border bg-neutral-soft",
+      };
     case "not_evaluated":
-      return { label: "Não avaliado", tone: "warning" as const };
+      return {
+        label: "Não avaliado",
+        tone: "warning" as const,
+        containerClassName: "border-warning bg-warning-soft",
+      };
+  }
+}
+
+function getRuleOriginLabel(origin: ReviewRuleReference["origin"]) {
+  switch (origin) {
+    case "direct":
+      return "Evidência direta";
+    case "pedagogical_inference":
+      return "Inferência pedagógica";
+    case "editorial":
+      return "Regra editorial";
   }
 }

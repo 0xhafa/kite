@@ -45,13 +45,14 @@
   --font-weight-extrabold: 800;
   --font-weight-black: 900;
 
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-xxl: 3rem;
-  --spacing-touch: 2.75rem;
+  --kite-spacing-xs: 0.25rem;
+  --kite-spacing-sm: 0.5rem;
+  --kite-spacing-md: 1rem;
+  --kite-spacing-lg: 1.5rem;
+  --kite-spacing-xl: 2rem;
+  --kite-spacing-xxl: 3rem;
+  --kite-spacing-touch: 2.75rem;
+  --spacing-touch: var(--kite-spacing-touch);
 
   --radius-sm: 0.75rem;
   --radius-md: 1rem;

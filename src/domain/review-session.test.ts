@@ -38,6 +38,7 @@ function createItem(
       },
       createdAt: "2026-07-14T13:20:10-03:00",
     },
+    ruleReferences: [],
     ...overrides,
   };
 }

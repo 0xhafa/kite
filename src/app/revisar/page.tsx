@@ -125,6 +125,23 @@ function createDemoReviewItems() {
           version: 1,
           generationRunId,
         },
+        ruleReferences: [
+          {
+            ruleId: "acao-observavel",
+            ruleVersion: 1,
+            title: "Ação observável da criança",
+            origin: "pedagogical_inference",
+            sources: [
+              {
+                id: "fonte-diretrizes-kite",
+                title: "Diretrizes pedagógicas da POC Kite",
+                authors: ["Equipe Kite"],
+                publicationYear: 2026,
+                locator: "Critério de demonstração: ação observável da criança",
+              },
+            ],
+          },
+        ],
         validationReport: {
           activityId,
           activityVersion: 1,
@@ -137,9 +154,12 @@ function createDemoReviewItems() {
               ruleVersion: 1,
               applicability: "applicable",
               status: validationStatus,
-              ...(validationStatus === "passed"
-                ? { evidence: "A descrição usa o verbo observável “observa”." }
-                : {}),
+              evidence:
+                validationStatus === "passed"
+                  ? "A descrição usa o verbo observável “observa”."
+                  : validationStatus === "needs_review"
+                    ? "A descrição explicita uma ação, mas não define como observar a resposta da criança."
+                    : "A ação principal aparece de forma genérica e sem um comportamento verificável.",
               explanation:
                 validationStatus === "passed"
                   ? "A ação esperada da criança está explícita na descrição."
