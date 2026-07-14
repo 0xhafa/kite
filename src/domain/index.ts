@@ -5,6 +5,7 @@ export * from "./curriculum-navigation";
 export * from "./deterministic-validation";
 export * from "./generation";
 export * from "./generation-config";
+export * from "./feedback-governance";
 export * from "./applicability";
 export * from "./model-contracts";
 export * from "./mock-generator";
