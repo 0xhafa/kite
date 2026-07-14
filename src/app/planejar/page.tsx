@@ -6,8 +6,8 @@ import { CurriculumNavigator } from "@/components/curriculum/curriculum-navigato
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
 
 export const metadata: Metadata = {
-  title: "Selecionar aula | Kite",
-  description: "Seleção do caminho curricular e da aula para o planejamento pedagógico.",
+  title: "Planejar atividades | Kite",
+  description: "Seleção curricular e configuração do grupo de atividades pedagógicas.",
 };
 
 const curriculum = adaptCurriculum(curriculumData);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Badge, Button, Card, Progress } from "@/components/ui";
+import { GenerationConfigForm } from "@/components/curriculum/generation-config";
 import type { Curriculum } from "@/domain/curriculum";
 import {
   emptyCurriculumSelection,
@@ -55,6 +56,7 @@ function SelectionOption({
 
 export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
   const [selection, setSelection] = useState<CurriculumSelection>(emptyCurriculumSelection);
+  const [step, setStep] = useState<"curriculum" | "configuration">("curriculum");
 
   const skills = getAvailableSkills(curriculum, selection);
   const objectives = getAvailableObjectives(curriculum, selection);
@@ -66,6 +68,10 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
 
   function select(level: CurriculumSelectionLevel, id: string) {
     setSelection((currentSelection) => selectCurriculumLevel(currentSelection, level, id));
+  }
+
+  if (step === "configuration" && selectedLesson) {
+    return <GenerationConfigForm lesson={selectedLesson} onBack={() => setStep("curriculum")} />;
   }
 
   return (
@@ -216,13 +222,14 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
           aria-describedby="orientacao-avanco"
           disabled={!selectionComplete}
           fullWidth
+          onClick={() => setStep("configuration")}
           size="lg"
         >
           Avançar para configuração
         </Button>
         <p className="mt-3 text-center text-sm font-medium text-muted" id="orientacao-avanco">
           {selectionComplete
-            ? "A aula está definida. A configuração será a próxima etapa."
+            ? "A aula está definida. Avance para configurar o grupo."
             : "Selecione uma aula para liberar o avanço."}
         </p>
       </div>
