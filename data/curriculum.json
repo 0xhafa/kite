@@ -1,0 +1,803 @@
+{
+  "version": "1.0",
+  "themes": [
+    {
+      "id": "fonemas",
+      "name": "Fonemas",
+      "skills": [
+        {
+          "id": "fonemas-habilidade-01",
+          "name": "Reconhece o fonema inicial das palavras. Relaciona letras/sons: F, V, M, S.",
+          "objectives": [
+            {
+              "id": "fonemas-habilidade-01-objetivo-01",
+              "name": "Foco no som /f/, /m/",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-01-objetivo-01-semana-01",
+                  "number": 1,
+                  "title": "Semana 1",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-01-semana-01-aula-01",
+                      "number": 1,
+                      "specificObjective": "Escuta e produção do fonema /f/.",
+                      "content": "Aula 1: Escuta e produção do fonema /f/.\nAtividade 1: Música: A Formiga\nFui ao mercado comprar feijão, veio a formiguinha e subiu na minha mão, eu sacudi, sacudi, sacudi mas a formiguinha não parava de subir.\nFui ao mercado comprar um figo, veio a formiguinha e subiu no meu umbigo; eu sacudi, sacudi, sacudi mas a formiguinha não parava de subir.\nExplorar novas estrofes para a música utilizando palavras iniciadas com F (fubá, feijão, farinha, frango). Ex.:\n\"Fui ao mercado comprar fubá, veio a formiguinha e subiu no meu calcanhar.\"\nPerguntar: \"O que todas essas palavras têm de parecido?\"\nFalar lentamente, destacando o som inicial: FFFFormiga; FFFFeijão; FFFFigo. Apresentar a produção do fonema /f/, observando a posição da boca e a saída do ar.\nAtividade 2: Brincadeira: Trilha soprada da formiga\nConstruir uma trilha em cartolina ou papel madeira com imagens de palavras iniciadas com F (feijão, figo, fubá, farinha, formiga). As crianças utilizam um canudo para soprar uma formiga de papel pelo caminho. Ao encontrar cada imagem, devem nomear a figura e repetir o som inicial prolongado (FFFeijão, FFFigo). A atividade favorece a percepção auditiva e a produção do fonema /f/ em palavras conhecidas.\n- Ficha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-01-semana-01-aula-02",
+                      "number": 2,
+                      "specificObjective": "Relação entre o fonema /f/ e a letra F.",
+                      "content": "Aula 2: Relação entre o fonema /f/ e a letra F.\nAtividade1: Retomada da música e apresentação da letra F\nRelembrar a música A Formiga e as palavras exploradas na aula anterior. Retomar o som /ffff/ e apresentar a letra F (maiúscula e minúscula), explicando que ela representa esse som nas palavras. Percorrer o traçado da letra com o dedo, no ar e no papel, produzindo o fonema.\nAtividade 2: Registro artístico: A letra F de folha\nExplorar folhas naturais trazidas pelas crianças, observando suas características e destacando a palavra folha e seu som inicial /f/. As crianças colam as folhas sobre o contorno ampliado da letra F, construindo uma representação artística do grafema. Durante a produção, ampliar o repertório oral com palavras iniciadas por F: folha, flor, formiga, feijão, fogo, farinha.\n- Ficha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-01-semana-01-aula-03",
+                      "number": 3,
+                      "specificObjective": "Escuta e produção do fonema /m/.",
+                      "content": "Aula 3: Escuta e produção do fonema /m/.\nAtividade 1:Parlenda: Meio-dia, macaca Sofia\n\"Meio-dia, macaca Sofia, panela no fogo, barriga vazia.\"\nEscrever a parlenda no quadro, recitar com as crianças e destacar palavras iniciadas com M: Meio-dia, macaca. Perguntar: \"O que essas palavras têm em comum?\" Explorar o som /mmmm/, observando a posição da boca e a vibração do som.\nAtividade 2: Brincadeira: O macaco das palavras com M\nApresentar um cartaz com um macaco e palavras iniciadas com M escritas em sua barriga: macaco, mola, mala, mel, mão, milho. Ler cada palavra enfatizando o som inicial e pedir que as crianças identifiquem a letra inicial nas palavras, circulando ou apontando o M. Ampliar a percepção do fonema inicial em diferentes palavras do cotidiano.\n- Ficha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-01-semana-01-aula-04",
+                      "number": 4,
+                      "specificObjective": "Relação entre o fonema /m/ e a letra M.",
+                      "content": "Aula 4: Relação entre o fonema /m/ e a letra M.\nAtividade1: Retomada da parlenda e apresentação da letra M\nRelembrar a parlenda Meio-dia, macaca Sofia e as palavras exploradas. Retomar o som /mmmm/ e apresentar a letra M (maiúscula e minúscula), relacionando o grafema ao fonema. Explorar o traçado da letra com o dedo, no ar e no papel.\nAtividade 2: Registro artístico: Construção da letra M\nConstruir a letra M utilizando diferentes materiais (massinha, barbante, colagem ou pintura). Durante a produção, relacionar a letra às palavras trabalhadas: macaco, mala, mel, milho, mão. As crianças identificam que diferentes palavras compartilham o mesmo som inicial representado pela letra M.\n- Ficha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-01-semana-01-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisão e diferenciação dos fonemas /f/ e /m/.",
+                      "content": "Aula 5: Revisão e diferenciação dos fonemas /f/ e /m/.\nAtividade 1:Retomada dos sons e das letras F e M\nRelembrar as palavras trabalhadas nas aulas anteriores e produzir os sons /ffff/ e /mmmm/. Comparar as características dos dois fonemas, observando a posição da boca e identificando a letra correspondente.\nAtividade 2: Brincadeira: Casas do F e do M\nOrganizar dois espaços identificados com as letras F e M. As crianças recebem cartões com imagens de palavras conhecidas (formiga, folha, flor, feijão, macaco, mala, mel, milho), dizem o nome da figura, identificam o som inicial e colocam cada imagem na casa correspondente.\n- Ficha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-01-objetivo-02",
+              "name": "Foco no som /v/,/s/",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-01-objetivo-02-semana-02",
+                  "number": 2,
+                  "title": "Semana 2",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-02-semana-02-aula-01",
+                      "number": 1,
+                      "specificObjective": "Escuta e produção do fonema /s/.",
+                      "content": "Aula 1: Escuta e produção do fonema /s/.\nAtividade 1: Cantiga: A Canoa Virou\nCantar a cantiga A Canoa Virou, substituindo os nomes da música por nomes iniciados com S (Sofia, Samuel, Sara e Sabrina). À medida que cada nome é cantado, toda a turma realiza um movimento combinado (girar, bater palmas ou trocar de lugar). Após a cantiga, perguntar: \"O que esses nomes têm de parecido?\" Pronunciar lentamente os nomes, destacando o som inicial: SSSSofia; SSSSamuel; SSSSara. Apresentar a produção do fonema /s/, observando a aproximação dos dentes, a posição da língua atrás dos dentes inferiores e a passagem contínua do ar. Se houver crianças na turma com nomes iniciados por S, cantar novamente utilizando seus nomes. Em seguida, convidar as crianças a continuar a cantiga, sugerindo nomes de pessoas que conhecem e que também começam com o som /s/.\nAtividade 2: Pescaria das palavras com S\nPreparar uma pescaria com figuras de palavras iniciadas por S (sol, sapato, sapo, suco, sacola, sofá) e algumas figuras iniciadas por outros fonemas já conhecidos (F e M). Cada criança pesca uma figura, diz seu nome e prolonga o som inicial. Se a palavra começar com /s/, coloca a figura em um cesto identificado com a letra S; se começar com outro som, devolve-a ao lago para que outro colega possa pescar. Ao final, revisar oralmente as figuras colocadas no cesto, reforçando a percepção auditiva e a produção do fonema /s/ em palavras conhecidas.\n- Ficha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-02-semana-02-aula-02",
+                      "number": 2,
+                      "specificObjective": "Relação entre o fonema /s/ e a letra S.",
+                      "content": "Aula 2: Relação entre o fonema /s/ e a letra S.\nAtividade 1: Retomada da cantiga e apresentação da letra S\nRelembrar a cantiga A Canoa Virou e os nomes explorados na aula anterior. Retomar o som /ssss/, pronunciando lentamente: SSSSofia; SSSSamuel; SSSSara. Apresentar a letra S (maiúscula e minúscula), explicando que ela representa esse som nas palavras. Comparar a letra S no início dos nomes e de palavras conhecidas, como sol, sapo, sacola e suco.\nAtividade 2: Conhecendo o caminho da letra S\nApresentar o contorno ampliado da letra S. As crianças percorrem seu traçado com o dedo, produzindo o som /ssss/. Em seguida, reproduzem a letra em uma bandeja com areia ou fubá e modelam a letra S com massinha, observando seu formato e a direção do traçado.\n- Ficha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-02-semana-02-aula-03",
+                      "number": 3,
+                      "specificObjective": "Escuta e produção do fonema /v/.",
+                      "content": "Aula 3: Escuta e produção do fonema /v/.\nAtividade 1: Adivinhas\nApresentar adivinhas cujas respostas sejam palavras iniciadas por V. Exemplos:\n\"Moro na fazenda, faço 'muuu' e dou leite. Quem sou eu?\" (Vaca)\n\"Quando falta luz, posso iluminar o lugar. Tenho pavio e uma chama. Quem sou eu?\" (Vela)\nApós cada resposta, perguntar: \"O que essas palavras têm em comum?\" Pronunciar lentamente: VVVVaca; VVVVela. Apresentar a produção do fonema /v/, observando os dentes superiores apoiados no lábio inferior e a vibração da garganta.\nAtividade 2: Brincadeira: O motor ligou ou desligou?\nDistribuir figuras de palavras iniciadas por V e por outros fonemas já trabalhados (F, M e S) entre as crianças. Uma de cada vez, elas mostram sua figura para a turma e dizem seu nome. Se a palavra começar com /v/, toda a turma \"liga o motor\", produzindo o som /vvvv/ com a mão apoiada na garganta. Se começar com outro som, o motor permanece desligado. Em seguida, a criança repete o nome da figura, destacando o fonema inicial. Ao final, convidar as crianças a citar outras palavras iniciadas pelo som /v/.\n- Ficha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-02-semana-02-aula-04",
+                      "number": 4,
+                      "specificObjective": "Relação entre o fonema /v/ e a letra V.",
+                      "content": "Aula 4: Relação entre o fonema /v/ e a letra V.\nAtividade 1: Retomada das adivinhas e apresentação da letra V\nRelembrar as adivinhas e as palavras exploradas na aula anterior. Retomar o som /vvvv/ e apresentar a letra V (maiúscula e minúscula), relacionando o grafema ao fonema. Explorar o traçado da letra com o dedo, no ar e no papel.\nAtividade 2: O varal da letra V\nEntregar a cada criança uma ficha com uma figura iniciada por V (vaca, vaso, vela, violão, vestido, ventilador, vassoura, entre outras) e a palavra correspondente, destacando a letra V vazada no início. As crianças percorrem a letra com o dedo e a preenchem utilizando pintura, colagem com papel picado ou outra técnica artística. Ao concluir, cada criança apresenta sua figura, diz seu nome destacando o som inicial (VVVVaca; VVVVela; VVVVaso) e prende sua produção em um varal coletivo. Ao final, observar o varal e perguntar: \"O que todas essas palavras têm em comum?\" Concluir que todas começam com a letra V, que representa o som /v/.\n– Ficha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-02-semana-02-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisão e diferenciação dos fonemas /s/ e /v/.",
+                      "content": "Aula 5: Revisão e diferenciação dos fonemas /s/ e /v/.\nAtividade 1: Brincadeira: O Saco Cantor\nColocar em um saco figuras das palavras trabalhadas durante a semana (sol, sapo, sacola, suco, vaca, vaso, vela, violão, entre outras). Enquanto uma música toca, as crianças passam o saco de mão em mão. Quando a música parar, a criança que estiver com o saco retira uma figura e diz seu nome, destacando o som inicial. Em seguida, toda a turma repete a palavra enfatizando o fonema inicial.\nAtividade 2: Brincadeira: Acerte a letra!\nEntregar a cada criança duas plaquinhas, uma com a letra S e outra com a letra V. O professor mostra uma figura e pergunta: \"Com que letra começa esta palavra?\" As crianças levantam a plaquinha correspondente e dizem o nome da figura, destacando o som inicial. Repetir a brincadeira com diferentes figuras trabalhadas durante a semana.\n– Ficha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-01-objetivo-03",
+              "name": "Foco em revisar os fonemas e comparar os pares /f/ e /v/; /m/ e /s/; /f/ e /m/ ; /s/ e /v/",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-01-objetivo-03-semana-03",
+                  "number": 3,
+                  "title": "Semana 3",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-03-semana-03-aula-01",
+                      "number": 1,
+                      "specificObjective": "Revisão e comparação dos fonemas /f/ e /v/",
+                      "content": "Aula 1 – Revisão e comparação dos fonemas /f/ e /v/\nAtividade 1: Acolhida sonora\nA professora apresenta os personagens Vento e Motor e diz: \"Hoje vieram nos visitar dois amigos: o Vento e o Motor.\" As crianças produzem os sons FFFFF (como um vento soprando) e VVVVV (como um motor funcionando). Em seguida, colocam a mão na garganta para perceber que, ao produzir o som do Motor, a garganta faz uma leve vibração. Não é necessário explicar o conceito de vibração; basta que sintam a diferença entre os dois sons.\nAtividade 2: Brincadeira: Quem chegou?\nA professora apresenta figuras de palavras iniciadas por F e V, alternando-as (por exemplo: faca, vaca, flor, vaso, folha e vela). Para cada figura, pergunta: \"Que som ouvimos no começo da palavra: o do Vento ou o do Motor?\" As crianças respondem indicando o personagem correspondente e, em seguida, toda a turma repete a palavra, destacando o fonema inicial.\nAtividade 3: Oficina do Vento e do Motor\nPreparar dois painéis, um do Vento e outro do Motor. Cada criança pega uma figura, diz seu nome, produz o som inicial e coloca a figura no painel correspondente. Enquanto isso, toda a turma repete o fonema inicial da palavra, reforçando a percepção e a produção dos sons.\n– Ficha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-03-semana-03-aula-02",
+                      "number": 2,
+                      "specificObjective": "Revisando e comparando os fonemas /m/ e /s/",
+                      "content": "Aula 2 - Revisando e comparando os fonemas /m/ e /s/\nAtividade 1: Desafio: Boca fechada ou boca aberta?\nA professora retoma os sons: MMMMM e SSSSS. As crianças acompanham a produção, observando a posição da boca e realizando os sons. Em seguida, a professora propõe a comparação: MMMMM → boca fechada, com passagem do ar pelo nariz; SSSSS → boca entreaberta, com passagem contínua do ar pela boca, lembrando o som da cobrinha.\nRealizar algumas combinações sonoras, como: MMMMM → SSSSS; MSMSMS; SMSMSM.\nPerguntar:\n\"O que acontece com a boca quando fazemos o /m/?\"\n\"E quando fazemos o /s/?\"\n\"Qual som parece o som da cobrinha?\"\nAtividade 2: Detetives dos sons: observando a boca do colega\nOrganizar as crianças em duplas, uma de frente para a outra. A professora explica:\n\"Hoje vamos ser detetives dos sons. Um colega vai fazer o som e o outro vai observar o movimento da boca para descobrir qual som foi produzido.\"\nApresentar figuras com palavras iniciadas por M e S (macaco, milho, mel, sapo, sino, sofá, suco e meia).\nCada criança, em sua vez, escolhe uma figura, diz o nome da palavra e prolonga o primeiro som: MMMMacaco ; SSSapo\nO colega observa e identifica:\nboca fechada → /m/;\nboca entreaberta → /s/.\nDepois, trocam os papéis. Ao final, a professora retoma coletivamente as palavras que geraram dúvidas.\nAtividade 3: Caixa Surpresa dos Sons\nA professora apresenta uma caixa com figuras ou pequenos objetos. Cada criança retira uma imagem e identifica: qual é o nome da figura; qual som aparece primeiro;\nse é um som de boca fechada (M) ou de boca entreaberta (S). Depois, coloca a figura em um dos espaços: Casa do M ou Casa do S.\nSugestões:\nM: macaco, mão, mala, milho.\nS: sapo, sapato, sino, suco.\nA turma acompanha repetindo o som inicial das palavras.\n– Ficha de atividade impressa (5 minutos).",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-03-semana-03-aula-03",
+                      "number": 3,
+                      "specificObjective": "Revisando e comparando os fonemas /f/ e /m/",
+                      "content": "Aula 3 - Revisando e comparando os fonemas /f/ e /m/\nAtividade 1 – O laboratório do vento e do silêncio da boca \nA professora propõe uma investigação: \"Hoje vamos descobrir como nossa boca trabalha para fazer sons diferentes.\"\nAs crianças experimentam: produzir /f/, fazendo um vento com a boca e percebendo a saída de ar com as mãos; produzir /m/, mantendo os lábios fechados e percebendo a vibração no nariz. \nA professora conduz a observação: \"O ar aparece onde?\" \"O que acontece com os lábios?\" \"Qual som faz a gente sentir o nariz mexer?\" \nRealizar poucas comparações: FFFFF – MMMMM; FMFMFM (O objetivo é apenas retomar a percepção dos dois sons.)\nAtividade 2 – O robô que troca os sons \nA professora apresenta um robô (fantoche, boneco ou imagem). \nExplica: \"Este robô está aprendendo a falar, mas ele ainda confunde alguns sons. Vamos ajudá-lo a falar as palavras do jeito certo?\" \nA professora apresenta imagens ou objetos e o robô fala a palavra com o primeiro som trocado. Exemplos: Imagem de flor. Robô: \"Eu encontrei uma mlor!\"\nAs crianças ajudam: \"É flor!\"\nImagem de mala. Robô: \"Eu encontrei uma fala!\" As crianças corrigem: \"É mala!\"\nOutras possibilidades: foca → moca; faca → maca; milho → filho (usar apenas se a turma compreender o jogo sonoro; caso contrário, substituir por outra combinação mais próxima). \nDurante a brincadeira, a professora pergunta: \"O que mudou na palavra?\"; \"Qual som precisamos colocar no começo?\" (O foco não é encontrar a letra, mas perceber que a troca do som inicial modifica a palavra.)\nAtividade 3 – O robô precisa completar suas mensagens \nA professora explica: \"O robô quer contar o que aconteceu, mas algumas palavras ficaram apagadas das mensagens. Vamos ajudá-lo a descobrir quais são?\"\nO robô apresenta uma frase com uma pista e duas possibilidades. Apenas uma completa adequadamente. Exemplos:\nMensagem 1: \"No jardim, o robô encontrou uma coisa colorida e cheirosa. Ele encontrou uma ______.\" Opções: flor ou milho (Resposta esperada: flor)\nMensagem 2: \"Na hora do lanche, o robô comeu um alimento amarelinho. Ele comeu ______.\"\nOpções: milho ou faca (Resposta esperada: milho)\nMensagem 3: \"O robô viu um animal no mar. Ele viu uma ______.\"\nOpções: foca ou mala (Resposta esperada: foca)\nApós a escolha, a professora faz uma retomada breve: \"Vamos ouvir como começa essa palavra: ffflor. Qual som apareceu primeiro?\" \n- Ficha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-03-semana-03-aula-04",
+                      "number": 4,
+                      "specificObjective": "Revisando e comparando os fonemas /s/ e /v/",
+                      "content": "Aula 4 – Revisando e comparando os fonemas /s/ e /v/\nAtividade 1 – Desafio: Quem faz a garganta vibrar? \nA professora retoma os sons: SSSSS e VVVVV\nAs crianças colocam a mão na garganta e observam: /s/ → não apresenta vibração; /v/ → apresenta vibração. \nDepois, a professora produz os sons sem mostrar qual é: SSSSS; VVVVV; SSSSS; VVVVV \nAs crianças respondem: \"Vibrou!\"ou \"Não vibrou!\"\nA atividade encerra com uma comparação rápida.\nAtividade 2 – A orquestra dos sons \nA professora propõe: \"Hoje vamos formar uma orquestra diferente. Cada som tem um jeito de tocar.\" Combinar os movimentos: \n/s/ → movimento de uma cobrinha deslizando com o dedo no ar: \"ssssss\"; \n/v/ → movimento de um motorzinho com as mãos girando: \"vvvvvv\". \nA professora faz a regência dos sons e as crianças acompanham com os gestos: \nproduz /s/ → crianças fazem o movimento da cobrinha; \nproduz /v/ → crianças fazem o movimento do motor.\nDepois, acrescenta palavras conhecidas: sapo, sino, suco, vaca, vela, vaso\nAs crianças fazem o movimento correspondente ao som inicial.\nA professora retoma: \"Além do movimento, vamos lembrar: qual som fez a garganta vibrar?\"\nAtividade 3 – O detetive perdeu um objeto \nA professora organiza sobre uma mesa ou tapete de 6 a 8 figuras ou pequenos objetos cujos nomes iniciem com os fonemas /s/ e /v/, por exemplo: sapo; sino; suco; sacola; vaca; vaso; vela; violão.\nAs crianças observam atentamente os objetos durante alguns instantes. Em seguida, fecham os olhos enquanto a professora retira um deles. Ao abrirem os olhos, a turma tenta descobrir: \"Qual objeto desapareceu?\" A criança que identificar nomeia o objeto.\nA professora retoma: \"Como começa essa palavra?\" \"Ela começa com o som da cobrinha ou do motor?\" \"Esse som fez a garganta vibrar?\"\nRealizar novas rodadas, retirando objetos diferentes.\n- Ficha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-03-semana-03-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisando e comparando os fonemas /f/, /v/, /m/ e /s/",
+                      "content": "Aula 5 – Revisando e comparando os fonemas /f/, /v/, /m/ e /s/\nAtividade 1 – Quem é esse som? \nA professora apresenta os quatro personagens já conhecidos da turma:\nVento (/f/); Motor (/v/); Nariz (/m/); Cobrinha (/s/)\nProduz apenas um dos fonemas e pergunta:\n\"Quem está falando?\" As crianças respondem apontando o personagem ou dizendo seu nome. Em seguida, todas produzem rapidamente o mesmo som. \nA professora faz poucas rodadas, apenas para retomar as características dos quatro fonemas e intercala a produção do som com apresentação de figuras iniciadas com F, V, M e S..\nAtividade 2 – Circuito dos Exploradores dos Sons \nOrganizar quatro espaços pela sala, um para cada fonema.\nAs crianças passam pelos quatro desafios em pequenos grupos por um tempo curto.\nEstação do Vento (/f/): Produzir o som /f/ movimentando uma pena, fita de papel ou pequeno pedaço de papel com o sopro.\nEstação do Motor (/v/): Produzir o /v/ colocando a mão na garganta para perceber a vibração.\nEstação do Nariz (/m/): Produzir o /m/ com os lábios fechados, percebendo a vibração no nariz.\nEstação da Cobrinha (/s/): Produzir o /s/ fazendo o movimento da cobrinha enquanto o ar passa continuamente. Ao final de cada estação, a professora apresenta apenas uma figura relacionada ao fonema para uma rápida nomeação coletiva, sem necessidade de classificação.\nAtividade 3 – Desafio final: O baú dos exploradores \nA professora apresenta um pequeno baú ou caixa contendo figuras das palavras trabalhadas durante as três semanas. Cada criança retira uma figura, mas não é necessário que todas retirem porque a turma vai ajudar a responder. A turma ajuda a responder:\n\"Com qual som essa palavra começa?\" Depois, a professora propõe apenas uma pergunta de comparação, conforme o fonema sorteado:\n\"Esse som faz vento ou vibra?\"\n\"A boca fica fechada ou aberta?\"\n\"O nariz participa?\"\n\"Parece o som da cobrinha?\"\nNão é necessário responder todas as perguntas para todas as figuras; basta retomar a característica principal do fonema correspondente.\n- Ficha de Atividade impressa",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-01-objetivo-04",
+              "name": "Foco em Sistematizar a correspondência grafofonêmica das letras F,V, M e S",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-01-objetivo-04-semana-04",
+                  "number": 4,
+                  "title": "Semana 4",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-04-semana-04-aula-01",
+                      "number": 1,
+                      "specificObjective": "Retomando a relação entre os fonemas /s/,/f/,/v/,/m/ e as letras iniciais",
+                      "content": "Aula 1 – Retomando a relação entre os fonemas /s/,/f/,/v/,/m/ e as letras iniciais\nAtividade 1 – Desafio das Janelas \nPreparar um painel com quatro ou cinco \"janelas\" de papel (dobraduras simples). Atrás de cada janela há uma figura conhecida pela turma (flor, sapo, mala, vela, folha, sino, vaso, milho...).\nA professora abre apenas uma janela por vez e convida as crianças a descobrir a figura escondida. Depois que a figura é revelada, a turma nomeia a imagem, prolonga o fonema inicial e identifica a letra correspondente.\nExemplo: A professora abre a janela. — \"O que apareceu?\"\n\"Flor!\" \"Como começa flor?\" \"FFFF...\" \"Qual letra representa esse som?\"\nAtividade 2 – Desafio do Raio \nCada criança recebe um conjunto com as letras F, V, M e S.\nA professora apresenta figuras conhecidas, uma de cada vez. Após nomeá-las, todas levantam simultaneamente a letra correspondente ao fonema inicial. Nas primeiras rodadas, há tempo suficiente para a escolha. Aos poucos, o intervalo entre uma figura e outra diminui discretamente, incentivando respostas cada vez mais rápidas, sempre respeitando o ritmo da turma.. \nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-04-semana-04-aula-02",
+                      "number": 2,
+                      "specificObjective": "Ampliar a autonomia na associação entre o fonema inicial das palavras e as letras F, V, M e S.",
+                      "content": "Aula 2: Ampliar a autonomia na associação entre o fonema inicial das palavras e as letras F, V, M e S.\nAtividade 1 – Desafio do Quebra-cabeça das Letras \nA professora organiza cartões divididos em duas partes: uma parte com as letras F, V, M e S e outra parte com figuras cujos nomes iniciam com essas letras.\nAs peças ficam misturadas sobre a mesa ou no chão. Em pequenos grupos, as crianças procuram as partes que combinam, formando os pares.\nAo encontrar uma combinação, a criança nomeia a figura, prolonga o fonema inicial e confirma a letra correspondente. Exemplos:\nF + flor → \"Flor começa com FFFF.\"\nM + macaco → \"Macaco começa com MMMM.\"\nA professora acompanha as escolhas, fazendo perguntas como:\"Como você descobriu que essas peças combinam?\"\nAtividade 2 – Desafio da Memória Sonora \nA professora apresenta um jogo da memória adaptado com cartas contendo as letras F, V, M e S e imagens correspondentes.\nUtilizar apenas quatro pares de cartas:\nF ↔ flor; V ↔ vela ; M ↔ macaco ; S ↔ sapo \nAs cartas ficam viradas para baixo. Cada criança, em sua vez, vira duas cartas. Quando encontrar o par, nomeia a figura, identifica o fonema inicial e relaciona com a letra.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-04-semana-04-aula-03",
+                      "number": 3,
+                      "specificObjective": "Relação entre os fonemas iniciais e as letras F, V, M e S.",
+                      "content": "Aula 3 – Relação entre os fonemas iniciais e as letras F, V, M e S.\nAtividade 1 – Desafio das Palavras Perdidas \nA professora apresenta figuras conhecidas pela turma acompanhadas de quatro opções de letras (F, V, M e S). As crianças observam a imagem, dizem o nome da palavra e identificam o fonema inicial para escolher a letra correspondente.\nExemplos: Imagem: sapo\nPerguntar: \"Que animal é esse?\" \"Qual é o som de sapo?\" \"Qual letra representa esse som?\" \nRealizar algumas rodadas com palavras conhecidas: flor; vela; macaco; sapo; folha; milho. \nA professora reforça a relação entre o som inicial e a letra, valorizando as justificativas das crianças.\nAtividade 2 – Desafio da Máquina de Letras\nA professora apresenta uma caixa ou painel representando uma \"máquina\" que transforma letras em palavras. Coloca uma letra na máquina (F, V, M ou S) e explica: \"Esta máquina precisa de palavras que começam com esse som para funcionar. Vamos ajudá-la?\"\nAs crianças observam as figuras disponíveis no centro da roda e procuram uma imagem cujo nome comece com o fonema indicado. Exemplo: Letra colocada na máquina: F. As crianças procuram uma figura iniciada com F: flor; folha; formiga. Ao encontrar uma imagem, a criança nomeia a figura, destaca o som inicial e coloca a carta na saída da máquina. \"Flor começa com FFFF.\" \nDepois, a professora troca a letra e realiza novas rodadas.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-04-semana-04-aula-04",
+                      "number": 4,
+                      "specificObjective": "Identificar, em diferentes contextos, palavras iniciadas pelos fonemas F, M, S e V.",
+                      "content": "Aula 4 – Identificar, em diferentes contextos, palavras iniciadas pelos fonemas F, M, S e V.\n“Atividade 1: Caça ao Tesouro \nAntes de iniciar a aula, espalhar pela sala figuras, objetos reais ou embalagens iniciadas pelos quatro fonemas estudados. Efetuar uma retomada das quatro letras (F, M, S e V), relembrando seus respectivos sons. Cada criança recebe quatro etiquetas (F, M, S e V) e é orientada a encontrar os objetos e figuras escondidas pela sala e colocar nela a etiqueta correta.\nAo encontrar um objeto, deve: dizer seu nome; destacar o fonema inicial e colar a etiqueta correspondente. \nAtividade 2: Desafio das Descobertas Sonoras\nApós a Caça ao Tesouro, a professora reúne as crianças para compartilhar as descobertas. Cada criança apresenta um objeto, figura ou embalagem encontrada, dizendo seu nome, destacando o fonema inicial e identificando a letra correspondente.\nExemplos:\n\"Eu encontrei uma folha. Folha começa com FFFF. A letra é F.\"\n\"Eu encontrei uma vela. Vela começa com VVVV. A letra é V.\"\nA professora registra algumas descobertas em um cartaz coletivo ou retoma oralmente os itens encontradas, reforçando a relação entre os sons iniciais e as letras.\nPerguntas possíveis:\n\"Como vocês descobriram que essa figura começa com esse som?\"\n\"Que figuras encontramos que começam com o mesmo som?\"\n\"Que outras coisas conhecemos que começam com esse som?\"\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-01-objetivo-04-semana-04-aula-05",
+                      "number": 5,
+                      "specificObjective": "Retomando a relação entre os fonemas e as letras F, V, M e S em uma produção coletiva.",
+                      "content": "Aula 5: Retomando a relação entre os fonemas e as letras F, V, M e S em uma produção coletiva.\nAtividade 1: Escuta dos Sons na Cantiga\nA professora apresenta um pequeno trecho da cantiga “A Barata Diz Que Tem”: \n\"A barata diz que tem sete saias de filó.\nÉ mentira da barata, ela tem é uma só.\"\nApós cantar o trecho com a turma, a professora pergunta: \"Vocês perceberam algum som que nós já aprendemos?\"\nAs crianças são convidadas a perceber se algum dos sons trabalhados durante a semana aparece nas palavras da cantiga ou em outras palavras conhecidas pela turma. A professora retoma os fonemas /f/, /v/, /m/ e /s/, destacando algumas palavras e figuras conhecidas:\nFFFFlor – som do Vento.\nVVVela – som do Motor.\nMMMala – som do Nariz.\nSSSapo – som da Cobrinha.\nAs crianças repetem os sons e fazem os gestos combinados para cada personagem (Vento, Motor, Nariz, Cobrinha).\nAo final, a professora explica: \"Hoje vamos fazer um desafio maior: os sons que aprendemos vão se encontrar para formar uma grande Banda dos Sons.\"\nAtividade 2 – A Banda dos Sons (15 minutos)\nCada criança recebe uma figura e identifica o nome e o som inicial. Depois procura colegas que tenham figuras iniciadas pelo mesmo som para formar sua banda. Exemplo: Violão encontra vaso e vela. O grupo do V apresenta: \"VVVV\". Depois todos os grupos apresentam juntos os sons: FFFF; VVVV; MMMM; SSSS.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fonemas-habilidade-02",
+          "name": "Reconhece o fonema final das palavras. Relaciona letras/sons iniciais: N, Z, P",
+          "objectives": [
+            {
+              "id": "fonemas-habilidade-02-objetivo-01",
+              "name": "Foco no som inicial /n/ e sons finais",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-02-objetivo-01-semana-01",
+                  "number": 1,
+                  "title": "Semana 1",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-01-semana-01-aula-01",
+                      "number": 1,
+                      "specificObjective": "Conhecer o fonema inicial /n/ e perceber que as palavras também têm um som final",
+                      "content": "Aula 1 – Conhecer o fonema inicial /n/ e perceber que as palavras também têm um som final\nAtividade 1 – A viagem do navio\nOrganizar as crianças em roda e apresentar uma imagem de um navio. Nomear a figura com a turma e repetir lentamente o início da palavra: /n/ ... navio. Convidar as crianças a observar a produção do som, percebendo a língua apoiada atrás dos dentes superiores e a passagem do ar pelo nariz. Apresentar outras imagens conhecidas iniciadas por /n/, como nariz, nota, novelo e nuvem. A cada imagem, as crianças nomeiam a figura e identificam o som que aparece primeiro. Em seguida, mostrar a letra N em formato maiúsculo e minúsculo e explicar que ela representa o som ouvido no começo dessas palavras.\nAtividade 2 – O som que abre e o som que fecha\nApresentar cartões com figuras de palavras de final oral bem marcado, como café, sofá, saci, cipó e tatu. O professor nomeia cada figura naturalmente e depois repete a palavra mais devagar, destacando apenas o último som. Combinar dois gestos: mãos abrindo para indicar o primeiro som e mãos fechando para indicar o último. Alternar palavras iniciadas por /n/ e palavras do conjunto de sons finais. Perguntar: “Qual som abriu a palavra?” ou “Qual som fechou a palavra?”. O foco é perceber auditivamente as duas posições, sem exigir registro escrito do som final.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-01-semana-01-aula-02",
+                      "number": 2,
+                      "specificObjective": "Relacionar o fonema /n/ à letra N",
+                      "content": "Aula 2 – Relacionar o fonema /n/ à letra N\nAtividade 1 – Retomada do navio e apresentação da letra N\nRetomar as figuras de navio, nariz, nota, novelo e nuvem. As crianças nomeiam cada imagem e produzem o fonema inicial /n/. O professor apresenta a letra N maiúscula e minúscula, localiza-a no início dos nomes escritos e pergunta: “Qual som esta letra representa nestas palavras?”. Explorar o traçado da letra com o dedo no ar, sobre a mesa e em uma bandeja com areia ou fubá, sempre retomando o som inicial.\nAtividade 2 – Ninho das palavras com N\nPreparar um ninho de papel e cartões com imagens acompanhadas dos nomes escritos. Misturar palavras iniciadas por N com palavras iniciadas por sons já conhecidos. Cada criança retira uma figura, nomeia-a e identifica o primeiro som. Se a palavra começar por /n/, coloca o cartão no ninho e aponta a letra N no início do nome; caso contrário, mantém a figura fora do ninho. Ao final, revisar os cartões escolhidos e comparar visualmente a letra que aparece no começo de todos eles.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-01-semana-01-aula-03",
+                      "number": 3,
+                      "specificObjective": "Reconhecer o som final de palavras conhecidas",
+                      "content": "Aula 3 – Reconhecer o som final de palavras conhecidas\nAtividade 1 – Eco do último som\nOrganizar as crianças em roda e apresentar pares de figuras cujos nomes terminam com o mesmo som oral, selecionados de acordo com a pronúncia da turma: café–boné, sofá–gambá, saci–abacaxi, cipó–avó e tatu–caju. Nomear as figuras e repetir cada palavra lentamente. As crianças fazem um eco somente do último som percebido. O professor reforça que, nesta brincadeira, a atenção vai para o som que fecha a palavra, e não para a letra escrita.\nAtividade 2 – Encontre o companheiro de final\nDistribuir os cartões dos pares entre as crianças. Uma criança nomeia sua figura e destaca o som final; quem tiver uma palavra que termina com o mesmo som aproxima-se para formar o par. A turma repete as duas palavras e confirma o som compartilhado. Se houver dúvida, o professor pronuncia novamente sem alterar a fala natural da variedade linguística local. Encerrar comparando uma dupla que combina e uma que não combina, pedindo que as crianças justifiquem pela escuta do final.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-01-semana-01-aula-04",
+                      "number": 4,
+                      "specificObjective": "Diferenciar o fonema inicial /n/ e os sons finais das palavras",
+                      "content": "Aula 4 – Diferenciar o fonema inicial /n/ e os sons finais das palavras\nAtividade 1 – Detetives do começo e do fim\nApresentar duas lupas de papel: uma marcada com “começo” e outra com “fim”. Mostrar figuras como navio, nariz, nota, café, sofá, saci e tatu. A cada rodada, uma criança escolhe uma lupa. Com a lupa do começo, a turma identifica o primeiro som da palavra e verifica se é /n/; com a lupa do fim, repete a palavra lentamente e identifica o último som ouvido. O professor alterna as perguntas para que as duas posições não sejam confundidas.\nAtividade 2 – Varal sonoro\nPreparar um varal com um cartão da letra N e cartões que representam diferentes sons finais por meio de imagens de referência já conhecidas. Cada criança recebe uma figura, nomeia-a e cumpre dois desafios: primeiro decide se a palavra começa por /n/ e, quando for o caso, prende-a perto da letra N; depois encontra uma imagem de referência cujo nome termine com o mesmo som. Ao final, revisar coletivamente algumas escolhas, solicitando que as crianças expliquem qual parte da palavra ouviram.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-01-semana-01-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /n/, a letra N e a identificação de sons finais",
+                      "content": "Aula 5 – Revisar o fonema /n/, a letra N e a identificação de sons finais\nAtividade 1 – Circuito do N\nOrganizar três estações breves. Na primeira, as crianças nomeiam figuras e separam as que começam por /n/. Na segunda, percorrem o traçado da letra N com o dedo e relacionam a letra ao fonema. Na terceira, escutam pares como café–boné e saci–abacaxi e indicam se o último som é igual ou diferente. O professor acompanha os grupos, retomando a diferença entre observar o começo e observar o fim da palavra.\nAtividade 2 – Desafio da caixa sonora\nColocar em uma caixa figuras trabalhadas durante a semana. Cada criança retira uma figura e sorteia um cartão “começo” ou “fim”. Se sair “começo”, identifica o primeiro som e verifica se ele é representado pela letra N. Se sair “fim”, nomeia a figura e destaca o último som percebido. A turma ajuda a validar a resposta por meio da repetição oral. Encerrar registrando em um cartaz o que foi aprendido: o N representa /n/ nas palavras estudadas e todas as palavras possuem um som que aparece por último.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-02-objetivo-02",
+              "name": "Foco no som inicial /p/ e sons finais",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-02-objetivo-02-semana-02",
+                  "number": 2,
+                  "title": "Semana 2",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-02-semana-02-aula-01",
+                      "number": 1,
+                      "specificObjective": "Conhecer o fonema inicial /p/ e retomar a percepção dos sons finais",
+                      "content": "Aula 1 – Conhecer o fonema inicial /p/ e retomar a percepção dos sons finais\nAtividade 1 – A pipoca que começa com /p/\nApresentar uma panela de brinquedo ou imagem de pipoca e dizer uma pequena sequência rítmica com palavras como pipoca, panela, pato, pipa e pote. As crianças repetem os nomes e identificam o som inicial comum. O professor produz /p/ de forma breve, sem acrescentar vogal, e convida a turma a colocar a mão diante da boca para perceber a pequena saída de ar. Mostrar a letra P e relacioná-la ao som inicial das palavras exploradas.\nAtividade 2 – Pulo no último som\nDispor no chão imagens de referência com finais orais conhecidos pela turma, como sofá, café, saci, cipó e tatu. O professor apresenta outra figura, nomeia-a e destaca seu último som. As crianças pulam até a imagem cujo nome termina de modo igual. Antes de confirmar, todos repetem as duas palavras. Selecionar previamente o vocabulário segundo a pronúncia local e evitar apoiar a resposta apenas na letra final escrita.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-02-semana-02-aula-02",
+                      "number": 2,
+                      "specificObjective": "Relacionar o fonema /p/ à letra P",
+                      "content": "Aula 2 – Relacionar o fonema /p/ à letra P\nAtividade 1 – Retomada sonora e traçado da letra P\nRelembrar as palavras pipoca, panela, pato, pipa e pote. A turma nomeia as imagens e produz o som inicial /p/ de maneira curta. O professor apresenta P e p, localiza a letra no início dos nomes escritos e conduz o traçado com o dedo no ar, sobre a mesa e no papel. Durante o percurso, as crianças repetem uma palavra de referência, evitando pronunciar o nome da letra no lugar do fonema.\nAtividade 2 – Pescaria do P\nPreparar uma pescaria com figuras acompanhadas dos nomes escritos, misturando palavras iniciadas por P, N e outros sons conhecidos. Cada criança pesca uma figura, nomeia-a e identifica o primeiro som. Quando for /p/, aponta a letra P no nome e coloca a figura no painel do P. Ao final, contar as figuras reunidas e retomar que palavras diferentes podem compartilhar o mesmo som e a mesma letra inicial.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-02-semana-02-aula-03",
+                      "number": 3,
+                      "specificObjective": "Comparar sons finais iguais e diferentes",
+                      "content": "Aula 3 – Comparar sons finais iguais e diferentes\nAtividade 1 – Correio dos finais\nPreparar envelopes identificados por imagens de referência: café, sofá, saci, cipó e tatu. Entregar cartões com figuras cujos nomes terminem com os mesmos sons das referências. Cada criança nomeia seu cartão, repete a palavra lentamente e o coloca no envelope do mesmo som final. O professor não mostra palavras escritas nesta etapa, para que a decisão seja feita pela escuta.\nAtividade 2 – Igual ou diferente?\nPronunciar pares de palavras conhecidas, alternando finais iguais e diferentes: café–boné, sofá–gambá, saci–tatu, cipó–avó e caju–tatu. As crianças levantam uma plaquinha verde quando o último som é igual e uma vermelha quando é diferente. Após cada escolha, a turma repete as palavras e destaca somente o som final. Concluir que o som final pode coincidir mesmo quando as palavras e as imagens são diferentes.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-02-semana-02-aula-04",
+                      "number": 4,
+                      "specificObjective": "Identificar /p/ no início e reconhecer o som final das palavras",
+                      "content": "Aula 4 – Identificar /p/ no início e reconhecer o som final das palavras\nAtividade 1 – O caminho completo da palavra\nApresentar cartões de pato, pipa, panela, pipoca e peixe, além de outras figuras conhecidas. Para cada palavra, usar uma seta com duas pontas: uma criança aponta a entrada e identifica o primeiro som; outra aponta a saída e identifica o último som percebido na fala da turma. Quando o início for /p/, localizar a letra P no nome escrito. O professor reforça que a letra inicial e o som final respondem a perguntas diferentes.\nAtividade 2 – Bingo do começo e do fim\nDistribuir cartelas com imagens. Em algumas rodadas, anunciar “palavra que começa por /p/”; em outras, anunciar uma imagem de referência para um som final. As crianças cobrem uma figura que atenda ao critério e justificam oralmente a escolha. Antes de marcar, todos nomeiam a figura e escutam a posição solicitada. Alternar os comandos para consolidar a atenção fonêmica.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-02-semana-02-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /p/, a letra P e os sons finais",
+                      "content": "Aula 5 – Revisar o fonema /p/, a letra P e os sons finais\nAtividade 1 – Mercado das palavras com P\nOrganizar uma brincadeira de mercado com figuras ou objetos de nomes iniciados por /p/ e por outros fonemas. Cada criança recebe uma ficha com a letra P e procura um item cujo nome comece pelo som correspondente. Ao escolher, nomeia o item, produz /p/ e aponta a letra inicial em uma etiqueta escrita. A turma confirma pela escuta do começo da palavra.\nAtividade 2 – Sacola dos finais\nDepois da revisão do P, apresentar uma sacola com pares de figuras de mesmo som final. Cada criança retira uma figura e procura seu par entre cartões expostos. Para justificar, nomeia as duas imagens e destaca o som que aparece por último. Encerrar comparando as estratégias: para encontrar itens do mercado foi preciso ouvir o começo; para encontrar o par foi preciso ouvir o fim.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-02-objetivo-03",
+              "name": "Foco no som inicial /z/ e sons finais",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-02-objetivo-03-semana-03",
+                  "number": 3,
+                  "title": "Semana 3",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-03-semana-03-aula-01",
+                      "number": 1,
+                      "specificObjective": "Conhecer o fonema inicial /z/ e ampliar a percepção de sons finais",
+                      "content": "Aula 1 – Conhecer o fonema inicial /z/ e ampliar a percepção de sons finais\nAtividade 1 – A visita da zebra\nApresentar uma zebra de brinquedo, fantoche ou imagem e explorar seu nome. Pronunciar zebra lentamente, destacando /z/, e convidar as crianças a colocar a mão na garganta para perceber a vibração. Ampliar o repertório com zero, zíper, zangão e zabumba. A cada palavra, perguntar qual som aparece primeiro. Mostrar a letra Z e relacioná-la ao fonema nas palavras selecionadas.\nAtividade 2 – Zigue-zague até o som final\nMontar um pequeno percurso em zigue-zague com imagens de palavras de final oral nítido. A criança percorre a trilha, para diante de uma figura, nomeia-a e repete somente o último som. Em seguida, procura outra imagem que termine do mesmo modo. O professor modela a escuta com pares conhecidos e respeita a pronúncia natural da turma, sem transformar diferenças linguísticas em erro.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-03-semana-03-aula-02",
+                      "number": 2,
+                      "specificObjective": "Relacionar o fonema /z/ à letra Z",
+                      "content": "Aula 2 – Relacionar o fonema /z/ à letra Z\nAtividade 1 – Retomada da zebra e apresentação da letra Z\nRever as imagens de zebra, zero, zíper, zangão e zabumba. As crianças nomeiam cada figura, prolongam o fonema inicial /z/ e percebem a vibração com a mão na garganta. O professor apresenta Z e z, localiza a letra no início dos nomes escritos e conduz o traçado em zigue-zague com o dedo, no ar e no papel.\nAtividade 2 – Zoológico do Z\nPreparar a entrada de um “zoológico” identificada com a letra Z e cartões com imagens iniciadas por /z/ misturadas a outras já conhecidas. Cada criança escolhe uma figura, diz seu nome e decide se ela entra no zoológico. Quando a palavra começar por /z/, aponta a letra inicial no nome escrito e coloca o cartão no espaço. Ao final, revisar as escolhas e produzir coletivamente o som representado por Z.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-03-semana-03-aula-03",
+                      "number": 3,
+                      "specificObjective": "Reconhecer e agrupar palavras pelo som final",
+                      "content": "Aula 3 – Reconhecer e agrupar palavras pelo som final\nAtividade 1 – Bingo do último som\nEntregar cartelas com imagens organizadas em pares de mesmo som final, usando vocabulário previamente validado na variedade oral da turma. O professor mostra e nomeia uma figura de referência; as crianças procuram em suas cartelas uma palavra que termine com o mesmo som. Antes de cobrir a imagem, repetem as duas palavras e isolam oralmente o final compartilhado.\nAtividade 2 – Trem dos finais\nOrganizar locomotivas identificadas por imagens como café, sofá, saci, cipó e tatu. Os vagões são outras figuras. Cada criança conecta um vagão à locomotiva cujo nome termina com o mesmo som. A turma valida cada escolha pela escuta. Inserir algumas figuras que não formam par para que as crianças percebam que nem todo vagão pode ser ligado a qualquer trem.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-03-semana-03-aula-04",
+                      "number": 4,
+                      "specificObjective": "Diferenciar o fonema inicial /z/ e os sons finais",
+                      "content": "Aula 4 – Diferenciar o fonema inicial /z/ e os sons finais\nAtividade 1 – Semáforo das posições\nApresentar um semáforo de papel com duas indicações: começar e terminar. Mostrar figuras como zebra, zíper, zabumba, café, saci e tatu. Quando o professor indicar “começar”, as crianças identificam o primeiro som e verificam se é /z/. Quando indicar “terminar”, nomeiam a figura e destacam o último som. Alternar rapidamente as posições, sempre dando tempo para repetir a palavra inteira antes de responder.\nAtividade 2 – Missão dupla da zebra\nCada criança retira uma figura de uma caixa e cumpre duas ações. Primeiro, diz se a palavra começa pelo som da zebra; quando começar, localiza a letra Z no nome escrito. Depois, escolhe entre imagens de referência aquela cujo nome termina com o mesmo som de sua figura. O professor oferece ajuda pronunciando as palavras naturalmente e registra quais posições ainda geram dúvida para retomada.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-03-semana-03-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /z/, a letra Z e a identificação de sons finais",
+                      "content": "Aula 5 – Revisar o fonema /z/, a letra Z e a identificação de sons finais\nAtividade 1 – Caça ao Z\nEspalhar pela sala cartões com imagens e nomes escritos. As crianças procuram palavras iniciadas por /z/, nomeiam as figuras e colocam os cartões junto à letra Z. Depois, a turma verifica o conjunto, produzindo o fonema inicial e observando a letra que se repete. Cartões iniciados por outros sons permanecem fora do grupo e são comparados oralmente.\nAtividade 2 – Memória dos sons finais\nPreparar um jogo da memória no qual o par é formado por duas figuras de palavras que terminam com o mesmo som, e não por imagens iguais. Ao virar duas cartas, a criança nomeia as figuras e destaca o final. Se os sons coincidirem, guarda o par; se forem diferentes, devolve as cartas. Encerrar retomando que a primeira atividade exigiu atenção ao começo e a segunda, ao fim das palavras.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-02-objetivo-04",
+              "name": "Foco em Sistematizar a correspondência grafofonêmica das letras N,P e Z e sons finais",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-02-objetivo-04-semana-04",
+                  "number": 4,
+                  "title": "Semana 4",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-04-semana-04-aula-01",
+                      "number": 1,
+                      "specificObjective": "Sistematizar os fonemas iniciais /n/, /p/ e /z/, as letras N, P e Z e os sons finais",
+                      "content": "Aula 1 – Sistematizar os fonemas iniciais /n/, /p/ e /z/, as letras N, P e Z e os sons finais\nAtividade 1 – Reencontro dos personagens sonoros\nRetomar imagens de referência das semanas anteriores: navio para /n/, pipoca para /p/ e zebra para /z/. As crianças nomeiam as figuras, identificam o primeiro som e associam cada uma às letras N, P e Z. Comparar a produção dos fonemas de forma acessível: /n/ com passagem de ar pelo nariz, /p/ curto com pequena saída de ar e /z/ contínuo com vibração na garganta.\nAtividade 2 – Duas perguntas para cada palavra\nApresentar figuras variadas e alternar duas perguntas: “Com qual som começa?” e “Com qual som termina?”. Para o começo, as crianças escolhem N, P ou Z quando couber; para o fim, comparam a palavra a imagens de referência de finais já trabalhados. Usar cartões de seta para marcar visualmente a posição solicitada e reforçar que reconhecer um som depende de onde se escuta a palavra.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-04-semana-04-aula-02",
+                      "number": 2,
+                      "specificObjective": "Comparar os fonemas /n/, /p/ e /z/ e suas letras",
+                      "content": "Aula 2 – Comparar os fonemas /n/, /p/ e /z/ e suas letras\nAtividade 1 – Laboratório da boca e da garganta\nO professor produz /n/, /p/ e /z/ separadamente e convida as crianças a observar o que muda. Para /n/, percebem a língua atrás dos dentes e o ar pelo nariz; para /p/, sentem a saída breve de ar com a mão diante da boca; para /z/, colocam a mão na garganta e percebem a vibração. Não é necessário memorizar nomes técnicos. Depois, associam cada som à letra N, P ou Z.\nAtividade 2 – Casas dos três sons\nOrganizar três painéis com N, P e Z. Distribuir figuras de navio, nariz, nota, pato, pipa, panela, zebra, zero e zíper, além de alguns intrusos. Cada criança nomeia a figura, identifica o primeiro fonema e coloca o cartão na casa correspondente. Ao final, a turma revisa cada grupo e explica como o som inicial ajudou a reconhecer a letra.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-04-semana-04-aula-03",
+                      "number": 3,
+                      "specificObjective": "Percorrer a palavra do som inicial ao som final",
+                      "content": "Aula 3 – Percorrer a palavra do som inicial ao som final\nAtividade 1 – Trilha do começo ao fim\nMontar uma trilha com uma seta de entrada e outra de saída. A criança recebe uma figura, nomeia-a e entra na trilha produzindo o primeiro som. Se o início for /n/, /p/ ou /z/, leva a letra correspondente. Ao chegar à saída, repete a palavra lentamente e identifica seu último som por comparação com as referências já conhecidas. A turma acompanha e ajuda a validar as duas respostas.\nAtividade 2 – Que posição mudou?\nApresentar duas palavras por rodada e pedir que as crianças escutem uma posição específica. Em algumas rodadas, comparar começos diferentes; em outras, comparar finais iguais ou diferentes. Usar pares conhecidos e imagens para sustentar o significado. As crianças levantam um cartão “começo” ou “fim” para indicar onde perceberam a semelhança ou a mudança.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-04-semana-04-aula-04",
+                      "number": 4,
+                      "specificObjective": "Aplicar a identificação dos sons iniciais e finais em um jogo de classificação",
+                      "content": "Aula 4 – Aplicar a identificação dos sons iniciais e finais em um jogo de classificação\nAtividade 1 – Loja das letras N, P e Z\nOrganizar uma loja com figuras ou objetos de nomes iniciados pelos três fonemas. Cada criança recebe uma letra e precisa escolher um item que comece pelo som representado. Para concluir a compra, nomeia o item, produz o primeiro fonema e mostra a letra correspondente. Trocar as letras entre as crianças para realizar novas rodadas.\nAtividade 2 – Embalagens do último som\nDepois da compra, cada item precisa ser colocado em uma embalagem sonora. As embalagens são identificadas por imagens de palavras com finais conhecidos. A criança nomeia seu item, identifica o último som segundo a pronúncia usada pela turma e procura a referência que termina do mesmo modo. Se não houver par adequado, coloca o item na caixa “ainda sem par”, reconhecendo que não é preciso forçar uma combinação.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-02-objetivo-04-semana-04-aula-05",
+                      "number": 5,
+                      "specificObjective": "Consolidar a relação N–/n/, P–/p/, Z–/z/ e o reconhecimento do som final",
+                      "content": "Aula 5 – Consolidar a relação N–/n/, P–/p/, Z–/z/ e o reconhecimento do som final\nAtividade 1 – Grande desafio dos sons\nOrganizar rodadas curtas com três tipos de cartão: “letra”, “começo” e “fim”. Ao retirar “letra”, a criança associa N, P ou Z a uma figura adequada. Ao retirar “começo”, identifica o primeiro fonema da palavra apresentada. Ao retirar “fim”, destaca o último som e procura uma palavra que termine de modo igual. A turma confirma as respostas pela nomeação e pela repetição oral.\nAtividade 2 – Painel do que aprendemos\nConstruir um painel coletivo dividido em duas partes. Em “No começo”, colar imagens agrupadas sob N, P e Z. Em “No fim”, colar pares de imagens que compartilham o último som. Antes de cada colagem, as crianças justificam oralmente a escolha. O professor registra observações sobre quem identifica as posições com autonomia e quais contrastes precisam ser retomados, sem transformar variações legítimas de pronúncia em erro.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fonemas-habilidade-03",
+          "name": "Realiza síntese fonêmica (ouve sons separados e junta para formar a palavra) + Letras/Sons: B, T, D.",
+          "objectives": [
+            {
+              "id": "fonemas-habilidade-03-objetivo-01",
+              "name": "Realiza síntese fonêmica (ouve sons separados e junta para formar a palavra) - Letras/Sons: B",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-03-objetivo-01-semana-01",
+                  "number": 1,
+                  "title": "Semana 1",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-01-semana-01-aula-01",
+                      "number": 1,
+                      "specificObjective": "Escuta e produção do fonema /b/.",
+                      "content": "Aula 1: Escuta e produção do fonema /b/.\nAtividade 1: Cantiga – A Barata Diz que Tem\nCantar a cantiga A Barata Diz que Tem com a turma. Em seguida, destacar a palavra barata, pronunciando-a lentamente e prolongando o fonema inicial (/bbbb/), convidando as crianças a perceberem que esse é o primeiro som da palavra. Pedir que as crianças observem a posição dos lábios durante a produção do som e repitam o fonema /b/ algumas vezes. Apresentar a letra B em um cartão grande e explicar que ela representa esse som. Em seguida, mostrar uma a uma as figuras de bola, boca, bolo, bebê, banana e baleia. A cada imagem, o professor nomeia a palavra, destaca o primeiro som (/bbbb/ola) e pergunta: “Que som ouvimos primeiro nessa palavra? Ela começa com /b/?” Após a resposta, convidar as crianças a repetir a palavra, destacando o som inicial.\nAtividade 2: Compras na Loja do B\nOrganizar as crianças em roda e apresentar uma pequena loja com figuras ou objetos variados. Explicar que a turma ajudará a organizar os produtos da loja, colocando na prateleira do B apenas aqueles cujos nomes começam com o som /b/.\nPreparar materiais suficientes para que todas as crianças participem (uma figura por criança), incluindo produtos iniciados pelo fonema /b/ (bola, boneca, banana, bolo, biscoito, batata, bota) e produtos iniciados por outros sons (gato, sapato, peixe, tomate).\nCada criança recebe um produto da loja. Na sua vez, apresenta a figura, nomeia o item com apoio do professor quando necessário e todos escutam o início da palavra. O professor pergunta: “Essa palavra começa com o som /b/?”\nQuando a resposta for sim, a criança coloca o produto na prateleira da Loja do B. Quando não começar com /b/, o professor explica: “Esse produto começa com outro som. Vamos guardá-lo para descobrir em outra loja de sons.” A figura retorna ao centro da roda.\nAo final, observar os produtos selecionados e repetir coletivamente as palavras, destacando o fonema inicial: /bbbb/ola, /bbbb/oneca, /bbbb/anana, /bbbb/olo.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-01-semana-01-aula-02",
+                      "number": 2,
+                      "specificObjective": "Síntese Silábica Auditiva e Visual do Fonema /b/.",
+                      "content": "Aula 2: Síntese Silábica Auditiva e Visual do Fonema /b/.\nAtividade 1: O Castelo das Sílabas\nApresentar na lousa um cartaz pronto e colorido de um grande castelo com duas torres separadas por uma ponte, explicando de forma lúdica que os sons moram ali e adoram atravessar a ponte dando as mãos para formar um pedacinho sonoro que aparece dentro das palavras. O professor fixa a letra B na primeira torre e a vogal A na segunda torre, apontando para cada uma e emitindo seus sons de forma contínua à medida que desliza os dedos pela ponte até juntá-los, demonstrando em coro com a turma a formação das primeiras combinações como BA e BO. Encerra-se a demonstração convidando uma criança por vez para escolher uma das vogais restantes (E, I e U), colocá-la na segunda torre e realizar, junto com a turma, a fusão dos sons para descobrir as novas combinações (BE, BI e BU)..\nAtividade 2: A Árvore das Sílabas do B \nOrganizar a turma em roda diante de um cartaz de árvore pronto fixado na lousa e distribuir cartões individuais contendo as sílabas formadas com B (BA, BE, BI, BO, BU), explicando que o professor colherá os frutos da árvore utilizando apenas comandos sonoros. Antes de permitir que qualquer criança mostre seu cartão, o professor apresenta a combinação fonêmica separada de forma puramente auditiva (ex: “Escutem: /b/ + /o/”), orientando as crianças a analisar seus cartões individuais para que aquela que possuir a sílaba correspondente levante-se, mostre para os colegas e cole o cartão na copa da árvore, liderando a turma inteira na leitura coletiva da sílaba até que todas as combinações preencham a árvore de forma colorida.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-01-semana-01-aula-03",
+                      "number": 3,
+                      "specificObjective": "Síntese fonêmica de palavras com o fonema /b/",
+                      "content": "Aula 3: Síntese fonêmica de palavras com o fonema /b/\nAtividade 1: O Segredo da Caixa dos Sons\nOrganizar as crianças em roda e apresentar uma caixa decorada contendo figuras de palavras iniciadas pelo fonema /b/ (boi, baú, bola, boca e bolo). Explicar que os objetos da caixa só poderão ser descobertos ouvindo atentamente os sons produzidos pelo professor. A cada rodada, o professor retira uma figura sem revelá-la e conduz a síntese fonêmica de forma mediada: primeiro pronuncia lentamente os fonemas da sílaba inicial, por exemplo, /b/.../o/, convidando a turma a unir os sons e responder \"bo\"; em seguida, quando houver uma segunda sílaba, apresenta seus fonemas (/l/.../a/), para que as crianças formem \"la\". Depois pergunta: \"Se juntarmos bo e la, que palavra formamos?\" As crianças respondem, o professor revela a figura e todos repetem a palavra completa, destacando o som inicial /b/. Com palavras formadas por uma única sílaba, como boi e baú, o professor realiza diretamente a síntese dos fonemas que compõem a palavra antes da revelação da imagem.\nAtividade 2: Descobrindo a Palavra Escondida\nFixar na lousa seis fichas numeradas de um a seis, cada uma escondendo uma figura (bota, boné, baú, bola, boca e bolo). Após o lançamento de um dado, o professor retira a ficha correspondente sem mostrar a imagem e propõe um novo desafio. Conduz a síntese fonêmica em etapas, produzindo primeiro os fonemas da sílaba inicial (/b/.../o/ → bo) e, em seguida, os fonemas da sílaba seguinte (/t/.../a/ → ta, por exemplo). Depois pergunta: \"Que palavra formamos quando juntamos bo e ta?\" A criança responde, a imagem é revelada e toda a turma repete a palavra, enfatizando o fonema inicial /b/. A dinâmica continua até que todas as fichas sejam descobertas, garantindo ampla participação da turma e oferecendo apoio sempre que necessário.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-01-semana-01-aula-04",
+                      "number": 4,
+                      "specificObjective": "Leitura de sílabas e relação som-letra do B.",
+                      "content": "Aula 4: Leitura de sílabas e relação som-letra do B.\nAtividade 1: A Caixa de Encomendas do B\nOrganizar as crianças em roda e apresentar uma grande caixa contendo envelopes fechados e numerados de um a cinco, representando encomendas misteriosas. O professor explica que cada envelope esconde um cartão com uma sílaba escrita que será descoberta a partir dos sons apresentados pelo professor, utilizando uma lista secreta com o gabarito dos números. O professor convida uma criança a retirar um envelope da caixa e, observando o número impresso no papel, dita os fonemas correspondentes de forma isolada (ex: “Que pedaço formamos juntando /b/ + /u/?”). Após a resposta da criança, ela abre o envelope, retira o cartão de sílaba para conferir o resultado e o mostra para a turma, que realiza a leitura coletiva da sílaba revelada. O jogo prossegue de forma direta até que todas as cinco variações silábicas da semana (BA, BE, BI, BO, BU) tenham sido descobertas pelo grupo.\nAtividade 2: Jogo dos Pares das Sílabas\nDividir as crianças em pequenos grupos de quatro integrantes e distribuir para cada equipe um conjunto de doze cartas contendo seis pares idênticos de sílabas escritas: dois pares de BA e um par de cada uma das sílabas BE, BI, BO e BU. O professor distribui exatamente três cartas para cada criança do grupo, que as colocam abertas na mesa à sua frente para facilitar a visualização de todos. O jogo acontece respeitando a ordem da roda e começa com o centro da mesa vazio. A primeira criança inicia escolhendo qualquer uma de suas cartas para colocar no centro e, com apoio do professor quando necessário, identifica a sílaba escrita apresentada. A próxima criança da vez observa suas cartas; se possuir a sílaba idêntica à que está no centro, identifica a sílaba, coloca sua carta por cima, recolhe o par formado para perto de si como sua conquista e deixa o centro da mesa limpo novamente para que o próximo colega da roda reinicie o jogo com qualquer carta de sua preferência. Caso a criança da vez não possua a sílaba correspondente para formar o par, ela passa a vez para o participante seguinte tentar encontrar a carta correspondente, garantindo que o jogo circule de forma organizada até que todas as doze cartas sejam pareadas.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-01-semana-01-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /b/ e as sínteses realizadas.",
+                      "content": "Aula 5: Revisar o fonema /b/ e as sínteses realizadas.\nAtividade 1: Jogo do Baú dos Sons\nOrganizar as crianças em roda e apresentar um baú ou caixa decorada no centro do semicírculo contendo os objetos reais estudados ao longo da semana (um boi de brinquedo e um baú em miniatura), explicando que para retirar cada item de dentro do recipiente a turma precisará descobrir o nome do objeto unindo os sons soltos que o professor vai produzir. O professor dita os fonemas isolados de um dos itens escondidos de forma pausada (ex: /b/ + /o/ + /i/), orientando as crianças a realizar a síntese fonêmica de forma coletiva em voz alta com o apoio visual da articulação dos lábios do professor. Assim que a turma descobre a palavra em conjunto, o professor retira o objeto real de dentro do baú para visualização de todos, repetindo o processo com o próximo item (ex: /b/ + /a/ + /ú/) até que os objetos sejam desvendados e nomeados em coro pelo grupo.\nAtividade 2: Compras no Mercado do B\nAproveitar o entusiasmo dos objetos descobertos para montar um mercado simbólico na mesa da sala, adicionando à prateleira vários objetos conhecidos pelas crianças que começam com a letra B (bola, boneca, bolo de brinquedo, bicicleta miniatura, entre outros), explicando que para comprar qualquer item o cliente da vez precisará pagar falando o som de partida prolongado e o primeiro pedaço da palavra. Uma criança por vez é convidada a ir até a mesa do mercado escolher um produto e, com o apoio do professor, realiza o pagamento prolongando o fonema inicial e pronunciando a sílaba correspondente (ex: /bbbbb/ - BO para a bola ou /bbbbb/ - BÓ para a bota), fazendo com que o restante da turma atue em coro repetindo essa estrutura inicial e completando o restante do vocábulo, girando a vez sucessivamente para que vários alunos participem como compradores.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-03-objetivo-02",
+              "name": "Realiza síntese fonêmica (ouve sons separados e junta para formar a palavra) - Letras/Sons: T",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-03-objetivo-02-semana-02",
+                  "number": 2,
+                  "title": "Semana 2",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-02-semana-02-aula-01",
+                      "number": 1,
+                      "specificObjective": "Escuta e produção do fonema /t/.",
+                      "content": "Aula 1: Escuta e produção do fonema /t/.\nAtividade 1: Cantiga – O Trem Maluco\nCantar a cantiga O Trem Maluco com a turma, batendo palmas no ritmo, destacando em seguida a palavra trem para pronunciá-la lentamente e isolar o fonema inicial (/t/, /t/, /t/), pedindo que as crianças observem a posição da língua encostando atrás dos dentes superiores durante a produção desse som seco e curto, convidando-as a repetir o fonema /t/ algumas vezes como pequenas batidas de uma porta ou de um tambor. O professor apresenta a letra T em um cartão grande explicando que ela representa esse som e mostra uma a uma as figuras de tatu, teia, tijolo, tomate, tucano e tapete, onde, a cada imagem, o professor nomeia a palavra, realiza uma breve pausa para destacar o fonema inicial de forma isolada e sem acrescentar vogal (/t/ - tatu) e pergunta se a palavra começa com o som /t/, convidando as crianças a repetir coletivamente a palavra, enfatizando o som inicial.\nAtividade 2: O Estacionamento do T\nOrganizar as crianças em roda e apresentar um cartaz pronto de estacionamento fixado na lousa com uma grande vaga marcada com a letra T, explicando que a turma ajudará a estacionar carrinhos que carregam apenas figuras cujos nomes começam com o som /t/. Cada criança recebe uma ficha com a imagem de um produto, incluindo itens iniciados pelo fonema /t/ (tatu, teia, tijolo, tomate, tucano, tapete, tinta) e itens iniciados por outros fonemas já estudados ou neutros (bola, macaco, sapato), passando a vez na roda onde a criança apresenta sua figura, nomeia o item com o apoio do professor e todos escutam atentamente o início da palavra. O professor questiona se a palavra começa com o som /t/ e, quando a resposta for positiva, a criança cola seu carrinho na vaga do T, enquanto nos casos negativos o professor orienta a guardar a ficha em uma caixa para outras oportunidades de sons depois, finalizando com a repetição coletiva das palavras selecionadas em coro destacando o fonema inicial.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-02-semana-02-aula-02",
+                      "number": 2,
+                      "specificObjective": "Síntese Silábica Auditiva e Visual do Fonema /t/.",
+                      "content": "Aula 2: Síntese Silábica Auditiva e Visual do Fonema /t/.\nAtividade 1: A Batida das Sílabas do T\nOrganizar as crianças em roda e explicar que o som do T precisa encontrar as vogais para formar novos pedaços sonoros. O professor apresenta a letra T em um cartão grande e retoma coletivamente seu som (/t/), mostrando em seguida cartões com as vogais A, E, I, O e U. Para iniciar a brincadeira, o professor segura o cartão do T e uma vogal, produz os sons de forma isolada (ex: /t/ + /a/) e convida as crianças a juntarem os sons fazendo uma batida de palma enquanto dizem a sílaba formada (TA). O professor repete o procedimento com diferentes combinações, variando as vogais e convidando as crianças a acompanhar corporalmente a fusão dos sons. Após cada descoberta oral, apresenta o cartão da sílaba correspondente (TA, TE, TI, TO ou TU), relacionando a combinação sonora à forma escrita e realizando a leitura coletiva com a turma.\nAtividade 2: O Correio das Sílabas do T\nOrganizar a turma em roda e apresentar uma caixa ou sacola representando o correio das sílabas, contendo envelopes identificados com as sílabas TA, TE, TI, TO e TU e cartões menores com as mesmas combinações escritas. Explicar que os carteiros da turma precisam entregar cada carta no envelope correto, mas primeiro devem descobrir qual sílaba está sendo chamada pelo som. O professor retira uma carta sem mostrar o escrito e apresenta a combinação sonora de forma isolada (ex: /t/ + /u/), convidando as crianças a realizarem a síntese silábica em coro para descobrir o pedaço formado (TU). Em seguida, revela a carta, confirma a sílaba escrita e chama uma criança para colocar a correspondência no envelope correto. A dinâmica continua até que todas as sílabas sejam entregues, finalizando com a leitura coletiva das cinco combinações formadas pelo T.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-02-semana-02-aula-03",
+                      "number": 3,
+                      "specificObjective": "Síntese fonêmica de palavras com o fonema /t/.",
+                      "content": "Aula 3: Síntese fonêmica de palavras com o fonema /t/.\nAtividade 1: Jogo do Varal dos Sons\nOrganizar as crianças em semicírculo diante de um pequeno varal de barbante montado na sala e apresentar quatro pregadores coloridos vazios, explicando que o professor vai pendurar palavras invisíveis por meio de pequenos sons que a turma precisará juntar para descobrir qual figura será revelada. O professor seleciona uma das imagens das palavras trabalhadas (tatu, teia ou tia), sem mostrar o desenho, e representa cada som da palavra nos pregadores do varal, pronunciando os fonemas de forma isolada e pausada (ex: /t/ + /a/ + /t/ + /u/), convidando as crianças a ouvir atentamente e unir os sons para descobrir a palavra formada. Após uma criança apresentar sua hipótese, o professor revela a imagem correspondente, confirma a descoberta e conduz a repetição coletiva do vocábulo completo. A dinâmica continua com as demais palavras, alternando as crianças que participam da descoberta e reforçando que cada som separado, quando unido aos outros, forma uma palavra.\nAtividade 2: O Desafio das Caixas de Fósforo\nOrganizar as crianças em duplas nas mesas e entregar para cada grupo um conjunto de quatro caixas de fósforo vazias coladas lado a lado, representando pequenos vagões, além de fichas ilustradas com as imagens das palavras trabalhadas (tatu, teia e tia). O professor explica que cada dupla deverá descobrir qual palavra está escondida antes de colocar a imagem no trem. A cada rodada, uma criança da dupla vira uma ficha sem revelar o desenho para o colega e o professor realiza a síntese fonêmica da palavra, pronunciando seus sons de forma pausada e organizada conforme a palavra apresentada (ex: /t/ + /e/ + /i/ + /a/). As crianças acompanham a sequência sonora nos vagões e tentam juntar os sons para descobrir a palavra. Após a resposta da dupla, o professor revela a imagem para confirmação, todos repetem o vocábulo completo em coro e a ficha é colocada no último vagão do trem. A atividade prossegue até que todas as palavras sejam descobertas, garantindo a participação das crianças e retomando a habilidade de ouvir sons separados e juntá-los para formar palavras.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-02-semana-02-aula-04",
+                      "number": 4,
+                      "specificObjective": "Leitura de sílabas e relação som-letra do T.",
+                      "content": "Aula 4: Leitura de sílabas e relação som-letra do T.\nAtividade 1: Os Balões de Mensagens do T\nOrganizar as crianças em roda e apresentar cinco balões cheios, cada um marcado externamente com um número visível de um a cinco, explicando que dentro de cada balão há uma sílaba escrita que será descoberta ouvindo os sons. O professor indica uma criança para escolher um balão e, consultando um gabarito de apoio, produz os sons correspondentes à sílaba (ex.: “Que pedacinho formamos quando juntamos /t/ + /u/?”). Após a resposta da criança, o professor estoura o balão de forma divertida, retira o papel com a sílaba escrita e o entrega para a criança mostrar à turma. Em seguida, todos realizam a leitura coletiva da sílaba, confirmando a relação entre os sons ouvidos e a escrita apresentada, antes de passar para o próximo balão.\nAtividade 2: O Trem das Sílabas do T\nOrganizar a turma em roda e apresentar um trem de cartolina com cinco vagões vazios, explicando que o trem precisa receber seus bilhetes para poder partir. Cada bilhete contém uma das sílabas estudadas (TA, TE, TI, TO e TU). O professor entrega um bilhete por vez para uma criança e solicita que ela observe o que está escrito. A criança realiza a leitura da sílaba com apoio do professor quando necessário e coloca o bilhete no vagão do trem. Após cada nova passagem, a turma realiza a leitura coletiva da sílaba apresentada. Quando todos os vagões estiverem preenchidos, o professor aponta para os bilhetes em uma ordem diferente da inicial, convidando as crianças a realizarem novas leituras, reforçando a relação entre a escrita da sílaba e seu som correspondente.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-02-semana-02-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /t/ e as sínteses realizadas.",
+                      "content": "Aula 5: Revisar o fonema /t/ e as sínteses realizadas.\nAtividade 1: A Pescaria no Rio do T\nOrganizar as crianças em roda ao redor de um tapete azul que representa um rio, contendo peixes de papel com clipes de metal que trazem fixadas as imagens das palavras curtas estudadas na semana (teia, tia e Teo), explicando que cada aluno terá a chance de pescar uma figura usando uma vara magnética e descobrir o nome oculto através dos sons. A criança da vez pesca um peixe, observa a imagem sem mostrar aos colegas e entrega o peixe ao professor, que produz os fonemas da palavra de forma pausada e isolada (ex.: /t/ + /i/ + /a/) para que a criança selecionada realize a síntese fonêmica auditiva. Assim que o aluno identifica a palavra, ele mostra o peixe para a turma, e todos validam o resultado repetindo o vocábulo completo em coro e realizando um gesto representativo relacionado à palavra. A atividade prossegue com a participação de diferentes crianças, retomando as sínteses fonêmicas trabalhadas durante a semana.\nAtividade 2: Telefone dos Sons Secretos\nOrganizar as crianças em roda e apresentar a brincadeira do telefone dos sons secretos, explicando que uma mensagem especial será passada de criança em criança, mas ela só poderá ser descoberta quando os pequenos sons forem unidos. O professor inicia a rodada cochichando no ouvido da primeira criança os fonemas separados de uma palavra curta estudada na semana (ex.: /t/ + /e/ + /i/ + /a/), orientando-a a escutar com atenção e juntar os sons para descobrir a palavra. A mensagem segue pela roda até chegar à última criança, que realiza a síntese fonêmica e escolhe, entre imagens disponíveis sobre a mesa, aquela correspondente à palavra descoberta. Após a escolha, a criança apresenta a imagem para a turma, que valida a resposta repetindo a palavra completa em coro. O professor reinicia a brincadeira com novas palavras estudadas (ex.: /t/ + /i/ + /a/; /t/ + /e/ + /o/), permitindo a participação de diferentes crianças e reforçando a escuta, a união dos sons e a formação das palavras.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-03-objetivo-03",
+              "name": "Realiza síntese fonêmica (ouve sons separados e junta para formar a palavra) - Letras/Sons: D",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-03-objetivo-03-semana-03",
+                  "number": 3,
+                  "title": "Semana 3",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-03-semana-03-aula-01",
+                      "number": 1,
+                      "specificObjective": "Escuta e produção do fonema /d/.",
+                      "content": "Aula 1: Escuta e produção do fonema /d/.\nAtividade 1: A Mala Misteriosa do D\nOrganizar as crianças em roda e apresentar uma mala pequena decorada contendo figuras de dado, dedo, doce, dinossauro e duende, explicando que dentro dela existem pistas de um novo som que a turma irá descobrir. O professor retira uma figura por vez, mostra para a turma e pergunta o que apareceu. Após a nomeação da figura, pronuncia lentamente a palavra e realiza uma breve pausa para destacar o fonema inicial de forma isolada e sem acrescentar vogal (/d/ - dado). As crianças são convidadas a repetir o som /d/ algumas vezes, observando a posição da língua atrás dos dentes superiores durante a produção desse som curto e sonoro.\nApós algumas descobertas, o professor apresenta a letra D em um cartão grande, explicando que ela representa o som descoberto. Em seguida, retoma as figuras apresentadas, destacando coletivamente a relação entre o som e os elementos representados: /d/ - dado, /d/ - dedo, /d/ - doce, /d/ - dinossauro e /d/ - duende.\nAtividade 2: O Detetive do Som D\nOrganizar as crianças em roda e apresentar uma lupa de brinquedo ou confeccionada pelo professor, explicando que os detetives receberam uma missão: descobrir quais objetos da sala ou figuras preparadas pelo professor começam com o som do D. O professor explica que os detetives não irão procurar apenas pela letra, mas pelo som que escutam no começo das palavras. Faz uma demonstração com a figura de dado: “Eu encontrei um dado. Vamos ouvir o começo: /d/ - dado. O primeiro som é /d/.”\nEm seguida, entrega a lupa para uma criança por vez e apresenta uma figura ou objeto. A criança “investiga” o início da palavra com apoio do professor, produzindo o som inicial e dizendo se encontrou o som do D.\nUtilizar as figuras de dado, dedo, doce, dinossauro e duende e objetos ou figuras conhecidos que não começam com /d/, como bola, sapato, gato e tatu, para que a criança possa perceber quando o som aparece ou não.\nAo final, o professor reúne as descobertas dos “detetives do D” e retoma a letra D, reforçando que aquele símbolo representa o som encontrado nas palavras.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-03-semana-03-aula-02",
+                      "number": 2,
+                      "specificObjective": "Síntese Silábica Auditiva e Visual do Fonema /d/.",
+                      "content": "Aula 2: Síntese Silábica Auditiva e Visual do Fonema /d/.\nAtividade 1: Brincando com os Sons da Cantiga “A Dona Aranha”\nOrganizar as crianças em roda e cantar a cantiga tradicional “A Dona Aranha”, acompanhando com gestos a subida da aranha pela parede. Após a cantoria, o professor retoma a personagem principal e pergunta: “Quem apareceu na música?”\nApós as crianças responderem Dona Aranha, o professor destaca a palavra Dona, pronunciando lentamente o início da palavra: /d/ - Dona. Em seguida, explica que o som do D pode se juntar a outros sons para formar novos pedaços sonoros.\nO professor apresenta a letra D e a vogal O em cartões separados. Aponta para cada cartão e produz os sons isolados: /d/ + /o/. Em seguida, aproxima os cartões e convida a turma a juntar os sons para descobrir o pedaço formado: DO. Depois, o professor realiza novas combinações com as demais vogais, sempre apresentando os cartões separados e realizando a fusão dos sons antes da leitura da sílaba: \n/d/ + /a/ → DA\n/d/ + /e/ → DE\n/d/ + /i/ → DI\n/d/ + /u/ → DU\nAo final, organiza os cartões das sílabas formadas e realiza a leitura coletiva de DA, DE, DI, DO e DU.\nAtividade 2: Adivinhe o Som que Formou\nOrganizar as crianças em roda e apresentar cartões grandes com as sílabas DA, DE, DI, DO e DU voltados para baixo. Explicar que a turma irá descobrir qual sílaba está escondida ouvindo primeiro os sons que a formaram. \nO professor retira uma combinação de cartões com a letra D e uma vogal, mantendo-os separados, e produz os sons isolados, por exemplo:\n“Escutem: /d/ + /a/.”\nAs crianças juntam os sons e dizem qual sílaba foi formada. Após a resposta, o professor vira o cartão correspondente (DA) e realiza a leitura coletiva.\nA atividade continua com diferentes combinações até que todas as sílabas sejam descobertas. Ao final, as crianças observam todas as sílabas reveladas e realizam uma leitura coletiva em diferentes ordens.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-03-semana-03-aula-03",
+                      "number": 3,
+                      "specificObjective": "Síntese fonêmica de palavras com o fonema /d/",
+                      "content": "Aula 3: Síntese fonêmica de palavras com o fonema /d/\nAtividade 1: Quem Mora na Casa dos Sons?\nOrganizar as crianças em roda e apresentar uma casa de cartolina com espaços vazios, explicando que dentro dela irão aparecer moradores que a turma irá descobrir a partir de pistas sonoras. O professor inicia realizando uma demonstração para ensinar como será o desafio.\nApresenta a figura de um dado e diz: “Esta figura é um dado. Vamos ouvir como os sons dessa palavra aparecem.”\nO professor pronuncia a palavra destacando os sons que a formam: /d/ ... /a/ ... /d/ ... /o/\nEm seguida, realiza a fusão: “Quando juntamos esses sons, formamos: dado.”\nO professor explica: “Agora eu vou dar pistas sem mostrar a figura. Vocês vão ouvir os sons separados e tentar juntar para descobrir quem são os moradores da Casa dos Sons.” \nInicia o desafio apresentando a sequência sonora: /d/ ... /u/ ... /d/ ... /a/\nAs crianças realizam a síntese e descobrem: Duda\nApós a resposta, o professor apresenta a figura e coloca na casa. Realizar uma nova rodada utilizando: Dudu /d/ ... /u/ ... /d/ ... /u/\nApós cada descoberta, a turma repete a palavra completa. Durante as rodadas, o professor oferece apoio quando necessário, retomando os sons separados e incentivando a união dos fonemas.\nAo final: “Quem mora na Casa dos Sons? Como conseguimos descobrir?” \nAs crianças retomam que ouviram os sons separados e juntaram para formar a palavra.\nAtividade 2: Complete os Grupos\nOrganizar as crianças em roda ao redor de quatro bambolês distribuídos pelo espaço. Dentro de cada bambolê colocar uma figura grande: dado, dedo, Duda e Dudu. Embaralhar cartões contendo cópias dessas mesmas figuras e entregar um para cada criança, orientando que observem a imagem sem mostrá-la aos colegas.\nExplicar: \"Vocês vão ouvir os sons de uma palavra. Quando descobrirmos qual é, quem estiver com a figura correspondente irá completar o grupo.\"\nO professor realiza uma demonstração pronunciando lentamente: /d/ ... /e/ ... /d/ ... /o/\nEm seguida pergunta: — \"Que palavra formamos quando juntamos esses sons?\"\nApós a resposta da turma (dedo), orienta: — \"Quem está com a figura do dedo? Venha completar esse grupo.\"\nAs crianças que possuem essa figura caminham até o bambolê correspondente, colocam o cartão junto à figura grande e retornam à roda.\nRepetir a dinâmica utilizando as demais palavras: dado — /d/ ... /a/ ... /d/ ... /o/; Duda — /d/ ... /u/ ... /d/ ... /a/; Dudu — /d/ ... /u/ ... /d/ ... /u/\nSempre que necessário, repetir a sequência sonora antes da resposta da turma. Durante a atividade, garantir que todas as crianças participem, observando se realizam a síntese fonêmica antes de localizar a figura correspondente.\nAo final, observar os grupos formados e perguntar: — \"Como descobrimos qual era a palavra?\"\nAs crianças retomam que ouviram os sons separados e os juntaram para formar a palavra. Em seguida, quem estava com a figura correspondente completou o grupo.\nFicha de atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-03-semana-03-aula-04",
+                      "number": 4,
+                      "specificObjective": "Relação som-letra e leitura de sílabas com D",
+                      "content": "Aula 4: Relação som-letra e leitura de sílabas com D\nAtividade 1: O Painel das Combinações do D\nOrganizar as crianças em roda e apresentar um painel com a letra D no centro e cinco espaços vazios ao redor. Ao lado, disponibilizar cartões grandes com as vogais A, E, I, O e U. O professor retoma o som trabalhado nas aulas anteriores, dizendo: \"Nas palavras dado, dedo, Duda e Dudu ouvimos o som /d/. Hoje vamos descobrir o que acontece quando juntamos a letra D com as vogais.\"\nO professor realiza uma demonstração colocando a letra A próxima ao D no painel e pergunta: — \"Que letras estão juntas?\"\nApós a resposta das crianças, conduz a leitura: — \"D com A forma DA.\"\nEm seguida, pronuncia a sílaba formada e solicita que as crianças repitam.\nO professor realiza novas combinações, mostrando como a letra D pode se juntar às diferentes vogais: D + E = DE; D + I = DI; D + O = DO; D + U = DU\nApós a demonstração, organizar as crianças em duplas e entregar um conjunto com a letra D e as cinco vogais para cada dupla. As crianças deverão montar as combinações solicitadas pelo professor e realizar a leitura das sílabas formadas. O professor acompanha as duplas, incentivando que observem as letras presentes e unam seus sons para realizar a leitura.\nAo final, reunir a turma novamente e organizar no painel todas as combinações construídas. Perguntar: — \"O que precisamos fazer para descobrir a sílaba formada?\"\nAs crianças retomam que juntaram a letra D com as vogais e leram as sílabas formadas.\nAtividade 2: O Desafio das Sílabas em Movimento\nOrganizar as crianças em pequenos grupos e preparar o espaço com cinco pontos de parada identificados pelas sílabas DA, DE, DI, DO e DU. Em cada ponto, colocar uma imagem correspondente a uma palavra iniciada pela respectiva sílaba, utilizando palavras conhecidas pelas crianças, como dado (DA) e dedo (DE), e outras imagens selecionadas previamente pelo professor de acordo com o repertório trabalhado. \nO professor explica que os grupos participarão de um desafio: encontrar a sílaba que ajuda a iniciar o nome de cada imagem. \nRealizar uma demonstração apresentando a imagem de um dado e o cartão com a sílaba DA. Perguntar: — \"Que sílaba aparece aqui?\"\nApós a leitura coletiva, dizer: — \"DA é o começo da palavra dado.\"\nEm seguida, entregar aos grupos cartões com as sílabas DA, DE, DI, DO e DU. As crianças observam as imagens disponíveis, escolhem a sílaba correspondente e colocam o cartão junto à figura. Depois, realizam a leitura da sílaba encontrada com apoio dos colegas.\nDurante a atividade, o professor acompanha os grupos, retomando a relação entre a letra D e o som /d/ e incentivando as crianças a observarem as letras que formam cada sílaba antes de realizar a leitura.\nAo final, reunir a turma e observar as correspondências construídas. Perguntar: — \"Como conseguimos descobrir qual sílaba combinava com cada palavra?\"\nAs crianças retomam que observaram a letra D, juntaram seu som às vogais e leram as sílabas formadas.\nFicha de Atividade impressa",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-03-semana-03-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /d/ e as sínteses realizadas",
+                      "content": "Aula 5: Revisar o fonema /d/ e as sínteses realizadas\nAtividade 1: O Correio dos Sons\nOrganizar as crianças em roda e apresentar uma caixa de correio confeccionada para a atividade, contendo envelopes com imagens já trabalhadas durante a semana (dado, dedo, Duda e Dudu) e outras imagens selecionadas previamente pelo professor de acordo com o repertório trabalhado ou conhecido das crianças. Explicar que a turma receberá algumas mensagens misteriosas e que, antes de abrir cada envelope, será necessário descobrir qual palavra está escondida ouvindo os sons separados que o professor irá produzir.\nO professor retira um envelope e, antes de mostrar a imagem, pronuncia os fonemas que formam a palavra: /d/ ... /a/ ... /d/ ... /o/\nPergunta: — \"Que palavra formamos quando juntamos esses sons?\"\nApós a resposta das crianças, abre o envelope e apresenta a imagem correspondente, confirmando a descoberta. Em seguida, a turma repete a palavra completa, retomando o som inicial /d/.\nRepetir o desafio utilizando outras palavras com o fonema /d/, selecionadas previamente pelo professor, incluindo as já trabalhadas na semana: \ndado — /d/ ... /a/ ... /d/ ... /o/\ndedo — /d/ ... /e/ ... /d/ ... /o/\nDuda — /d/ ... /u/ ... /d/ ... /a/\nDudu — /d/ ... /u/ ... /d/ ... /u/\nDurante as rodadas, o professor incentiva as crianças a ouvirem cada som separado e a juntá-los antes de responder. Ao final, observar as imagens descobertas e perguntar: — \"O que fizemos para descobrir cada palavra?\"\nO professor conduz a retomada, destacando que a turma ouviu os sons separados e juntou cada um deles para formar as palavras.\nAtividade 2: Montagem das Palavras com D\nOrganizar as crianças em pequenos grupos e disponibilizar cartões com as sílabas DA, DE, DI, DO e DU e cartões com imagens das palavras trabalhadas durante a semana (dado, dedo, Duda e Dudu) e outras imagens selecionadas previamente pelo professor de acordo com o repertório trabalhado ou conhecido das crianças, ampliando as possibilidades de leitura e síntese sem perder a adequação ao método fônico. O professor explica que os grupos deverão descobrir qual sílaba ajuda a iniciar cada palavra.\nRealizar uma demonstração com a imagem do dado. O professor apresenta a imagem e pergunta: — \"Qual palavra aparece aqui?\"\nApós a resposta da turma, apresenta os cartões de sílabas e questiona:\n— \"Qual pedaço precisamos escolher para começar a palavra dado?\"\nAs crianças selecionam DA, realizam a leitura da sílaba e colocam o cartão junto à imagem. Em seguida, os grupos recebem as demais imagens e sílabas para realizar novas combinações. As crianças observam a imagem, escolhem a sílaba correspondente, realizam a leitura e organizam as combinações encontradas.\nDurante a atividade, o professor retoma a relação entre a letra D e o som /d/, incentivando as crianças a observarem as letras que formam cada sílaba e a realizarem a leitura antes de completar oralmente a palavra.\nAo final, reunir a turma e observar as combinações construídas. Perguntar: — \"O que precisamos lembrar para descobrir as palavras com D?\"\nO professor conduz a sistematização, destacando que, para descobrir as palavras, a turma identificou o som /d/, juntou sons ou sílabas e utilizou a letra D para formar as palavras trabalhadas.\nFicha de Atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-03-objetivo-04",
+              "name": "Revisa e sistematiza a síntese fonêmica (ouve sons separados e junta para formar a palavra) – Letras/Sons: B, T e D.",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-03-objetivo-04-semana-04",
+                  "number": 4,
+                  "title": "Semana 4",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-04-semana-04-aula-01",
+                      "number": 1,
+                      "specificObjective": "Retomando a síntese fonêmica e a relação entre os fonemas /b/, /t/, /d/ e as letras B, T e D",
+                      "content": "Aula 1 – Retomando a síntese fonêmica e a relação entre os fonemas /b/, /t/, /d/ e as letras B, T e D\nAtividade 1 – Desafio das Descobertas\nOrganizar as crianças em roda e preparar um painel com três espaços identificados pelas letras B, T e D. Separar previamente cartões com imagens de palavras adequadas à atividade de síntese fonêmica (bebê, bota, tatu, dado, dedo, Duda e Dudu). O professor explica que a turma participará de um desafio: descobrir palavras ouvindo apenas seus sons separados. Depois de cada descoberta, será preciso identificar o primeiro som da palavra e colocá-la no espaço da letra correspondente.\nO professor realiza uma demonstração pronunciando pausadamente os fonemas da palavra: /d/ ... /a/ ... /d/ ... /o/\nPergunta: — \"Que palavra formamos quando juntamos esses sons?\"\nApós a resposta da turma (dado), o professor apresenta a imagem correspondente e pergunta: — \"Qual é o primeiro som que ouvimos em dado?\"\nAs crianças respondem: — \"/d/.\"\nEm seguida, o professor pergunta: — \"Que letra representa esse som?\"\nApós a identificação da letra D, uma criança coloca a imagem de dado no espaço identificado com essa letra.\nRealizar novas rodadas utilizando as demais palavras selecionadas para a atividade. Em cada rodada, uma criança diferente participa da organização da imagem no painel, garantindo a participação de toda a turma. Durante a atividade, o professor incentiva as crianças a ouvirem todos os sons da palavra antes de responderem e, após a descoberta, retomarem o primeiro som e a letra correspondente.\nAo final, observar o painel organizado e perguntar: — \"Como descobrimos onde cada imagem deveria ficar?\"\nO professor conduz a sistematização, destacando que a turma primeiro juntou os sons para descobrir a palavra e, depois, identificou o primeiro som para relacioná-lo à letra correspondente.\nAtividade 2 – Desafio dos Lugares Trocados\nOrganizar as crianças em roda e preparar previamente um painel com três colunas identificadas pelas letras B, T e D. Antes do início da atividade, distribuir intencionalmente algumas imagens nos lugares errados. Por exemplo, colocar a figura de um tatu na coluna da letra B, a figura de um bebê na coluna da letra D e a figura de um dado na coluna da letra T. Utilizar também outras imagens iniciadas por B, T e D, selecionadas previamente pelo professor de acordo com o repertório conhecido das crianças. O professor explica que alguém organizou o painel com muita pressa e algumas figuras ficaram nos lugares errados. A turma deverá observar cada imagem, descobrir onde ela deve ficar e explicar por que será necessário fazer a troca.\nO professor inicia a demonstração apontando para a figura do tatu e pergunta: — \"Que figura é esta?\"\nApós a resposta das crianças, pergunta: — \"Qual é o primeiro som que ouvimos em tatu?\"\nAs crianças respondem: — \"/t/.\"\nEm seguida, o professor pergunta: — \"Que letra representa esse som?\"\nApós a identificação da letra T, uma criança desloca a imagem para a coluna correspondente.\nA atividade prossegue com as demais figuras organizadas incorretamente. Em cada rodada, uma criança diferente realiza a mudança da imagem, enquanto os colegas acompanham, nomeiam a figura, identificam o primeiro som e confirmam a letra correspondente. O professor amplia gradativamente o desafio, deixando algumas figuras corretamente posicionadas para que as crianças também decidam quando não é necessário fazer nenhuma alteração.\nAo final, observar o painel organizado e perguntar: — \"Como descobrimos se uma figura precisava ou não mudar de lugar?\"\nO professor conduz a sistematização, destacando que foi necessário ouvir o primeiro som da palavra e relacioná-lo à letra correspondente para verificar se cada imagem estava no lugar correto.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-04-semana-04-aula-02",
+                      "number": 2,
+                      "specificObjective": "Ampliando a autonomia na relação entre a síntese fonêmica, os fonemas /b/, /t/, /d/ e as letras B, T e D",
+                      "content": "Aula 2 – Ampliando a autonomia na relação entre a síntese fonêmica, os fonemas /b/, /t/, /d/ e as letras B, T e D\nAtividade 1 – Desafio das Duas Possibilidades\nOrganizar as crianças em pequenos grupos e preparar pares de cartões com imagens conhecidas iniciadas por B, T ou D. Em cada par, apenas uma das imagens corresponderá à palavra formada pela síntese fonêmica apresentada pelo professor. Explicar que, a cada rodada, será necessário ouvir atentamente os sons da palavra, descobrir qual figura foi formada e justificar a escolha.\nO professor realiza uma demonstração apresentando as imagens de dado e bebê. Em seguida, pronuncia pausadamente os fonemas: /d/ ... /a/ ... /d/ ... /o/\nPergunta: — \"Que palavra formamos quando juntamos esses sons?\"\nApós a resposta (dado), pergunta: — \"Entre estas duas figuras, qual representa a palavra que vocês descobriram?\"\nUma criança aponta a imagem correspondente e explica como chegou à resposta. Em seguida, o professor pergunta: — \"Qual é o primeiro som que ouvimos em dado?\"\nAs crianças respondem: — \"/d/.\"\nO professor conclui: — \"Que letra representa esse som?\" A turma identifica a letra D.\nRealizar novas rodadas alternando os pares de imagens e garantindo que diferentes crianças participem da escolha e da justificativa. Durante a atividade, o professor incentiva a turma a ouvir todos os fonemas antes de responder e a explicar como realizou a descoberta.\nAo final, perguntar: — \"O que ajudou vocês a escolher a figura correta?\"\nO professor sistematiza que ouvir todos os sons da palavra permite descobrir qual imagem representa a palavra formada e identificar seu primeiro som e a letra correspondente.\nAtividade 2 – Desafio do Intruso\nOrganizar as crianças em roda e preparar pequenos conjuntos com quatro imagens. Em cada conjunto, três imagens iniciam com o mesmo fonema e uma apresenta fonema inicial diferente. Utilizar palavras conhecidas pelas crianças. Exemplos: dado, dedo, Duda e bebê; tatu, tomate, tapete e dado; bebê, bola, boneca e tatu.\nO professor apresenta um conjunto de cada vez e solicita que as crianças nomeiem todas as figuras. Em seguida, pergunta: — \"Qual dessas figuras não pertence a este grupo?\"\nApós a escolha da turma, o professor pergunta: — \"Como vocês descobriram?\"\nAs crianças explicam que observaram o primeiro som das palavras. O professor retoma a resposta perguntando: — \"Qual é o primeiro som das figuras que ficaram no grupo?\" As crianças produzem o fonema correspondente e identificam a letra que o representa.\nA atividade prossegue com novos conjuntos, alternando o fonema inicial predominante e convidando diferentes crianças para justificar suas escolhas. O professor acompanha as respostas, retomando os sons iniciais sempre que necessário e incentivando as crianças a compararem as palavras antes de decidir.\nAo final, perguntar: — \"O que observamos nas palavras para descobrir qual figura era a intrusa?\"\nO professor conduz a sistematização, destacando que palavras que começam com o mesmo som podem ser agrupadas e que identificar esse som ajuda a reconhecer a letra inicial correspondente.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-04-semana-04-aula-03",
+                      "number": 3,
+                      "specificObjective": "Consolidando a relação entre os fonemas iniciais /b/, /t/, /d/ e as letras B, T e D",
+                      "content": "Aula 3 – Consolidando a relação entre os fonemas iniciais /b/, /t/, /d/ e as letras B, T e D\nAtividade 1 – Jogo da Memória dos Sons\nOrganizar as crianças em pequenos grupos e preparar um jogo da memória com 12 cartas, contendo imagem e nome escrito das palavras. Cada par será formado por duas figuras cujos nomes iniciam com o mesmo fonema. Utilizar seis pares distribuídos entre as letras B, T e D: BOI – BOLA; BEBÊ – BOLO; TATU – TEIA; TUCANO – TIJOLO; DADO – DEDO; DUDA – DUDU.\nO professor apresenta as cartas antes do início do jogo, nomeando cada figura com a turma para garantir que todas as palavras sejam conhecidas. Em seguida, organiza as cartas viradas para baixo e explica que o desafio será encontrar pares de palavras que começam com o mesmo som, e não figuras iguais.\nCada criança, em sua vez, vira duas cartas e nomeia as figuras encontradas. Depois, observa o início das palavras e identifica se elas começam com o mesmo fonema.\nQuando formar um par, o professor pergunta: — \"Com que som começam essas duas palavras?\"\nA criança responde produzindo o fonema inicial. Em seguida, o professor pergunta: — \"Qual letra aparece no começo dessas palavras?\"\nA criança identifica a letra correspondente e guarda as cartas como conquista do grupo.\nQuando as cartas não formarem um par, a criança nomeia as figuras, identifica os sons iniciais e devolve as cartas viradas para baixo, passando a vez ao próximo participante. O jogo continua até que todos os pares sejam encontrados. Durante a atividade, o professor acompanha as jogadas, incentivando as crianças a observarem o início das palavras e justificarem suas escolhas.\nAo final, perguntar: — \"Como descobrimos quais cartas formavam um par?\"\nO professor conduz a sistematização, retomando que foi necessário observar o primeiro som das palavras para encontrar aquelas que começavam com o mesmo fonema e relacioná-las à letra correspondente.\nAtividade 2 – Desafio das Cartas que Completam\nOrganizar as crianças em pequenos grupos e preparar conjuntos de cartões contendo uma carta com a letra B, T ou D e três cartas com imagens acompanhadas do nome escrito. Em cada rodada, apenas uma das imagens terá o mesmo som inicial da letra apresentada. O professor explica que cada letra precisa encontrar uma palavra que comece com o seu som. Antes de iniciar, realiza uma demonstração colocando a letra D sobre a mesa e apresentando as imagens dado, tatu e bebê.\nPergunta: — \"Qual dessas palavras começa com o mesmo som da letra D?\"\nAs crianças nomeiam as figuras e identificam: — \"Dado começa com /d/.\"\nO professor retoma: — \"Qual letra representa esse som?\"\nApós a resposta, a criança coloca a imagem junto à letra correspondente.\nOs grupos continuam o desafio utilizando diferentes combinações com as letras B, T e D. A cada rodada, as crianças nomeiam as figuras, observam o som inicial das palavras e escolhem a carta que completa a letra apresentada. Durante a atividade, o professor acompanha as escolhas, incentivando as crianças a produzirem o fonema inicial e explicarem como descobriram a resposta.\nAo final, perguntar: — \"O que precisamos observar para descobrir qual palavra combina com cada letra?\"\nO professor conduz a sistematização, retomando que o som inicial das palavras ajuda a identificar a letra correspondente.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-04-semana-04-aula-04",
+                      "number": 4,
+                      "specificObjective": "Utilizar a relação entre os fonemas iniciais /b/, /t/, /d/ e as letras B, T e D em diferentes situações",
+                      "content": "Aula 4 – Utilizar a relação entre os fonemas iniciais /b/, /t/, /d/ e as letras B, T e D em diferentes situações\n\"Atividade 1 – Caça aos Sons pela Sala\nOrganizar previamente o ambiente espalhando pela sala cartões com imagens acompanhadas de seus nomes escritos, iniciadas pelos fonemas /b/, /t/ e /d/. Preparar também três cartazes identificados com as letras B, T e D. O professor reúne as crianças e retoma as letras e seus sons, explicando que a turma fará uma busca pela sala para encontrar palavras que começam com esses sons. Cada criança recebe um cartão com uma das letras B, T ou D. Ao encontrar uma imagem, a criança deve nomear a figura, observar o início da palavra e verificar se ela combina com a letra que recebeu.\nExemplo:\nA criança encontra a figura tatu.\nO professor pergunta: — \"Que palavra é essa?\"\nApós a resposta, pergunta: — \"Qual é o primeiro som que ouvimos em tatu?\"\nA criança responde: — \"/t/.\"\nEm seguida: — \"Qual letra representa esse som?\"\nApós identificar a letra T, a criança leva o cartão até o cartaz correspondente.\nRealizar novas rodadas até que diferentes palavras sejam encontradas. Durante a atividade, o professor acompanha as escolhas, incentivando as crianças a ouvirem o som inicial antes de decidir.\nAo final, observar os cartazes organizados e perguntar: — \"Como descobrimos onde cada palavra deveria ficar?\"\nO professor conduz a sistematização, retomando que o som inicial das palavras ajuda a identificar a letra correspondente.\nAtividade 2 – Desafio das Letras que Procuram Palavras\nOrganizar as crianças em pequenos grupos e preparar cartões com imagens acompanhadas dos nomes escritos de palavras iniciadas por B, T e D. Disponibilizar também cartões grandes com as letras B, T e D.\nO professor explica que cada letra precisa montar uma coleção de palavras que começam com o mesmo som. Para isso, os grupos deverão procurar, entre os cartões disponíveis, palavras que combinem com a letra recebida.\nRealizar uma demonstração utilizando a letra B.\nO professor apresenta a letra e pergunta: — \"Que som essa letra representa?\"\nApós a resposta da turma: — \"/b/.\"\nEm seguida, apresenta alguns cartões com palavras diferentes e pergunta: — \"Quais dessas palavras podem fazer parte da coleção do B?\"\nAs crianças observam as imagens, nomeiam as palavras e escolhem aquelas que começam com o som /b/.\nExemplo: BEBÊ – BOI – BOLO\nApós a escolha, o professor pergunta: — \"Por que essas palavras pertencem ao grupo do B?\"\nAs crianças respondem destacando o som inicial.\nRealizar novas rodadas utilizando as letras T e D, permitindo que cada grupo construa sua própria coleção de palavras. Ao final, cada grupo apresenta suas escolhas para a turma, nomeando as figuras e destacando o som inicial.\nDurante a atividade, o professor acompanha as decisões, incentivando as crianças a justificarem suas escolhas e retomando a relação entre o fonema inicial e a letra correspondente.\nAo final, perguntar: — \"O que precisamos observar para escolher palavras para cada letra?\"\nO professor conduz a sistematização, destacando que palavras iniciadas pelo mesmo som podem ser reunidas pela mesma letra.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-03-objetivo-04-semana-04-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar a relação entre os fonemas /b/, /t/, /d/, as letras B, T e D e as sínteses realizadas",
+                      "content": "Aula 5 – Revisar a relação entre os fonemas /b/, /t/, /d/, as letras B, T e D e as sínteses realizadas\nAtividade 1 – O Desafio das Palavras Secretas\nOrganizar as crianças em roda e preparar cartões com imagens acompanhadas dos nomes escritos de palavras iniciadas por B, T e D. O professor explica que a turma participará de um último desafio para descobrir palavras secretas utilizando tudo o que aprendeu durante a semana.\nO professor apresenta uma imagem escondida e realiza a síntese fonêmica da palavra, pronunciando os sons separadamente.\nExemplo: /d/ ... /a/ ... /d/ ... /o/\nPergunta: — \"Que palavra formamos quando juntamos esses sons?\"\nApós a resposta da turma (dado), o professor revela a imagem e pergunta: — \"Qual é o primeiro som dessa palavra?\"\nAs crianças respondem: — \"/d/.\"\nEm seguida, pergunta: — \"Qual letra representa esse som?\" A turma identifica a letra D.\nRealizar novas rodadas utilizando palavras trabalhadas ao longo da sequência e outras imagens selecionadas previamente pelo professor de acordo com o repertório conhecido das crianças. Durante o desafio, incentivar as crianças a ouvirem todos os sons antes de responder e retomarem a relação entre o som inicial e a letra correspondente.\nAo final, perguntar: — \"O que fizemos para descobrir cada palavra?\"\nO professor conduz a sistematização, retomando que foi necessário juntar os sons para formar a palavra e observar o som inicial para relacioná-lo à letra.\nAtividade 2 – Livro Coletivo dos Sons B, T e D\nOrganizar as crianças em pequenos grupos e preparar uma produção coletiva com folhas ou cartazes divididos em três partes identificadas pelas letras B, T e D.\nO professor explica que a turma irá criar um livro ou painel coletivo com imagens de elementos cujos nomes começam com os sons estudados. Em seguida, distribui aos grupos cartões com imagens acompanhadas dos nomes escritos de elementos iniciados por B, T e D. Cada grupo deverá selecionar os cartões que correspondem à letra recebida e organizar sua parte do painel.\nAntes de colar cada imagem, as crianças nomeiam a figura, identificam o primeiro som da palavra e confirmam a letra correspondente.\nExemplo: A criança escolhe a imagem de tatu. \nO professor pergunta: — \"Que figura é essa?\"\nApós a resposta:\n— \"Qual é o primeiro som que ouvimos em tatu?\"\nA criança responde: — \"/t/.\"\nO professor pergunta: — \"Qual letra representa esse som?\"\nApós identificar a letra T, a criança coloca a imagem na parte correspondente do painel.\nApós a organização das imagens, cada grupo apresenta sua parte do painel para a turma, nomeando algumas figuras e destacando os sons iniciais.\nDurante a apresentação, o professor retoma as relações construídas ao longo da semana, valorizando as estratégias utilizadas pelas crianças para identificar os sons e as letras.\nAo final, perguntar: — \"Como conseguimos organizar as figuras no nosso painel?\"\nO professor conduz a sistematização final da sequência, destacando que ouvir atentamente os sons das palavras ajuda a perceber como elas começam e qual letra representa esse som.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fonemas-habilidade-04",
+          "name": "Realiza manipulação (troca o som inicial para criar nova palavra) + Letras/Sons: C, G, L.",
+          "objectives": [
+            {
+              "id": "fonemas-habilidade-04-objetivo-01",
+              "name": "Foco: Realiza manipulação fonêmica inicial (troca o som inicial para criar nova palavra) + Letras/Sons: C.",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-04-objetivo-01-semana-01",
+                  "number": 1,
+                  "title": "Semana 1",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-01-semana-01-aula-01",
+                      "number": 1,
+                      "specificObjective": "Conhecer o fonema /k/ e relacioná-lo à letra C",
+                      "content": "Aula 1 – Conhecer o fonema /k/ e relacioná-lo à letra C\nAtividade 1 – Cantando e descobrindo o som do C\nOrganizar as crianças em roda e apresentar a cantiga “Caranguejo não é peixe”. O professor canta a cantiga com a turma, incentivando a participação por meio dos gestos e movimentos que acompanham a brincadeira. Após cantar algumas vezes, retoma uma palavra presente na cantiga: caranguejo. Pergunta: “Que animal apareceu na cantiga?”. Após a resposta das crianças, pergunta: “Vamos falar devagar o começo dessa palavra? Ca-ran-gue-jo. Que som ouvimos no início?”. O professor destaca o fonema /k/, realizando sua produção de forma prolongada quando possível: “CCCC...”. Em seguida, convida as crianças a observarem sua articulação: “Observem minha boca. O que acontece quando faço esse som?”. As crianças observam a produção do professor e experimentam realizar o fonema. O professor complementa a observação com perguntas adequadas à faixa etária: “Minha boca fica aberta ou fechada para fazer esse som?” e “Vamos fazer juntos? O que a boca precisa fazer para sair esse som?”. Depois, apresenta a letra C e explica que essa letra representa o som que a turma descobriu. Para ampliar a percepção, apresenta imagens de palavras conhecidas iniciadas pelo mesmo som, como casa, cama e copo, perguntando: “Essas palavras começam com o mesmo som de caranguejo?”.\nAtividade 2 – Desafio das figuras com som de C\nOrganizar as crianças em pequenos grupos e disponibilizar cartões com imagens acompanhadas dos nomes escritos de elementos iniciados pelo fonema /k/ (casa, cama, copo, cavalo, carro, coco) e imagens de elementos iniciados por outros sons. O professor explica que o desafio será descobrir quais figuras começam com o som que a turma aprendeu. Antes de iniciar, realiza uma demonstração com uma imagem: apresenta a figura, pergunta “Que figura é essa?” e, após a resposta, pergunta “Qual é o primeiro som que ouvimos nessa palavra?”. Quando a criança identifica o som /k/, o professor retoma a letra C: “Qual letra representa esse som?”. As crianças analisam os cartões, nomeiam as figuras e escolhem aquelas que começam com o fonema trabalhado, colocando-as próximas à letra C. Durante a atividade, o professor incentiva a escuta do início das palavras e retoma a produção do som sempre que necessário, reforçando que diferentes palavras podem começar com o mesmo som representado pela letra C.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-01-semana-01-aula-02",
+                      "number": 2,
+                      "specificObjective": "Ampliar a relação entre o fonema /k/ e a letra C",
+                      "content": "Aula 2 – Ampliar a relação entre o fonema /k/ e a letra C\nAtividade – Boliche dos Sons\nOrganizar seis garrafas plásticas (ou pinos de boliche) com imagens e nomes escritos de casa, cama, cavalo, copo, coco e cubo. Separadamente, deixar sobre uma mesa as imagens de mala, pato e sapo. Antes da brincadeira, o professor apresenta todas as figuras dos pinos, nomeando-as com a turma. Em seguida, retoma o fonema trabalhado na aula anterior: \"Que som ouvimos no começo de casa?\" Após a resposta, apresenta novamente a letra C e recorda que ela representa esse som.\nA brincadeira acontece em três momentos.\n1º momento – Derrubando os sons\nAs crianças jogam a bola, uma de cada vez. Após cada jogada, toda a turma nomeia as figuras dos pinos derrubados. O professor pergunta:\n— \"Qual é o primeiro som que ouvimos em copo?\"\nA turma responde: — \"/k/.\"\nDepois pergunta: \n— \"Que letra representa esse som?\"\nAs crianças respondem: — \"C.\"\nOs pinos são recolocados para a próxima rodada.\n2º momento – Será que pertence ao boliche?\nApós algumas rodadas, o professor mostra uma das imagens extras (mala, pato ou sapo) e pergunta:\n— \"Se essa figura fosse um pino, ela poderia entrar no nosso boliche?\"\nAs crianças justificam utilizando o primeiro som da palavra.\nRealizar novas rodadas utilizando as três imagens.\n3º momento – Descobrindo novos começos\nO professor escolhe dois pinos derrubados, por exemplo casa e cama, e pergunta:\n— \"Essas palavras começam do mesmo jeito?\"\nDepois conduz a análise: \n— \"Qual é o primeiro som?\" — \"/k/.\"\n— \"Depois do /k/, que som ouvimos?\" — \"/a/.\"\nO professor realiza oralmente a junção: — \"/k/ + /a/ = CA.\"\nRepetir o procedimento com copo/coco e cubo.\nAo final, retomar com a turma que várias palavras diferentes podem começar com o mesmo som e que a letra C representa esse fonema nas palavras exploradas durante a aula.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-01-semana-01-aula-03",
+                      "number": 3,
+                      "specificObjective": "Desenvolver a manipulação fonêmica com o som /k/.",
+                      "content": "Aula 3 – Desenvolver a manipulação fonêmica com o som /k/.\nAtividade 1 – O Jogo da Troca-Troca no VaralOrganizar as crianças em roda diante de um varal de barbante que já possui um cartaz grande com a imagem de um cão e as duas letras finais fixas (ÃO), explicando que a turma vai fazer uma mágica sonora trocando apenas a letra do começo para ver o desenho se transformar. O professor aponta para a letra C inicial, faz o som seco e curto /k/ encostando a parte de trás da língua no céu da boca, orientando a turma a falar a palavra completa cão enquanto retira fisicamente a letra C do varal. Em seguida, o professor faz o som labial prolongado /mmmmm/, pergunta o que acontece se colocarmos essa letra no início junto com o pedaço que sobrou e, após a síntese fonêmica coletiva das crianças descobrindo a palavra mão, o professor fixa a letra M e vira o cartaz revelando a ilustração de uma mão, repetindo o procedimento detalhado com o fonema /p/ para gerar a palavra pão, garantindo alta retenção auditiva sem cansar a memória de trabalho.\nAtividade 2 – O Circuito da Mudança Sonora\nOrganizar a turma sentada em uma única grande fileira no chão para assistir de frente e posicionar no centro da sala dois grandes bambolês alinhados um atrás do outro, terminando em frente a uma mesa que contém três cartões com imagens acompanhadas dos nomes escritos em destaque: COLA, BOLA e MOLA. O professor realiza a modelagem inicial apontando para os bambolês: explica que o primeiro bambolê está vazio para receber o som do começo e que o segundo bambolê contém um cartaz fixo apenas com o texto OLA escrito em letras de fôrma maiúsculas e grandes. O professor demonstra o jogo sozinho: pega a letra C, entra no primeiro bambolê emitindo o som /k/, pula para o segundo bambolê encaixando visualmente a letra antes do texto fixo, realiza a mediação fônica em voz alta lendo COLA e corre para tocar no cartão da cola na mesa, repetindo o exemplo com as letras B e M. Para iniciar a participação dos alunos, o professor distribui as fichas de letras seguindo a ordem da fila: a primeira criança recebe a letra C, entra no circuito fazendo o som /k/, junta a ficha ao texto OLA sob mediação do professor para falar COLA e toca no cartão correspondente; a segunda criança recebe a letra B para fazer o som /b/ e formar BOLA; a terceira recebe a letra M para fazer o som prolongado /mmmmm/ e formar MOLA. O circuito segue essa rotação contínua de letras entre os alunos até que todos participem, enquanto a turma sentada atua como o microfone do jogo, emitindo em coro o som da letra que o colega segura no momento exato em que ele pisa no primeiro bambolê.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-01-semana-01-aula-04",
+                      "number": 4,
+                      "specificObjective": "Ampliar a manipulação do fonema inicial com palavras da letra C",
+                      "content": "Aula 4 – Ampliar a manipulação do fonema inicial com palavras da letra C\nAtividade 1 – Oficina das famílias sonoras\nPreparar três bases com partes finais fixas: ÃO, OLA e AMA, acompanhadas de imagens que ajudem a conferir o significado. Apresentar cartões de sons iniciais já conhecidos. Na família ÃO, trocar C por M e P para formar cão, mão e pão. Na família OLA, alternar C, B e M para formar cola, bola e mola. Na família AMA, alternar C e L para formar cama e lama. A cada troca, o professor retira fisicamente o primeiro cartão, produz o novo fonema e conduz a junção com a parte que permaneceu. As crianças dizem a palavra formada e escolhem a imagem correspondente.\nAtividade 2 – Qual som precisa entrar?\nMostrar uma imagem-alvo e a parte final de seu nome. Para formar COLA, por exemplo, apresentar OLA e cartões C, B e M. As crianças nomeiam a imagem, identificam o fonema inicial necessário e escolhem C. Repetir com cão e cama. Incluir rodadas em que a palavra inicial seja outra da mesma família e perguntar: “Qual som precisamos tirar? Qual som deve entrar?”. Encerrar destacando que a troca de um único som no começo cria outra palavra.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-01-semana-01-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /k/, a letra C e a manipulação do som inicial",
+                      "content": "Aula 5 – Revisar o fonema /k/, a letra C e a manipulação do som inicial\nAtividade 1 – Caixa das transformações\nColocar em uma caixa pares ou trios de imagens trabalhados durante a semana: cão–mão–pão, cola–bola–mola e cama–lama. Uma criança retira uma imagem, nomeia-a e identifica o primeiro som. O professor escolhe uma segunda imagem da mesma família e pergunta qual som deve ser trocado para chegar à nova palavra. A criança substitui o cartão inicial, e a turma realiza a síntese oral para conferir o resultado.\nAtividade 2 – Livro coletivo das mágicas do C\nOrganizar páginas com a letra C e as partes finais ÃO, OLA e AMA. Em pequenos grupos, as crianças montam uma palavra iniciada pelo som /k/, escolhem ou desenham sua imagem e depois demonstram uma transformação, trocando C por outra letra conhecida. Durante a apresentação, dizem a palavra de partida, o som retirado, o som colocado e a nova palavra. Concluir retomando que C representa /k/ nas palavras estudadas com A, O e U.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-04-objetivo-02",
+              "name": "Foco: Realiza manipulação fonêmica inicial (troca o som inicial para criar nova palavra) + Letras/Sons: G.",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-04-objetivo-02-semana-02",
+                  "number": 2,
+                  "title": "Semana 2",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-02-semana-02-aula-01",
+                      "number": 1,
+                      "specificObjective": "Conhecer o fonema /g/ e relacioná-lo à letra G",
+                      "content": "Aula 1 – Conhecer o fonema /g/ e relacioná-lo à letra G\nAtividade 1 – O gato que encontrou palavras\nApresentar um gato de brinquedo, fantoche ou imagem e explorar seu nome. Pronunciar gato devagar, destacando o fonema inicial /g/. As crianças colocam a mão na garganta para perceber a vibração e observam que a parte de trás da língua participa da produção. Ampliar o repertório com galo, garfo, gota, gorila e gula. Mostrar a letra G e explicar que, nas palavras estudadas com A, O e U, ela representa o som /g/.\nAtividade 2 – A cesta do G\nDisponibilizar figuras acompanhadas dos nomes escritos, misturando palavras iniciadas por /g/ e por outros sons. Cada criança nomeia uma figura, identifica o primeiro fonema e decide se ela pertence à cesta do G. Quando pertencer, aponta a letra inicial no nome e repete a palavra destacando /g/. Ao final, revisar a coleção e comparar o som inicial das palavras reunidas.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-02-semana-02-aula-02",
+                      "number": 2,
+                      "specificObjective": "Ampliar a relação entre o fonema /g/ e a letra G",
+                      "content": "Aula 2 – Ampliar a relação entre o fonema /g/ e a letra G\nAtividade 1 – Garagem do G\nPreparar uma garagem de papel identificada com G e carrinhos ou cartões com imagens de gato, galo, garfo, gota, gorila e gula. Antes de estacionar, a criança nomeia a figura, produz o som inicial e localiza G no nome escrito. Misturar alguns veículos com imagens iniciadas por C, L e outros sons para que seja necessário escutar antes de decidir.\nAtividade 2 – Caminho e traçado da letra G\nApresentar G e g em tamanho ampliado. As crianças percorrem o traçado com o dedo, modelam a letra com massinha ou barbante e relacionam cada produção a uma palavra de referência. Depois, o professor mostra uma figura e oferece duas letras, G e outra já conhecida. A criança escolhe a letra que representa o fonema inicial e explica sua decisão pela escuta.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-02-semana-02-aula-03",
+                      "number": 3,
+                      "specificObjective": "Desenvolver a manipulação fonêmica com o som /g/",
+                      "content": "Aula 3 – Desenvolver a manipulação fonêmica com o som /g/\nAtividade 1 – Troca-troca do GATO\nApresentar a imagem de um gato e a palavra oralmente segmentada em som inicial e parte restante: /g/ + ato. Manter ATO fixo e substituir /g/ por /p/ e /r/, formando pato e rato. A cada mudança, retirar o cartão inicial, produzir o novo fonema e juntar os sons com a turma. As crianças escolhem a imagem correspondente e explicam o que mudou no começo da palavra.\nAtividade 2 – Varal da família OLA\nFixar OLA em um varal e disponibilizar cartões G, C, B e M, com imagens de gola, cola, bola e mola. Uma criança escolhe uma imagem-alvo, identifica o primeiro som e prende a letra adequada antes de OLA. A turma realiza a síntese e confere a palavra. Repetir em diferentes ordens, perguntando sempre qual som saiu e qual entrou.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-02-semana-02-aula-04",
+                      "number": 4,
+                      "specificObjective": "Manipular /g/ em diferentes famílias de palavras",
+                      "content": "Aula 4 – Manipular /g/ em diferentes famílias de palavras\nAtividade 1 – Máquina das palavras novas\nConstruir uma máquina de papel com uma janela para o som inicial e outra para a parte que permanece. Trabalhar com pares ou trios conhecidos: galo–ralo, gota–bota e gula–mula. O professor apresenta a palavra inicial, substitui somente o primeiro cartão e conduz a síntese oral. As crianças nomeiam a nova imagem e identificam a alteração ocorrida.\nAtividade 2 – Conserto da palavra\nO professor mostra uma imagem e produz propositalmente outra palavra da mesma família, por exemplo, mostra GOTA e diz BOTA. As crianças identificam que o som inicial precisa ser trocado, retiram B, colocam G e dizem /g/ + ota = gota. Realizar novas rodadas com gola–bola, gato–rato e gula–mula. O foco é a manipulação oral; a letra funciona como apoio visual para representar o fonema inicial.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-02-semana-02-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /g/, a letra G e a manipulação inicial",
+                      "content": "Aula 5 – Revisar o fonema /g/, a letra G e a manipulação inicial\nAtividade 1 – Trilha das transformações com G\nMontar uma trilha com imagens de gato, pato, rato, gola, cola, bola, gota e bota. Ao parar em uma casa, a criança nomeia a figura e identifica o som inicial. O professor aponta outra imagem da mesma família e pergunta qual fonema deve substituir o primeiro para formar a nova palavra. A criança escolhe a letra correspondente e a turma faz a síntese.\nAtividade 2 – Painel “Troquei e formei”\nEm pequenos grupos, as crianças recebem uma base fixa, como ATO, OLA ou OTA, e cartões de sons iniciais. Formam duas palavras reais, associam cada uma à imagem correta e apresentam a transformação para a turma: “Tirei /p/, coloquei /g/ e pato virou gato”. Encerrar retomando G como representação de /g/ nas palavras trabalhadas com A, O e U.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-04-objetivo-03",
+              "name": "Foco: Realiza manipulação fonêmica inicial (troca o som inicial para criar nova palavra) + Letras/Sons: L.",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-04-objetivo-03-semana-03",
+                  "number": 3,
+                  "title": "Semana 3",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-03-semana-03-aula-01",
+                      "number": 1,
+                      "specificObjective": "Conhecer o fonema /l/ e relacioná-lo à letra L",
+                      "content": "Aula 1 – Conhecer o fonema /l/ e relacioná-lo à letra L\nAtividade 1 – A história de Lola e a lua\nApresentar uma breve história oral apoiada por imagens de Lola observando a lua perto de um lago e levando uma lupa. Retomar as palavras Lola, lua, lago e lupa. Pronunciá-las lentamente, destacando /l/, e convidar as crianças a observar a ponta da língua próxima à região atrás dos dentes superiores. Mostrar L e l e relacionar a letra ao fonema inicial nas palavras exploradas.\nAtividade 2 – Lanterna das palavras com L\nEspalhar figuras acompanhadas dos nomes escritos pela sala. Com uma lanterna de brinquedo ou um foco de papel, cada criança ilumina uma figura, nomeia-a e identifica o primeiro som. Se começar por /l/, aponta a letra L no nome e leva o cartão ao painel da lua. Incluir figuras iniciadas por outros sons para exigir comparação auditiva.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-03-semana-03-aula-02",
+                      "number": 2,
+                      "specificObjective": "Ampliar a relação entre o fonema /l/ e a letra L",
+                      "content": "Aula 2 – Ampliar a relação entre o fonema /l/ e a letra L\nAtividade 1 – Labirinto da letra L\nConstruir um caminho no chão com imagens de lata, lápis, leão, livro, lobo e lua. As crianças percorrem o labirinto, nomeando cada figura e destacando o fonema inicial. Ao chegar ao final, escolhem a letra L entre outras letras conhecidas e explicam qual som ela representa nessas palavras.\nAtividade 2 – Construção e traçado do L\nApresentar L e l ampliados e explorar o traçado com o dedo, palitos, barbante ou massinha. Distribuir cartões de figuras e nomes escritos. As crianças ligam cada palavra iniciada por /l/ à letra construída, localizam L no início do nome e deixam de fora os cartões intrusos. Finalizar com a leitura oral coletiva das imagens selecionadas.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-03-semana-03-aula-03",
+                      "number": 3,
+                      "specificObjective": "Desenvolver a manipulação fonêmica com o som /l/",
+                      "content": "Aula 3 – Desenvolver a manipulação fonêmica com o som /l/\nAtividade 1 – Varal da família ATA\nFixar ATA em um varal e apresentar as imagens de lata, mata e pata, acompanhadas dos cartões L, M e P. Começar com LATA, retirar L e perguntar qual som precisa entrar para formar MATA. Repetir com PATA e retornar a LATA. As crianças produzem o fonema escolhido, juntam-no à parte fixa e conferem a imagem resultante.\nAtividade 2 – Da LUA para a RUA\nApresentar LUA e RUA com imagens claras. Manter UA como apoio visual e trocar L por R, conduzindo a síntese oral. Depois, realizar o caminho inverso. Acrescentar pares conhecidos como lobo–bobo quando o vocabulário estiver consolidado. Em cada rodada, perguntar: “Qual som saiu do começo? Qual som entrou? Que palavra formamos?”.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-03-semana-03-aula-04",
+                      "number": 4,
+                      "specificObjective": "Manipular o som inicial em diferentes palavras com L",
+                      "content": "Aula 4 – Manipular o som inicial em diferentes palavras com L\nAtividade 1 – Roleta das partes que ficam\nPreparar uma roleta com ATA, AGO e ENTE e cartões de sons iniciais. Ao sortear ATA, formar lata, mata e pata; com AGO, formar lago, pago e mago, usando imagens previamente apresentadas; com ENTE, comparar lente e dente. O professor conduz cada troca de modo explícito, mantendo a parte final e substituindo somente o primeiro fonema.\nAtividade 2 – Entrega da imagem correta\nOrganizar as imagens das palavras em uma mesa. O professor monta oralmente uma palavra com dois blocos, por exemplo /l/ + ata, e uma criança entrega a imagem correspondente. Em seguida, outra criança troca o som inicial para formar uma nova palavra real e busca a nova imagem. Se a combinação não formar uma palavra conhecida, a turma a coloca no espaço “não conhecemos essa palavra”, evitando validar sequências sem significado.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-03-semana-03-aula-05",
+                      "number": 5,
+                      "specificObjective": "Revisar o fonema /l/, a letra L e a manipulação inicial",
+                      "content": "Aula 5 – Revisar o fonema /l/, a letra L e a manipulação inicial\nAtividade 1 – Jogo da memória das transformações\nPreparar pares de imagens ligadas pela troca do primeiro som: lata–mata, lata–pata, lua–rua, lago–pago e lente–dente. Ao virar duas cartas, a criança nomeia as figuras e verifica se apenas o som inicial mudou. Quando formar um par, identifica o fonema de cada começo e mostra qual palavra é iniciada por L.\nAtividade 2 – Álbum das palavras com L\nCada pequeno grupo escolhe uma palavra iniciada por /l/, associa-a à letra L e monta uma transformação usando uma palavra real conhecida. No álbum, registra as duas imagens e os cartões iniciais que foram trocados. Na apresentação, as crianças dizem as palavras e explicam oralmente a mudança. Concluir retomando que alterar o primeiro som pode criar uma palavra com outro significado.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fonemas-habilidade-04-objetivo-04",
+              "name": "Foco: Revisa e sistematiza a manipulação fonêmica inicial (troca o som inicial para criar nova palavra) + Letras/Sons: C, G e L.",
+              "weeks": [
+                {
+                  "id": "fonemas-habilidade-04-objetivo-04-semana-04",
+                  "number": 4,
+                  "title": "Semana 4",
+                  "lessons": [
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-04-semana-04-aula-01",
+                      "number": 1,
+                      "specificObjective": "Revisar os fonemas /k/, /g/ e /l/ e as letras C, G e L",
+                      "content": "Aula 1 – Revisar os fonemas /k/, /g/ e /l/ e as letras C, G e L\nAtividade 1 – Reencontro das palavras de referência\nRetomar casa para /k/, gato para /g/ e lua para /l/. As crianças nomeiam as imagens, identificam o primeiro fonema e associam cada palavra a C, G ou L. Comparar a produção dos sons de forma concreta: /k/ e /g/ são produzidos na região posterior da boca, mas /g/ apresenta vibração na garganta; em /l/, a ponta da língua se aproxima da região atrás dos dentes superiores.\nAtividade 2 – Três casas, três começos\nOrganizar painéis com C, G e L e distribuir imagens das palavras estudadas. Cada criança nomeia sua figura, produz o fonema inicial e a coloca na casa adequada. Incluir palavras de outras letras como intrusas. Ao final, revisar as coleções, lembrando que C representa /k/ e G representa /g/ nas palavras trabalhadas com A, O e U.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-04-semana-04-aula-02",
+                      "number": 2,
+                      "specificObjective": "Comparar /k/, /g/ e /l/ e consolidar suas correspondências com C, G e L",
+                      "content": "Aula 2 – Comparar /k/, /g/ e /l/ e consolidar suas correspondências com C, G e L\nAtividade 1 – Voz ligada ou desligada?\nRetomar /k/ e /g/ com a mão na garganta. O professor alterna os dois fonemas, e as crianças indicam se perceberam vibração. Em seguida, acrescentar /l/ e observar a mudança de posição da língua. Associar cada som às letras C, G e L sem exigir terminologia articulatória. Usar casa, gato e lua como referências estáveis.\nAtividade 2 – Detetive das letras iniciais\nMostrar pares próximos como cola–gola e cama–lama, utilizando apenas palavras e imagens conhecidas pela turma. As crianças nomeiam cada figura, percebem a troca do primeiro fonema e escolhem a letra inicial correspondente. O professor pergunta o que permaneceu e o que mudou, preparando a retomada da manipulação fonêmica.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-04-semana-04-aula-03",
+                      "number": 3,
+                      "specificObjective": "Sistematizar a troca do fonema inicial com C, G, L e outros sons conhecidos",
+                      "content": "Aula 3 – Sistematizar a troca do fonema inicial com C, G, L e outros sons conhecidos\nAtividade 1 – Família OLA em transformação\nFixar OLA e disponibilizar C, G, B e M com as imagens de cola, gola, bola e mola. As crianças recebem uma palavra-alvo, escolhem o som inicial necessário e realizam a síntese. Depois, transformam a palavra em outra da família, dizendo explicitamente o fonema retirado e o colocado.\nAtividade 2 – Desafio das famílias\nOrganizar estações com ATO (gato, pato, rato), AMA (cama, lama, dama) e ATA (lata, mata, pata). Em cada estação, a criança forma uma palavra real, associa-a à imagem e troca somente o primeiro som para obter outra. O professor acompanha para garantir que a parte restante permaneça igual e que a nova sequência tenha significado conhecido.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-04-semana-04-aula-04",
+                      "number": 4,
+                      "specificObjective": "Aplicar a manipulação fonêmica em um circuito de desafios",
+                      "content": "Aula 4 – Aplicar a manipulação fonêmica em um circuito de desafios\nAtividade 1 – Circuito escutar, montar e transformar\nOrganizar três estações. Em “Escutar”, a criança nomeia uma figura e identifica o fonema inicial. Em “Montar”, associa C, G ou L à parte restante e realiza a síntese da palavra. Em “Transformar”, recebe uma segunda imagem da mesma família e substitui apenas o cartão inicial. Utilizar conjuntos como cola–gola–bola, gato–pato–rato e lata–mata–pata.\nAtividade 2 – Mensagem do robô\nApresentar um robô que troca o início das palavras e produz uma palavra diferente da imagem mostrada. Diante da imagem de GATO, por exemplo, ele diz PATO. As crianças identificam a troca, escolhem o fonema correto e reconstroem a palavra. Alternar alvos iniciados por C, G e L e pedir que a turma explique qual som saiu e qual entrou.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    },
+                    {
+                      "id": "fonemas-habilidade-04-objetivo-04-semana-04-aula-05",
+                      "number": 5,
+                      "specificObjective": "Consolidar a manipulação do som inicial e as relações C–/k/, G–/g/ e L–/l/",
+                      "content": "Aula 5 – Consolidar a manipulação do som inicial e as relações C–/k/, G–/g/ e L–/l/\nAtividade 1 – Grande jogo das palavras que mudam\nPreparar cartões de imagem, letras iniciais e partes finais. Em cada rodada, uma criança monta uma palavra conhecida, realiza sua síntese e encontra a imagem correspondente. Depois recebe um desafio de transformação e troca apenas o primeiro fonema para formar outra palavra real. A turma valida se a parte final permaneceu e se o novo nome combina com a imagem.\nAtividade 2 – Museu das transformações\nCada grupo escolhe uma família trabalhada, organiza duas ou três imagens e monta uma pequena exposição com os cartões iniciais usados. Na visita ao museu, as crianças apresentam uma transformação: dizem a palavra inicial, o som retirado, o som colocado e a palavra final. O professor registra evidências de quem identifica, substitui e sintetiza os sons com autonomia e encerra retomando as letras C, G e L nas palavras estudadas.\nFicha de atividade impressa.",
+                      "defaultDurationMinutes": 25
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

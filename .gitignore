@@ -1,0 +1,32 @@
+# dependências
+/node_modules
+
+# Next.js
+/.next
+/out
+
+# testes
+/coverage
+/playwright-report
+/test-results
+
+# ambiente local
+.env*
+!.env.example
+
+# sistema e editores
+.DS_Store
+*.log
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# coordenação local de agentes e do Ralph loop
+/AGENTS.md
+/LOOP.md
+/tasks/
+/.codex/
+/.ralph/
+/scripts/*loop*
+/scripts/*ralph*
