@@ -1,7 +1,72 @@
 @import "tailwindcss";
 
+@theme {
+  --color-canvas: #fffdf8;
+  --color-surface: #ffffff;
+  --color-ink: #28334a;
+  --color-ink-strong: #202a3f;
+  --color-muted: #5e6a80;
+  --color-border: #dfe5ef;
+  --color-neutral-soft: #edf3fb;
+  --color-track: #e8edf4;
+  --color-brand: #187b68;
+  --color-brand-strong: #105b4d;
+  --color-brand-soft: #dff7ef;
+  --color-brand-soft-strong: #c8ecdf;
+  --color-accent: #c94d49;
+  --color-accent-soft: #ffe4df;
+  --color-focus: #176fa6;
+  --color-success: #187b68;
+  --color-success-soft: #dff7ef;
+  --color-warning: #805c08;
+  --color-warning-soft: #fff3c8;
+  --color-danger: #b43c42;
+  --color-danger-strong: #963239;
+  --color-danger-deep: #7f2930;
+  --color-danger-soft: #ffe4e6;
+  --color-info: #246b9e;
+  --color-info-soft: #e2f1fb;
+
+  --font-sans: "Arial Rounded MT Bold", ui-rounded, "Trebuchet MS", system-ui, sans-serif;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.5;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.55;
+  --text-title: 2rem;
+  --text-title--line-height: 1.15;
+  --text-display: 3rem;
+  --text-display--line-height: 1.05;
+
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+  --spacing-touch: 2.75rem;
+
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-pill: 9999px;
+
+  --shadow-raised: 0 5px 0 #eef1f5;
+  --shadow-action: 0 4px 0 #151c2b;
+}
+
 :root {
   color-scheme: light;
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
 * {
@@ -14,7 +79,10 @@ html {
 
 body {
   margin: 0;
-  font-family: "Arial Rounded MT Bold", ui-rounded, "Trebuchet MS", system-ui, sans-serif;
+  min-height: 100vh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
 }
 
@@ -24,6 +92,12 @@ a {
 }
 
 ::selection {
-  background: #bfeee1;
-  color: #202a3f;
+  background: var(--color-brand-soft);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
