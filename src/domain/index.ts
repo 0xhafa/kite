@@ -1,4 +1,5 @@
 export * from "./curriculum";
+export * from "./ai-provider";
 export * from "./curriculum-adapter";
 export * from "./curriculum-navigation";
 export * from "./deterministic-validation";
