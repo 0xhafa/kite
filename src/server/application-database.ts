@@ -21,8 +21,17 @@ const globalDatabase = globalThis as typeof globalThis & {
 };
 
 async function initializeApplicationDatabase(): Promise<ApplicationDatabase> {
-  await mkdir(".data", { recursive: true });
-  const { db } = createLocalDatabase();
+  const databaseUrl =
+  process.env.DATABASE_URL?.trim() || "file:.data/kite.db";
+
+  if (databaseUrl.startsWith("file:")) {
+    await mkdir(".data", { recursive: true });
+  }
+
+  const { db } = createLocalDatabase({
+    url: databaseUrl,
+    authToken: process.env.DATABASE_AUTH_TOKEN,
+  });
   await migrateDatabase(db);
 
   const [existingTheme] = await db.select({ id: themes.id }).from(themes).limit(1);
