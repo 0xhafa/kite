@@ -11,6 +11,7 @@ test("revisa uma atividade principal por vez e exibe o progresso do lote", async
   await expect(page.getByRole("button", { name: "Aprovar" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Rejeitar" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Detalhes" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Feedback opcional" })).toBeVisible();
 
   const progress = page.getByRole("progressbar", { name: "Progresso da revisão" });
   await expect(progress).toHaveAttribute("aria-valuenow", "0");
@@ -30,9 +31,13 @@ test("revisa uma atividade principal por vez e exibe o progresso do lote", async
   await expect(progress).toHaveAttribute("aria-valuenow", "1");
   await expect(page.getByText("Aprovadas").locator("..")).toContainText("1");
 
+  await page
+    .getByRole("textbox", { name: "Feedback opcional" })
+    .fill("Simplificar a instrução.");
   await page.getByRole("button", { name: "Rejeitar" }).click();
   await expect(page.getByRole("heading", { name: "Aponte a pista" })).toBeFocused();
   await expect(progress).toHaveAttribute("aria-valuenow", "2");
+  await expect(page.getByRole("textbox", { name: "Feedback opcional" })).toHaveValue("");
 
   await page.getByRole("button", { name: "Aprovar" }).click();
   await expect(page.getByRole("heading", { name: "Lote revisado" })).toBeFocused();

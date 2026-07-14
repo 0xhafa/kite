@@ -2,10 +2,27 @@ import { z } from "zod";
 
 import {
   activityReviewItemSchema,
+  reviewDecisionSchema,
   reviewDecisionTypeSchema,
   type ActivityReviewItem,
+  type ReviewDecision,
   type ReviewDecisionType,
 } from "./review";
+
+export const reviewSessionDecisionSchema = reviewDecisionSchema.pick({
+  decision: true,
+  feedback: true,
+});
+
+export const reviewSessionDecisionHistorySchema = z.record(
+  z.string().trim().min(1).max(200),
+  z.array(reviewSessionDecisionSchema),
+);
+
+export type ReviewSessionDecision = Pick<ReviewDecision, "decision" | "feedback">;
+export type ReviewSessionDecisionHistory = Readonly<
+  Record<string, readonly ReviewSessionDecision[]>
+>;
 
 export const reviewBatchItemsSchema = z
   .array(activityReviewItemSchema)
@@ -46,7 +63,7 @@ export const reviewBatchItemsSchema = z
 export type ReviewSessionState = {
   items: readonly ActivityReviewItem[];
   currentIndex: number | null;
-  decisions: Readonly<Record<string, ReviewDecisionType>>;
+  decisionHistory: ReviewSessionDecisionHistory;
 };
 
 export type ReviewProgress = {
@@ -57,16 +74,31 @@ export type ReviewProgress = {
   pending: number;
 };
 
-export function createReviewSession(items: unknown): ReviewSessionState {
+export function createReviewSession(
+  items: unknown,
+  decisionHistory: unknown = {},
+): ReviewSessionState {
   const parsedItems = reviewBatchItemsSchema.parse(items);
+  const parsedHistory = reviewSessionDecisionHistorySchema.parse(decisionHistory);
   const orderedItems = [...parsedItems].sort(
     (first, second) => first.activity.slotIndex - second.activity.slotIndex,
+  );
+  const activityIds = new Set(orderedItems.map((item) => item.activity.id));
+
+  for (const activityId of Object.keys(parsedHistory)) {
+    if (!activityIds.has(activityId)) {
+      throw new Error("O histórico deve pertencer a uma atividade do lote de revisão.");
+    }
+  }
+
+  const currentIndex = orderedItems.findIndex(
+    (item) => !getLatestDecision(parsedHistory[item.activity.id]),
   );
 
   return {
     items: orderedItems,
-    currentIndex: orderedItems.length > 0 ? 0 : null,
-    decisions: {},
+    currentIndex: currentIndex >= 0 ? currentIndex : null,
+    decisionHistory: parsedHistory,
   };
 }
 
@@ -79,29 +111,41 @@ export function getCurrentReviewItem(
 export function decideCurrentReviewItem(
   session: ReviewSessionState,
   decision: ReviewDecisionType,
+  feedback?: string,
 ): ReviewSessionState {
   const parsedDecision = reviewDecisionTypeSchema.parse(decision);
+  const normalizedFeedback = feedback?.trim() || undefined;
+  const historyEntry = reviewSessionDecisionSchema.parse({
+    decision: parsedDecision,
+    ...(normalizedFeedback ? { feedback: normalizedFeedback } : {}),
+  });
   const currentItem = getCurrentReviewItem(session);
 
   if (!currentItem || session.currentIndex === null) {
     throw new Error("Não há atividade pendente para revisar.");
   }
 
-  const decisions = {
-    ...session.decisions,
-    [currentItem.activity.id]: parsedDecision,
+  const decisionHistory = {
+    ...session.decisionHistory,
+    [currentItem.activity.id]: [
+      ...(session.decisionHistory[currentItem.activity.id] ?? []),
+      historyEntry,
+    ],
   };
-  const nextIndex = findNextPendingIndex(session, decisions);
+  const nextIndex = findNextPendingIndex(session, decisionHistory);
 
   return {
     ...session,
     currentIndex: nextIndex,
-    decisions,
+    decisionHistory,
   };
 }
 
 export function getReviewProgress(session: ReviewSessionState): ReviewProgress {
-  const decisions = Object.values(session.decisions);
+  const decisions = session.items.flatMap((item) => {
+    const decision = getLatestDecision(session.decisionHistory[item.activity.id]);
+    return decision ? [decision.decision] : [];
+  });
   const approved = decisions.filter((decision) => decision === "approved").length;
   const rejected = decisions.filter((decision) => decision === "rejected").length;
   const reviewed = approved + rejected;
@@ -117,7 +161,7 @@ export function getReviewProgress(session: ReviewSessionState): ReviewProgress {
 
 function findNextPendingIndex(
   session: ReviewSessionState,
-  decisions: Readonly<Record<string, ReviewDecisionType>>,
+  decisionHistory: ReviewSessionDecisionHistory,
 ): number | null {
   if (session.currentIndex === null) {
     return null;
@@ -127,10 +171,16 @@ function findNextPendingIndex(
     const candidateIndex = (session.currentIndex + offset) % session.items.length;
     const candidate = session.items[candidateIndex];
 
-    if (!decisions[candidate.activity.id]) {
+    if (!getLatestDecision(decisionHistory[candidate.activity.id])) {
       return candidateIndex;
     }
   }
 
   return null;
+}
+
+function getLatestDecision(
+  history: readonly ReviewSessionDecision[] | undefined,
+): ReviewSessionDecision | undefined {
+  return history?.at(-1);
 }

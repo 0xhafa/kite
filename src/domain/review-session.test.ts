@@ -59,10 +59,21 @@ describe("sessão de revisão", () => {
 
   it("registra decisões sem alterar a sessão anterior e avança uma atividade por vez", () => {
     const initialSession = createReviewSession([createItem(0), createItem(1)]);
-    const afterApproval = decideCurrentReviewItem(initialSession, "approved");
-    const completedSession = decideCurrentReviewItem(afterApproval, "rejected");
+    const afterApproval = decideCurrentReviewItem(
+      initialSession,
+      "approved",
+      "  Instrução adequada.  ",
+    );
+    const completedSession = decideCurrentReviewItem(afterApproval, "rejected", "");
 
-    expect(initialSession.decisions).toEqual({});
+    expect(initialSession.decisionHistory).toEqual({});
+    expect(afterApproval.decisionHistory).toEqual({
+      "atividade-1": [{ decision: "approved", feedback: "Instrução adequada." }],
+    });
+    expect(completedSession.decisionHistory).toEqual({
+      "atividade-1": [{ decision: "approved", feedback: "Instrução adequada." }],
+      "atividade-2": [{ decision: "rejected" }],
+    });
     expect(getCurrentReviewItem(afterApproval)?.activity.id).toBe("atividade-2");
     expect(getReviewProgress(afterApproval)).toEqual({
       total: 2,
@@ -79,6 +90,29 @@ describe("sessão de revisão", () => {
       rejected: 1,
       pending: 0,
     });
+  });
+
+  it("carrega o histórico sem alterar uma atividade aprovada nem outras atividades", () => {
+    const history = {
+      "atividade-1": [
+        { decision: "rejected" as const, feedback: "Detalhar a mediação." },
+        { decision: "approved" as const },
+      ],
+    };
+    const session = createReviewSession([createItem(0), createItem(1)], history);
+
+    expect(session.decisionHistory).toEqual(history);
+    expect(getCurrentReviewItem(session)?.activity.id).toBe("atividade-2");
+    expect(getReviewProgress(session)).toEqual({
+      total: 2,
+      reviewed: 1,
+      approved: 1,
+      rejected: 0,
+      pending: 1,
+    });
+
+    const completedSession = decideCurrentReviewItem(session, "rejected");
+    expect(completedSession.decisionHistory["atividade-1"]).toEqual(history["atividade-1"]);
   });
 
   it("representa um lote vazio sem atividade atual", () => {
@@ -108,5 +142,13 @@ describe("sessão de revisão", () => {
 
     expect(reviewBatchItemsSchema.safeParse([firstItem, duplicateId]).success).toBe(false);
     expect(reviewBatchItemsSchema.safeParse([mismatchedReport]).success).toBe(false);
+  });
+
+  it("recusa histórico de uma atividade que não pertence ao lote", () => {
+    expect(() =>
+      createReviewSession([createItem(0)], {
+        "atividade-externa": [{ decision: "approved" }],
+      }),
+    ).toThrow("O histórico deve pertencer a uma atividade do lote de revisão.");
   });
 });

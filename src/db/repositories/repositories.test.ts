@@ -254,6 +254,56 @@ describe("repositórios libSQL", () => {
     expect(await traceability.listValidationResults(approvedActivity.id, 1)).toEqual([result]);
   });
 
+  it("preserva o histórico de decisões e altera somente a atividade explicitamente revisada", async () => {
+    await runs.save(createRun("run-1"));
+    await runs.save(createRun("run-2"));
+    await generations.createInitialActivityGroup({
+      batchId: "batch-1",
+      requestedDurationMinutes: 25,
+      requestedActivityCount: 2,
+      activities: [
+        { ...approvedActivity, status: "draft" },
+        { ...rejectedActivity, status: "draft" },
+      ],
+    });
+
+    const approval = {
+      activityId: approvedActivity.id,
+      activityVersion: 1,
+      decision: "approved" as const,
+      author: "revisor-poc",
+      createdAt: "2026-07-14T12:01:00.000Z",
+    };
+    const rejection = {
+      ...approval,
+      decision: "rejected" as const,
+      feedback: "A instrução precisa de mais apoio visual.",
+      createdAt: "2026-07-14T12:02:00.000Z",
+    };
+
+    await expect(
+      traceability.saveReviewDecision({ ...approval, feedback: "   " }),
+    ).resolves.toEqual(approval);
+
+    expect(await traceability.listReviewDecisions(approvedActivity.id)).toEqual([approval]);
+    expect((await generations.getCurrentActivityGroup("batch-1"))?.activities).toEqual([
+      approvedActivity,
+      { ...rejectedActivity, status: "draft" },
+    ]);
+
+    await traceability.saveReviewDecision(rejection);
+
+    expect(await traceability.listReviewDecisions(approvedActivity.id)).toEqual([
+      approval,
+      rejection,
+    ]);
+    expect(await traceability.listReviewDecisions(rejectedActivity.id)).toEqual([]);
+    expect((await generations.getCurrentActivityGroup("batch-1"))?.activities).toEqual([
+      { ...approvedActivity, status: "rejected" },
+      { ...rejectedActivity, status: "draft" },
+    ]);
+  });
+
   it("agrega tokens e mantém cache ligado à execução original validada", async () => {
     const original = createRun("run-original");
     await runs.save(original);

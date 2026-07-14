@@ -112,7 +112,7 @@ export class TraceabilityRepository {
   }
 
   async saveReviewDecision(input: unknown): Promise<ReviewDecision> {
-    const decision = reviewDecisionSchema.parse(input);
+    const decision = reviewDecisionSchema.parse(withoutBlankFeedback(input));
 
     await this.db.transaction(async (transaction) => {
       const [activity] = await transaction
@@ -138,9 +138,36 @@ export class TraceabilityRepository {
     return decision;
   }
 
+  async listReviewDecisions(activityId: string): Promise<ReviewDecision[]> {
+    const rows = await this.db
+      .select()
+      .from(reviewDecisions)
+      .where(eq(reviewDecisions.activityId, activityId))
+      .orderBy(asc(reviewDecisions.createdAt));
+
+    return rows.map((row) => reviewDecisionSchema.parse(omitNullValues(row)));
+  }
+
   async saveFeedbackProposal(input: unknown): Promise<FeedbackProposal> {
     const proposal = feedbackProposalSchema.parse(input);
     await this.db.insert(feedbackProposals).values(proposal);
     return proposal;
   }
+}
+
+function withoutBlankFeedback(input: unknown): unknown {
+  if (
+    typeof input !== "object" ||
+    input === null ||
+    Array.isArray(input) ||
+    !("feedback" in input) ||
+    typeof input.feedback !== "string" ||
+    input.feedback.trim().length > 0
+  ) {
+    return input;
+  }
+
+  const decision = { ...(input as Record<string, unknown>) };
+  delete decision.feedback;
+  return decision;
 }

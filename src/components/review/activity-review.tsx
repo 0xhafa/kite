@@ -46,6 +46,7 @@ function ReadyActivityReview({ items }: { items: readonly ActivityReviewItem[] }
   const [session, setSession] = useState(() => createReviewSession(items));
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [decisionFeedback, setDecisionFeedback] = useState<DecisionFeedback | null>(null);
+  const [feedback, setFeedback] = useState("");
   const activityHeadingRef = useRef<HTMLHeadingElement>(null);
   const completionHeadingRef = useRef<HTMLHeadingElement>(null);
   const closeDetails = useCallback(() => setDetailsOpen(false), []);
@@ -66,7 +67,9 @@ function ReadyActivityReview({ items }: { items: readonly ActivityReviewItem[] }
     }
 
     const title = currentItem.activity.title;
-    setSession((currentSession) => decideCurrentReviewItem(currentSession, decision));
+    setSession((currentSession) =>
+      decideCurrentReviewItem(currentSession, decision, feedback),
+    );
     setDecisionFeedback({
       message:
         decision === "approved"
@@ -74,6 +77,7 @@ function ReadyActivityReview({ items }: { items: readonly ActivityReviewItem[] }
           : `“${title}” foi rejeitada.`,
       tone: decision === "approved" ? "success" : "danger",
     });
+    setFeedback("");
     setDetailsOpen(false);
   }
 
@@ -130,8 +134,10 @@ function ReadyActivityReview({ items }: { items: readonly ActivityReviewItem[] }
 
       {currentItem ? (
         <ActivityCard
+          feedback={feedback}
           item={currentItem}
           onApprove={() => decide("approved")}
+          onFeedbackChange={setFeedback}
           onOpenDetails={() => setDetailsOpen(true)}
           onReject={() => decide("rejected")}
           position={progress.reviewed + 1}
@@ -176,16 +182,20 @@ function ProgressCount({
 }
 
 function ActivityCard({
+  feedback,
   item,
   onApprove,
+  onFeedbackChange,
   onOpenDetails,
   onReject,
   position,
   titleRef,
   total,
 }: {
+  feedback: string;
   item: ActivityReviewItem;
   onApprove: () => void;
+  onFeedbackChange: (feedback: string) => void;
   onOpenDetails: () => void;
   onReject: () => void;
   position: number;
@@ -193,6 +203,7 @@ function ActivityCard({
   total: number;
 }) {
   const validation = getValidationPresentation(item);
+  const feedbackHelpId = `ajuda-feedback-${item.activity.id}`;
 
   return (
     <Card className="mt-6 overflow-hidden" padding="none">
@@ -229,16 +240,36 @@ function ActivityCard({
         </div>
       </article>
 
-      <div className="grid gap-3 border-t-2 border-border bg-canvas p-4 sm:grid-cols-3 sm:p-6">
-        <Button fullWidth onClick={onReject} size="lg" variant="danger">
-          Rejeitar
-        </Button>
-        <Button fullWidth onClick={onOpenDetails} size="lg" variant="secondary">
-          Detalhes
-        </Button>
-        <Button fullWidth onClick={onApprove} size="lg">
-          Aprovar
-        </Button>
+      <div className="border-t-2 border-border bg-canvas p-4 sm:p-6">
+        <label
+          className="block text-sm font-extrabold"
+          htmlFor={`feedback-${item.activity.id}`}
+        >
+          Feedback opcional
+        </label>
+        <p className="mt-1 text-sm font-medium leading-6 text-muted" id={feedbackHelpId}>
+          Registre uma observação sobre esta atividade. Você também pode decidir sem preencher.
+        </p>
+        <textarea
+          aria-describedby={feedbackHelpId}
+          className="mt-3 min-h-24 w-full resize-y rounded-md border-2 border-border bg-surface px-4 py-3 font-medium text-ink outline-none transition-colors placeholder:text-muted focus:border-focus focus:ring-2 focus:ring-focus/20"
+          id={`feedback-${item.activity.id}`}
+          onChange={(event) => onFeedbackChange(event.target.value)}
+          placeholder="Ex.: simplificar a instrução ou manter como está"
+          value={feedback}
+        />
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <Button fullWidth onClick={onReject} size="lg" variant="danger">
+            Rejeitar
+          </Button>
+          <Button fullWidth onClick={onOpenDetails} size="lg" variant="secondary">
+            Detalhes
+          </Button>
+          <Button fullWidth onClick={onApprove} size="lg">
+            Aprovar
+          </Button>
+        </div>
       </div>
     </Card>
   );
