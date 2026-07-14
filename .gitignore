@@ -13,6 +13,10 @@
 # ambiente local
 .env*
 !.env.example
+/.data/
+*.db
+*.db-shm
+*.db-wal
 
 # sistema e editores
 .DS_Store

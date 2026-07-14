@@ -13,6 +13,20 @@ npm run dev
 
 A aplicação ficará disponível em `http://localhost:3000`.
 
+## Banco local
+
+O desenvolvimento usa libSQL em `.data/kite.db` por padrão. O diretório e
+arquivos SQLite são ignorados pelo Git. Para criar ou atualizar o banco a partir
+das migrations versionadas:
+
+```bash
+cp .env.example .env.local
+npm run db:migrate
+```
+
+Ao alterar o schema Drizzle durante uma tarefa que autorize essa mudança, gere a
+próxima migration com `npm run db:generate`.
+
 ## Qualidade
 
 ```bash
