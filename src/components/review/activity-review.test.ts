@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { activityReviewItemSchema, type ActivityReviewItem } from "@/domain/review";
 import type { ValidationStatus } from "@/domain/rules";
 
-import { ValidationDetailsModal } from "./activity-review";
+import { ActivityReview, ValidationDetailsModal } from "./activity-review";
 
 function createItem(status: ValidationStatus): ActivityReviewItem {
   const activityId = `atividade-${status}`;
@@ -103,5 +103,29 @@ describe("detalhes da validação", () => {
       /<li class="[^"]*border-danger bg-danger-soft" data-validation-status="failed">/,
     );
     expect(failedHtml).toContain(">Não atendido</span>");
+  });
+});
+
+describe("resumo da validação na atividade", () => {
+  function renderReview(status: ValidationStatus) {
+    return renderToStaticMarkup(
+      createElement(ActivityReview, {
+        state: { status: "ready", items: [createItem(status)] },
+      }),
+    );
+  }
+
+  it("omite o aviso redundante quando a atividade foi validada sem pendências", () => {
+    const html = renderReview("passed");
+
+    expect(html).not.toContain("Validação geral");
+    expect(html).not.toContain("Validação aprovada");
+  });
+
+  it("mantém problemas de validação visíveis para revisão", () => {
+    const html = renderReview("failed");
+
+    expect(html).toContain("Validação geral");
+    expect(html).toContain("Requer ajustes");
   });
 });

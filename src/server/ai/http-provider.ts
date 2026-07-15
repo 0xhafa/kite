@@ -88,6 +88,18 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
+function isTransientValidationError(error: unknown): error is AiProviderError {
+  return error instanceof AiProviderError && (
+    error.code === "timeout" ||
+    error.code === "network_error" ||
+    (error.code === "http_error" && (
+      error.statusCode === 408 ||
+      error.statusCode === 429 ||
+      (error.statusCode !== undefined && error.statusCode >= 500)
+    ))
+  );
+}
+
 function validateConsideredRules(
   consideredRuleIds: readonly string[],
   allowedRuleIds: ReadonlySet<string>,
@@ -245,57 +257,21 @@ export class HttpAiProvider implements AiProvider {
       );
     }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
-    let response: Response;
     let envelope: ChatCompletionEnvelope;
+    const renderedMessages = messages(inputResult.data);
+    const maxAttempts = operation === "validation" ? 2 : 1;
 
-    try {
-      response = await this.fetchImplementation(
-        new URL("chat/completions", `${this.config.baseUrl.replace(/\/+$/u, "")}/`),
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.config.apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: this.config.model,
-            messages: messages(inputResult.data),
-            response_format: { type: "json_object" },
-            temperature: 0,
-          }),
-          signal: controller.signal,
-        },
-      );
-
-      if (!response.ok) {
-        throw new AiProviderError("http_error", operation, [], response.status);
-      }
-
+    for (let attempt = 1; ; attempt += 1) {
       try {
-        envelope = (await response.json()) as ChatCompletionEnvelope;
+        envelope = await this.requestEnvelope(operation, renderedMessages);
+        break;
       } catch (error) {
-        if (controller.signal.aborted || isAbortError(error)) {
-          throw new AiProviderError("timeout", operation);
+        if (attempt < maxAttempts && isTransientValidationError(error)) {
+          continue;
         }
 
-        throw new AiProviderError("invalid_response", operation, [
-          "O corpo HTTP não é um JSON válido.",
-        ]);
-      }
-    } catch (error) {
-      if (error instanceof AiProviderError) {
         throw error;
       }
-
-      if (controller.signal.aborted || isAbortError(error)) {
-        throw new AiProviderError("timeout", operation);
-      }
-
-      throw new AiProviderError("network_error", operation);
-    } finally {
-      clearTimeout(timeout);
     }
 
     const content = envelope.choices?.[0]?.message?.content;
@@ -340,5 +316,61 @@ export class HttpAiProvider implements AiProvider {
     }
 
     return outputResult.data;
+  }
+
+  private async requestEnvelope(
+    operation: AiOperation,
+    messages: readonly AiMessage[],
+  ): Promise<ChatCompletionEnvelope> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
+
+    try {
+      const response = await this.fetchImplementation(
+        new URL("chat/completions", `${this.config.baseUrl.replace(/\/+$/u, "")}/`),
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.config.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: this.config.model,
+            messages,
+            response_format: { type: "json_object" },
+            temperature: 0,
+          }),
+          signal: controller.signal,
+        },
+      );
+
+      if (!response.ok) {
+        throw new AiProviderError("http_error", operation, [], response.status);
+      }
+
+      try {
+        return (await response.json()) as ChatCompletionEnvelope;
+      } catch (error) {
+        if (controller.signal.aborted || isAbortError(error)) {
+          throw new AiProviderError("timeout", operation);
+        }
+
+        throw new AiProviderError("invalid_response", operation, [
+          "O corpo HTTP não é um JSON válido.",
+        ]);
+      }
+    } catch (error) {
+      if (error instanceof AiProviderError) {
+        throw error;
+      }
+
+      if (controller.signal.aborted || isAbortError(error)) {
+        throw new AiProviderError("timeout", operation);
+      }
+
+      throw new AiProviderError("network_error", operation);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }

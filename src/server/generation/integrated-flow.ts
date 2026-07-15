@@ -80,15 +80,23 @@ export async function generateAndPersistBatch(input: {
   const artifacts = createInitialGenerationArtifacts({ curriculum, ...input });
   const { generations, runs, traceability } = await repositories();
 
-  await generations.createBatch(artifacts.batch);
-  await runs.save(artifacts.generationRun);
-  await generations.createInitialActivityGroup(artifacts.group);
+  await generations.createBatch({ ...artifacts.batch, status: "generating" });
 
-  for (const run of artifacts.validationRuns) {
-    await runs.save(run);
-  }
-  for (const report of artifacts.reports) {
-    await persistReport(traceability, report);
+  try {
+    await runs.save(artifacts.generationRun);
+    await generations.createInitialActivityGroup(artifacts.group);
+
+    for (const run of artifacts.validationRuns) {
+      await runs.save(run);
+    }
+    for (const report of artifacts.reports) {
+      await persistReport(traceability, report);
+    }
+
+    await generations.updateBatchStatus(artifacts.batch.id, "ready_for_review");
+  } catch (error) {
+    await generations.updateBatchStatus(artifacts.batch.id, "failed").catch(() => undefined);
+    throw error;
   }
 
   return artifacts.batch.id;
@@ -123,10 +131,43 @@ function rebuildReport(
   });
 }
 
+function requirePersistedValidationReport(
+  activity: Activity,
+  results: ValidationResult[],
+  runs: readonly ModelRun[],
+): ValidationReport {
+  const validationRun = [...runs]
+    .reverse()
+    .find((run) => run.stage === "validate" && run.activityId === activity.id);
+
+  if (
+    !validationRun ||
+    validationRun.status !== "completed" ||
+    validationRun.validatedResponse === undefined
+  ) {
+    throw new Error("A atividade ainda não possui uma validação concluída. Tente novamente.");
+  }
+
+  const validatedReport = validationReportSchema.parse(validationRun.validatedResponse);
+  const expectedResultIds = new Set(validatedReport.results.map(({ id }) => id));
+  const hasCompletePersistedReport =
+    validatedReport.activityId === activity.id &&
+    validatedReport.activityVersion === activity.version &&
+    expectedResultIds.size > 0 &&
+    expectedResultIds.size === results.length &&
+    results.every(({ id }) => expectedResultIds.has(id));
+
+  if (!hasCompletePersistedReport) {
+    throw new Error("A validação da atividade não foi persistida por completo. Tente novamente.");
+  }
+
+  return rebuildReport(activity, results, runs);
+}
+
 export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData | undefined> {
   const { generations, runs, traceability } = await repositories();
   const batch = await generations.getBatch(batchId);
-  if (!batch) return undefined;
+  if (!batch || batch.status !== "ready_for_review") return undefined;
 
   const group = await generations.getCurrentActivityGroup(batchId);
   if (!group) return undefined;
@@ -136,7 +177,7 @@ export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData 
 
   for (const activity of group.activities) {
     const results = await traceability.listValidationResults(activity.id, activity.version);
-    const report = rebuildReport(activity, results, modelRuns);
+    const report = requirePersistedValidationReport(activity, results, modelRuns);
     const decisions = await traceability.listReviewDecisions(activity.id);
     decisionHistory[activity.id] = decisions.map(({ decision, feedback }) => ({
       decision,
@@ -159,13 +200,19 @@ export async function approveActivity(input: {
   activityVersion: number;
   feedback?: string;
 }): Promise<void> {
-  const { generations, traceability } = await repositories();
+  const { generations, runs, traceability } = await repositories();
   const group = await generations.getCurrentActivityGroup(input.batchId);
   const activity = group?.activities.find(({ id }) => id === input.activityId);
 
   if (!activity || activity.version !== input.activityVersion) {
     throw new Error("A atividade mudou desde que a revisão foi carregada.");
   }
+
+  requirePersistedValidationReport(
+    activity,
+    await traceability.listValidationResults(activity.id, activity.version),
+    await runs.listByBatch(input.batchId),
+  );
 
   await traceability.saveReviewDecision({
     activityId: activity.id,
@@ -213,7 +260,11 @@ export async function rejectAndRegenerateActivity(input: {
     currentActivity.id,
     currentActivity.version,
   );
-  const currentReport = rebuildReport(currentActivity, currentResults, modelRuns);
+  const currentReport = requirePersistedValidationReport(
+    currentActivity,
+    currentResults,
+    modelRuns,
+  );
   const generationContext = generationContextFromRuns(modelRuns);
   const artifacts = createRegenerationArtifacts({
     group: activityGroupSchema.parse(group),

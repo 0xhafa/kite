@@ -4,10 +4,12 @@ import {
   type Activity,
   type ActivityGroup,
   type GenerationBatch,
+  type GenerationBatchStatus,
   activityGroupSchema,
   activitySchema,
   applyActivityRegeneration,
   generationBatchSchema,
+  generationBatchStatusSchema,
 } from "../../domain/generation";
 
 import type { KiteDatabase } from "../client";
@@ -39,6 +41,21 @@ export class GenerationRepository {
       .limit(1);
 
     return row ? toBatch(row) : undefined;
+  }
+
+  async updateBatchStatus(
+    id: string,
+    input: GenerationBatchStatus,
+  ): Promise<void> {
+    const status = generationBatchStatusSchema.parse(input);
+    const result = await this.db
+      .update(generationBatches)
+      .set({ status })
+      .where(eq(generationBatches.id, id));
+
+    if (result.rowsAffected !== 1) {
+      throw new Error(`Lote ${id} não encontrado.`);
+    }
   }
 
   async createInitialActivityGroup(input: unknown): Promise<ActivityGroup> {

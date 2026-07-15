@@ -307,7 +307,7 @@ function ActivityCard({
   titleRef: React.RefObject<HTMLHeadingElement | null>;
   total: number;
 }) {
-  const validation = getValidationPresentation(item);
+  const validationIssue = getValidationIssuePresentation(item);
   const feedbackHelpId = `ajuda-feedback-${item.activity.id}`;
 
   return (
@@ -339,15 +339,19 @@ function ActivityCard({
           {item.activity.description}
         </p>
 
-        <div className="mt-6 flex flex-col gap-3 rounded-md bg-neutral-soft p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.08em] text-muted">
-              Validação geral
-            </p>
-            <p className="mt-1 text-sm font-bold text-muted">{validation.description}</p>
+        {validationIssue ? (
+          <div className="mt-6 flex flex-col gap-3 rounded-md bg-neutral-soft p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.08em] text-muted">
+                Validação geral
+              </p>
+              <p className="mt-1 text-sm font-bold text-muted">
+                {validationIssue.description}
+              </p>
+            </div>
+            <Badge tone={validationIssue.tone}>{validationIssue.label}</Badge>
           </div>
-          <Badge tone={validation.tone}>{validation.label}</Badge>
-        </div>
+        ) : null}
       </article>
 
       <div className="border-t-2 border-border bg-canvas p-4 sm:p-6">
@@ -587,7 +591,7 @@ function ReviewEmptyState() {
   );
 }
 
-function getValidationPresentation(item: ActivityReviewItem) {
+function getValidationIssuePresentation(item: ActivityReviewItem) {
   if (item.validationReport.summary.blockingFailures > 0) {
     return {
       label: "Requer ajustes",
@@ -604,11 +608,7 @@ function getValidationPresentation(item: ActivityReviewItem) {
     };
   }
 
-  return {
-    label: "Validação aprovada",
-    description: "Nenhum bloqueio ou pendência foi registrado.",
-    tone: "success" as const,
-  };
+  return null;
 }
 
 function getCriterionStatusPresentation(status: ValidationStatus) {

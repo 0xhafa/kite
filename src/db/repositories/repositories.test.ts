@@ -139,6 +139,18 @@ describe("repositórios libSQL", () => {
     ).rejects.toThrow();
   });
 
+  it("só expõe o novo status do lote depois da transição persistida", async () => {
+    await generations.updateBatchStatus("batch-1", "generating");
+    await expect(generations.getBatch("batch-1")).resolves.toMatchObject({
+      status: "generating",
+    });
+
+    await generations.updateBatchStatus("batch-1", "ready_for_review");
+    await expect(generations.getBatch("batch-1")).resolves.toMatchObject({
+      status: "ready_for_review",
+    });
+  });
+
   it("regenera apenas a rejeitada e preserva versões, aprovada e duração total", async () => {
     await saveInitialGroup();
     await runs.save(createRun("run-3", { stage: "repair" }));

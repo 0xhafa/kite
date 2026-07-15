@@ -13,7 +13,7 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
   await expect(usageSummary.getByText("Reparos", { exact: true }).locator("..")).toContainText("0");
   await expect(page.getByText("Atividade 1 de 3")).toBeVisible();
   await expect(page.getByText("0 de 3 revisadas · 25 min")).toBeVisible();
-  await expect(page.getByText("Validação aprovada", { exact: true })).toBeVisible();
+  await expect(page.getByText("Validação aprovada", { exact: true })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Detalhes" }).click();
   const dialog = page.getByRole("dialog", { name: "Detalhes da validação" });

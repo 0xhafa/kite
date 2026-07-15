@@ -5,6 +5,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import curriculumData from "../../../data/curriculum.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
+import { GenerationRepository, ModelRunRepository } from "@/db/repositories";
+import { getApplicationDatabase } from "@/server/application-database";
 
 import {
   approveActivity,
@@ -12,6 +14,7 @@ import {
   loadReviewBatch,
   rejectAndRegenerateActivity,
 } from "./integrated-flow";
+import { createInitialGenerationArtifacts } from "./pipeline";
 
 const curriculum = adaptCurriculum(curriculumData);
 const theme = curriculum.themes[0];
@@ -89,5 +92,25 @@ describe("fluxo integrado persistido", () => {
     )).toBe(originalTotal);
     expect(regeneration.usage.byStage.repair).toBeGreaterThan(0);
     expect(reloaded?.usage).toEqual(regeneration.usage);
+  });
+
+  it("não entrega uma atividade cujo relatório validado ficou incompleto", async () => {
+    const artifacts = createInitialGenerationArtifacts({
+      curriculum,
+      selection,
+      config: { requestedDurationMinutes: 5, requestedActivityCount: 1 },
+    });
+    const { db } = await getApplicationDatabase();
+    const generations = new GenerationRepository(db);
+    const runs = new ModelRunRepository(db);
+
+    await generations.createBatch(artifacts.batch);
+    await runs.save(artifacts.generationRun);
+    await generations.createInitialActivityGroup(artifacts.group);
+    await runs.save(artifacts.validationRuns[0]);
+
+    await expect(loadReviewBatch(artifacts.batch.id)).rejects.toThrow(
+      /não foi persistida por completo/,
+    );
   });
 });

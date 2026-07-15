@@ -141,6 +141,20 @@ const generationOutput = {
   uncertainties: [],
 };
 
+const validationOutput = {
+  results: [
+    {
+      ruleId: "PED-001",
+      ruleVersion: 1,
+      status: "passed" as const,
+      evidence: currentActivity.description,
+      explanation: "A ação observável está explícita.",
+      confidence: 0.95,
+    },
+  ],
+  summary: { blockingFailures: 0, needsHumanReview: 0 },
+};
+
 function completionResponse(content: unknown, status = 200): Response {
   return new Response(
     JSON.stringify({
@@ -248,19 +262,6 @@ describe("adaptador HTTP estruturado", () => {
     const repairOutput = {
       activity: generationOutput.activities[0],
       uncertainties: [],
-    };
-    const validationOutput = {
-      results: [
-        {
-          ruleId: "PED-001",
-          ruleVersion: 1,
-          status: "passed",
-          evidence: currentActivity.description,
-          explanation: "A ação observável está explícita.",
-          confidence: 0.95,
-        },
-      ],
-      summary: { blockingFailures: 0, needsHumanReview: 0 },
     };
     const fetchImplementation = vi
       .fn<typeof fetch>()
@@ -404,6 +405,19 @@ describe("adaptador HTTP estruturado", () => {
       message:
         "O provedor de IA demorou mais que o esperado. Tente novamente em instantes.",
     });
+  });
+
+  it("repete uma validação após uma falha transitória", async () => {
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockRejectedValueOnce(new DOMException("Abortado", "AbortError"))
+      .mockResolvedValueOnce(completionResponse(validationOutput));
+    const provider = new HttpAiProvider(httpConfig, fetchImplementation);
+
+    await expect(provider.evaluate(createValidationInput())).resolves.toEqual(
+      validationOutput,
+    );
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
   });
 
   it("mantém o timeout ativo enquanto consome o corpo após os headers", async () => {
