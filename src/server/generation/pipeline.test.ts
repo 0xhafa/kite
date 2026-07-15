@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 import curriculumData from "../../../data/curriculum.json";
@@ -28,9 +29,16 @@ let sequence = 0;
 const createId = (prefix: string) => `${prefix}-test-${sequence++}`;
 
 describe("pipeline integrado de geração", () => {
-  it("gera um grupo válido com relatório por atividade e tokens por etapa", () => {
+  it("não acopla o fluxo aos geradores mock do domínio", async () => {
+    const source = await readFile(new URL("./pipeline.ts", import.meta.url), "utf8");
+
+    expect(source).not.toContain("@/domain/mock-generator");
+    expect(source).not.toMatch(/generateMock(?:Batch|Repair)/u);
+  });
+
+  it("gera um grupo válido com relatório por atividade e tokens por etapa", async () => {
     sequence = 0;
-    const artifacts = createInitialGenerationArtifacts(
+    const artifacts = await createInitialGenerationArtifacts(
       {
         curriculum,
         selection,
@@ -60,9 +68,9 @@ describe("pipeline integrado de geração", () => {
     expect(usage.byStage.repair).toBe(0);
   });
 
-  it("substitui só a versão rejeitada e preserva posição, duração e total", () => {
+  it("substitui só a versão rejeitada e preserva posição, duração e total", async () => {
     sequence = 0;
-    const initial = createInitialGenerationArtifacts(
+    const initial = await createInitialGenerationArtifacts(
       {
         curriculum,
         selection,
@@ -71,7 +79,7 @@ describe("pipeline integrado de geração", () => {
       { createId, now },
     );
     const rejected = initial.group.activities[1];
-    const artifacts = createRegenerationArtifacts(
+    const artifacts = await createRegenerationArtifacts(
       {
         group: initial.group,
         currentActivity: rejected,

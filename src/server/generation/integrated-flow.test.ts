@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import curriculumData from "../../../data/curriculum.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
@@ -30,6 +30,16 @@ const selection = {
   lessonId: lesson.id,
 };
 
+function completionResponse(
+  content: unknown,
+  usage: Record<string, number>,
+): Response {
+  return Response.json({
+    choices: [{ message: { content: JSON.stringify(content) } }],
+    usage,
+  });
+}
+
 describe("fluxo integrado persistido", () => {
   let databaseDirectory: string;
 
@@ -41,6 +51,11 @@ describe("fluxo integrado persistido", () => {
   afterAll(async () => {
     delete process.env.DATABASE_URL;
     await rm(databaseDirectory, { recursive: true, force: true });
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it("reconstrói o lote, preserva aprovação e persiste a substituta", async () => {
@@ -95,7 +110,7 @@ describe("fluxo integrado persistido", () => {
   });
 
   it("não entrega uma atividade cujo relatório validado ficou incompleto", async () => {
-    const artifacts = createInitialGenerationArtifacts({
+    const artifacts = await createInitialGenerationArtifacts({
       curriculum,
       selection,
       config: { requestedDurationMinutes: 5, requestedActivityCount: 1 },
@@ -111,6 +126,110 @@ describe("fluxo integrado persistido", () => {
 
     await expect(loadReviewBatch(artifacts.batch.id)).rejects.toThrow(
       /não foi persistida por completo/,
+    );
+  });
+
+  it("usa o provedor HTTP na geração e regeneração e persiste seus metadados reais", async () => {
+    const generationUsage = {
+      prompt_tokens: 321,
+      completion_tokens: 123,
+      total_tokens: 444,
+    };
+    const repairUsage = {
+      prompt_tokens: 111,
+      completion_tokens: 55,
+      total_tokens: 166,
+    };
+    const generationOutput = {
+      plan: {
+        totalDurationMinutes: 5,
+        activities: [{
+          slotIndex: 0,
+          durationMinutes: 5,
+          primaryChildAction: "Apontar",
+          pedagogicalFunction: "Relacionar som e imagem",
+        }],
+      },
+      activities: [{
+        slotIndex: 0,
+        title: "Atividade entregue por HTTP",
+        description: "A criança aponta a imagem cujo nome começa com o som trabalhado.",
+        durationMinutes: 5,
+        consideredRuleIds: [],
+      }],
+      uncertainties: [],
+    };
+    const repairOutput = {
+      activity: {
+        slotIndex: 0,
+        title: "Substituta entregue por HTTP",
+        description: "A criança separa a imagem cujo nome começa com o som trabalhado.",
+        durationMinutes: 5,
+        consideredRuleIds: [],
+      },
+      uncertainties: [],
+    };
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(completionResponse(generationOutput, generationUsage))
+      .mockResolvedValueOnce(completionResponse(repairOutput, repairUsage));
+
+    vi.stubEnv("AI_PROVIDER", "http");
+    vi.stubEnv("AI_BASE_URL", "https://ia.example.test/v1/");
+    vi.stubEnv("AI_API_KEY", "segredo-que-nao-pode-ser-persistido");
+    vi.stubEnv("AI_MODEL", "modelo-http-integrado");
+    vi.stubEnv("AI_TIMEOUT_MS", "1000");
+    vi.stubGlobal("fetch", fetchImplementation);
+
+    const batchId = await generateAndPersistBatch({
+      selection,
+      config: { requestedDurationMinutes: 5, requestedActivityCount: 1 },
+    });
+    const initial = await loadReviewBatch(batchId);
+    const currentActivity = initial!.items[0].activity;
+
+    expect(currentActivity.title).toBe("Atividade entregue por HTTP");
+
+    const regeneration = await rejectAndRegenerateActivity({
+      batchId,
+      activityId: currentActivity.id,
+      activityVersion: currentActivity.version,
+      feedback: "Trocar a ação da criança.",
+    });
+    expect(regeneration.item.activity.title).toBe("Substituta entregue por HTTP");
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+
+    const { db } = await getApplicationDatabase();
+    const persistedRuns = await new ModelRunRepository(db).listByBatch(batchId);
+    const generationRun = persistedRuns.find((run) => run.stage === "generate");
+    const repairRun = persistedRuns.find((run) => run.stage === "repair");
+
+    expect(generationRun).toMatchObject({
+      provider: "http",
+      model: "modelo-http-integrado",
+      rawUsage: generationUsage,
+      tokenUsage: {
+        inputTokens: 321,
+        outputTokens: 123,
+        otherTokens: 0,
+        totalTokens: 444,
+      },
+      latencyMilliseconds: expect.any(Number),
+    });
+    expect(repairRun).toMatchObject({
+      provider: "http",
+      model: "modelo-http-integrado",
+      rawUsage: repairUsage,
+      tokenUsage: {
+        inputTokens: 111,
+        outputTokens: 55,
+        otherTokens: 0,
+        totalTokens: 166,
+      },
+      latencyMilliseconds: expect.any(Number),
+    });
+    expect(JSON.stringify([generationRun, repairRun])).not.toContain(
+      "segredo-que-nao-pode-ser-persistido",
     );
   });
 });

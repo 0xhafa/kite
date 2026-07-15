@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import rulesData from "../../../data/rules.json";
+import type { AiProvider, AiRunMetadata } from "@/domain/ai-provider";
 import { selectApplicableRuleInputs } from "@/domain/applicability";
 import type { Curriculum, Lesson } from "@/domain/curriculum";
 import type { CurriculumSelection } from "@/domain/curriculum-navigation";
@@ -16,7 +17,6 @@ import {
   generationConfigSchema,
   type GenerationConfig,
 } from "@/domain/generation-config";
-import { generateMockBatch, generateMockRepair } from "@/domain/mock-generator";
 import type {
   ApplicableRuleInput,
   CurriculumLessonContext,
@@ -29,6 +29,7 @@ import {
   normalizeTokenUsage,
   type ModelRun,
 } from "@/domain/usage";
+import { createAiProvider } from "@/server/ai";
 
 export type CompleteCurriculumSelection = {
   themeId: string;
@@ -47,6 +48,7 @@ export type GenerationPipelineInput = {
 export type PipelineOptions = {
   createId?: (prefix: string) => string;
   now?: () => string;
+  provider?: AiProvider;
 };
 
 export type InitialGenerationArtifacts = {
@@ -81,7 +83,7 @@ const catalog = loadRuleCatalog(rulesData);
 const catalogRulesByKey = new Map(
   catalog.rules.map((rule) => [`${rule.id}:${rule.version}`, rule]),
 );
-const promptVersion = "mock-generation-1";
+const promptVersion = "generation-1";
 const ruleSetVersion = `rules-${catalog.version}`;
 const traceabilitySource = {
   id: "kite-rule-catalog",
@@ -99,6 +101,7 @@ function createRuntime(options: PipelineOptions) {
   return {
     createId: options.createId ?? defaultCreateId,
     now: options.now ?? (() => new Date().toISOString()),
+    provider: options.provider ?? createAiProvider(),
   };
 }
 
@@ -173,7 +176,7 @@ function createCompletedRun(input: {
   stage: "generate" | "validate" | "repair";
   normalizedInput: unknown;
   validatedResponse: unknown;
-  rawUsage: Record<string, number>;
+  run: AiRunMetadata;
   createdAt: string;
   promptVersion: string;
   ruleSetVersion: string;
@@ -183,28 +186,28 @@ function createCompletedRun(input: {
     batchId: input.batchId,
     ...(input.activityId ? { activityId: input.activityId } : {}),
     stage: input.stage,
-    provider: "mock",
-    model: "kite-mock-v1",
+    provider: input.run.provider,
+    model: input.run.model,
     status: "completed",
     normalizedInput: input.normalizedInput,
     inputHash: stableHash(input.normalizedInput),
-    promptTemplateId: `mock-${input.stage}`,
+    promptTemplateId: `${input.run.provider}-${input.stage}`,
     promptVersion: input.promptVersion,
-    renderedPrompt: `Execução mock estruturada da etapa ${input.stage}.`,
+    renderedPrompt: `Execução estruturada da etapa ${input.stage} pelo provedor ${input.run.provider}.`,
     validatedResponse: input.validatedResponse,
     ruleSetVersion: input.ruleSetVersion,
-    cacheKey: `${input.stage}:${input.batchId}:${input.activityId ?? "batch"}:${stableHash(input.normalizedInput)}`,
-    rawUsage: input.rawUsage,
-    tokenUsage: normalizeTokenUsage(input.rawUsage),
-    latencyMilliseconds: 1,
+    cacheKey: `${input.run.provider}:${input.stage}:${input.batchId}:${input.activityId ?? "batch"}:${stableHash(input.normalizedInput)}`,
+    ...(input.run.rawUsage ? { rawUsage: input.run.rawUsage } : {}),
+    tokenUsage: normalizeTokenUsage(input.run.rawUsage),
+    latencyMilliseconds: input.run.latencyMilliseconds,
     createdAt: input.createdAt,
   });
 }
 
-export function createInitialGenerationArtifacts(
+export async function createInitialGenerationArtifacts(
   input: GenerationPipelineInput,
   options: PipelineOptions = {},
-): InitialGenerationArtifacts {
+): Promise<InitialGenerationArtifacts> {
   const runtime = createRuntime(options);
   const config = generationConfigSchema.parse(input.config);
   const curriculumContext = resolveCurriculumContext(input.curriculum, input.selection);
@@ -226,7 +229,8 @@ export function createInitialGenerationArtifacts(
     localFeedback: [],
     editorialTemplateVersion: promptVersion,
   };
-  const generated = generateMockBatch(modelInput);
+  const generationResult = await runtime.provider.generate(modelInput);
+  const generated = generationResult.output;
   const activities = generated.activities.map((proposal) => ({
     id: runtime.createId(`activity-${proposal.slotIndex + 1}-v1`),
     batchId,
@@ -252,10 +256,7 @@ export function createInitialGenerationArtifacts(
     stage: "generate",
     normalizedInput: modelInput,
     validatedResponse: generated,
-    rawUsage: {
-      input_tokens: 180 + config.requestedActivityCount * 20,
-      output_tokens: 120 + config.requestedActivityCount * 40,
-    },
+    run: generationResult.run,
     createdAt,
     promptVersion,
     ruleSetVersion,
@@ -268,7 +269,12 @@ export function createInitialGenerationArtifacts(
       stage: "validate",
       normalizedInput: { activityId: report.activityId, activityVersion: report.activityVersion },
       validatedResponse: report,
-      rawUsage: { input_tokens: 70, output_tokens: 20 },
+      run: {
+        provider: "mock",
+        model: "kite-mock-v1",
+        rawUsage: { input_tokens: 70, output_tokens: 20 },
+        latencyMilliseconds: 1,
+      },
       createdAt,
       promptVersion,
       ruleSetVersion,
@@ -292,7 +298,7 @@ export function createInitialGenerationArtifacts(
       createdAt,
       promptVersion,
       ruleSetVersion,
-      cacheKey: `mock:${batchId}`,
+      cacheKey: `${generationResult.run.provider}:${batchId}`,
     }),
     group,
     reports,
@@ -333,10 +339,10 @@ function repairFailures(report: ValidationReport): ValidationModelResult[] {
   }];
 }
 
-export function createRegenerationArtifacts(
+export async function createRegenerationArtifacts(
   input: RegenerationPipelineInput,
   options: PipelineOptions = {},
-): RegenerationArtifacts {
+): Promise<RegenerationArtifacts> {
   const runtime = createRuntime(options);
   const createdAt = runtime.now();
   const repairRunId = runtime.createId("run-repair");
@@ -351,7 +357,8 @@ export function createRegenerationArtifacts(
     curriculum: input.curriculumContext,
     applicableRules: input.applicableRules,
   };
-  const generated = generateMockRepair(repairInput);
+  const repairResult = await runtime.provider.repair(repairInput);
+  const generated = repairResult.output;
   const replacement: Activity = {
     id: runtime.createId(`activity-${input.currentActivity.slotIndex + 1}-v${input.currentActivity.version + 1}`),
     batchId: input.currentActivity.batchId,
@@ -384,7 +391,7 @@ export function createRegenerationArtifacts(
       stage: "repair",
       normalizedInput: repairInput,
       validatedResponse: generated,
-      rawUsage: { input_tokens: 110, output_tokens: 70 },
+      run: repairResult.run,
       createdAt,
       promptVersion: input.promptVersion,
       ruleSetVersion: input.ruleSetVersion,
@@ -396,7 +403,12 @@ export function createRegenerationArtifacts(
       stage: "validate",
       normalizedInput: { activityId: replacement.id, activityVersion: replacement.version },
       validatedResponse: report,
-      rawUsage: { input_tokens: 70, output_tokens: 20 },
+      run: {
+        provider: "mock",
+        model: "kite-mock-v1",
+        rawUsage: { input_tokens: 70, output_tokens: 20 },
+        latencyMilliseconds: 1,
+      },
       createdAt,
       promptVersion: input.promptVersion,
       ruleSetVersion: input.ruleSetVersion,

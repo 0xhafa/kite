@@ -6,17 +6,36 @@ import type {
   ValidationModelInput,
 } from "./model-contracts";
 import type { ValidationModelOutput } from "./rules";
+import type { JsonObject } from "./shared";
+
+export type AiRunMetadata = {
+  provider: string;
+  model: string;
+  rawUsage?: JsonObject;
+  latencyMilliseconds: number;
+};
+
+export type AiProviderResult<TOutput> = {
+  output: TOutput;
+  run: AiRunMetadata;
+};
 
 export interface GenerationProvider {
-  generate(input: GenerationModelInput): Promise<GenerationModelOutput>;
+  generate(
+    input: GenerationModelInput,
+  ): Promise<AiProviderResult<GenerationModelOutput>>;
 }
 
 export interface RepairProvider {
-  repair(input: RepairModelInput): Promise<RepairModelOutput>;
+  repair(
+    input: RepairModelInput,
+  ): Promise<AiProviderResult<RepairModelOutput>>;
 }
 
 export interface SemanticValidationProvider {
-  evaluate(input: ValidationModelInput): Promise<ValidationModelOutput>;
+  evaluate(
+    input: ValidationModelInput,
+  ): Promise<AiProviderResult<ValidationModelOutput>>;
 }
 
 export interface AiProvider

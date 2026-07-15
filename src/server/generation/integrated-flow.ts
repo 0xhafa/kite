@@ -77,7 +77,7 @@ export async function generateAndPersistBatch(input: {
   selection: CompleteCurriculumSelection;
   config: GenerationConfig;
 }): Promise<string> {
-  const artifacts = createInitialGenerationArtifacts({ curriculum, ...input });
+  const artifacts = await createInitialGenerationArtifacts({ curriculum, ...input });
   const { generations, runs, traceability } = await repositories();
 
   await generations.createBatch({ ...artifacts.batch, status: "generating" });
@@ -266,7 +266,7 @@ export async function rejectAndRegenerateActivity(input: {
     modelRuns,
   );
   const generationContext = generationContextFromRuns(modelRuns);
-  const artifacts = createRegenerationArtifacts({
+  const artifacts = await createRegenerationArtifacts({
     group: activityGroupSchema.parse(group),
     currentActivity,
     currentReport,

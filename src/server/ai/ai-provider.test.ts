@@ -155,10 +155,15 @@ const validationOutput = {
   summary: { blockingFailures: 0, needsHumanReview: 0 },
 };
 
-function completionResponse(content: unknown, status = 200): Response {
+function completionResponse(
+  content: unknown,
+  status = 200,
+  usage?: Record<string, unknown>,
+): Response {
   return new Response(
     JSON.stringify({
       choices: [{ message: { content: JSON.stringify(content) } }],
+      ...(usage ? { usage } : {}),
     }),
     { status, headers: { "Content-Type": "application/json" } },
   );
@@ -219,8 +224,14 @@ describe("seleção do provedor", () => {
     const output = await provider.generate(createGenerationInput());
 
     expect(provider).toBe(mockAiProvider);
-    expect(output.plan.totalDurationMinutes).toBe(5);
-    expect(output.activities).toHaveLength(1);
+    expect(output.output.plan.totalDurationMinutes).toBe(5);
+    expect(output.output.activities).toHaveLength(1);
+    expect(output.run).toEqual({
+      provider: "mock",
+      model: "kite-mock-v1",
+      rawUsage: { input_tokens: 200, output_tokens: 160 },
+      latencyMilliseconds: 1,
+    });
   });
 
   it("cria o adaptador HTTP quando ele é selecionado", () => {
@@ -235,9 +246,13 @@ describe("adaptador HTTP estruturado", () => {
     );
     const provider = new HttpAiProvider(httpConfig, fetchImplementation);
 
-    await expect(provider.generate(createGenerationInput())).resolves.toEqual(
-      generationOutput,
-    );
+    await expect(provider.generate(createGenerationInput())).resolves.toMatchObject({
+      output: generationOutput,
+      run: {
+        provider: "http",
+        model: "modelo-configurado-no-teste",
+      },
+    });
 
     const [url, request] = fetchImplementation.mock.calls[0];
     const body = JSON.parse(String(request?.body)) as {
@@ -269,12 +284,37 @@ describe("adaptador HTTP estruturado", () => {
       .mockResolvedValueOnce(completionResponse(validationOutput));
     const provider = new HttpAiProvider(httpConfig, fetchImplementation);
 
-    await expect(provider.repair(createRepairInput())).resolves.toEqual(
-      repairOutput,
+    await expect(provider.repair(createRepairInput())).resolves.toMatchObject({
+      output: repairOutput,
+    });
+    await expect(provider.evaluate(createValidationInput())).resolves.toMatchObject({
+      output: validationOutput,
+    });
+  });
+
+  it("preserva usage, modelo e latência efetivamente observados na resposta HTTP", async () => {
+    const usage = {
+      prompt_tokens: 321,
+      completion_tokens: 123,
+      total_tokens: 444,
+    };
+    const fetchImplementation = vi.fn<typeof fetch>(async () =>
+      completionResponse(generationOutput, 200, usage),
     );
-    await expect(provider.evaluate(createValidationInput())).resolves.toEqual(
-      validationOutput,
-    );
+    const now = vi.fn<() => number>()
+      .mockReturnValueOnce(100)
+      .mockReturnValueOnce(142.4);
+    const provider = new HttpAiProvider(httpConfig, fetchImplementation, now);
+
+    await expect(provider.generate(createGenerationInput())).resolves.toEqual({
+      output: generationOutput,
+      run: {
+        provider: "http",
+        model: "modelo-configurado-no-teste",
+        rawUsage: usage,
+        latencyMilliseconds: 42,
+      },
+    });
   });
 
   it("rejeita a entrada antes da rede quando ela não atende ao contrato", async () => {
@@ -414,9 +454,9 @@ describe("adaptador HTTP estruturado", () => {
       .mockResolvedValueOnce(completionResponse(validationOutput));
     const provider = new HttpAiProvider(httpConfig, fetchImplementation);
 
-    await expect(provider.evaluate(createValidationInput())).resolves.toEqual(
-      validationOutput,
-    );
+    await expect(provider.evaluate(createValidationInput())).resolves.toMatchObject({
+      output: validationOutput,
+    });
     expect(fetchImplementation).toHaveBeenCalledTimes(2);
   });
 

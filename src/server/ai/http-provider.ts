@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import type { AiProvider } from "@/domain/ai-provider";
+import type { AiProvider, AiProviderResult } from "@/domain/ai-provider";
 import {
   type GenerationModelInput,
   type GenerationModelOutput,
@@ -17,6 +17,7 @@ import {
   type ValidationModelOutput,
   validationModelOutputSchema,
 } from "@/domain/rules";
+import { jsonObjectSchema } from "@/domain/shared";
 
 import type { HttpProviderConfig } from "./config";
 import {
@@ -75,6 +76,7 @@ type ChatCompletionEnvelope = {
       content?: unknown;
     };
   }>;
+  usage?: unknown;
 };
 
 function formatSchemaIssues(error: z.ZodError): string[] {
@@ -204,9 +206,12 @@ export class HttpAiProvider implements AiProvider {
   constructor(
     private readonly config: HttpProviderConfig,
     private readonly fetchImplementation: typeof fetch = fetch,
+    private readonly now: () => number = () => performance.now(),
   ) {}
 
-  generate(input: GenerationModelInput): Promise<GenerationModelOutput> {
+  generate(
+    input: GenerationModelInput,
+  ): Promise<AiProviderResult<GenerationModelOutput>> {
     return this.requestStructured({
       operation: "generation",
       input,
@@ -217,7 +222,9 @@ export class HttpAiProvider implements AiProvider {
     });
   }
 
-  repair(input: RepairModelInput): Promise<RepairModelOutput> {
+  repair(
+    input: RepairModelInput,
+  ): Promise<AiProviderResult<RepairModelOutput>> {
     return this.requestStructured({
       operation: "repair",
       input,
@@ -228,7 +235,9 @@ export class HttpAiProvider implements AiProvider {
     });
   }
 
-  evaluate(input: ValidationModelInput): Promise<ValidationModelOutput> {
+  evaluate(
+    input: ValidationModelInput,
+  ): Promise<AiProviderResult<ValidationModelOutput>> {
     return this.requestStructured({
       operation: "validation",
       input,
@@ -246,7 +255,7 @@ export class HttpAiProvider implements AiProvider {
     outputSchema,
     messages,
     validateOutput,
-  }: StructuredRequest<TInput, TOutput>): Promise<TOutput> {
+  }: StructuredRequest<TInput, TOutput>): Promise<AiProviderResult<TOutput>> {
     const inputResult = inputSchema.safeParse(input);
 
     if (!inputResult.success) {
@@ -260,6 +269,7 @@ export class HttpAiProvider implements AiProvider {
     let envelope: ChatCompletionEnvelope;
     const renderedMessages = messages(inputResult.data);
     const maxAttempts = operation === "validation" ? 2 : 1;
+    const startedAt = this.now();
 
     for (let attempt = 1; ; attempt += 1) {
       try {
@@ -315,7 +325,26 @@ export class HttpAiProvider implements AiProvider {
       );
     }
 
-    return outputResult.data;
+    const rawUsageResult =
+      envelope.usage === undefined
+        ? undefined
+        : jsonObjectSchema.safeParse(envelope.usage);
+
+    if (rawUsageResult && !rawUsageResult.success) {
+      throw new AiProviderError("invalid_response", operation, [
+        "O uso de tokens retornado pelo provedor não é um objeto JSON válido.",
+      ]);
+    }
+
+    return {
+      output: outputResult.data,
+      run: {
+        provider: "http",
+        model: this.config.model,
+        ...(rawUsageResult ? { rawUsage: rawUsageResult.data } : {}),
+        latencyMilliseconds: Math.max(0, Math.round(this.now() - startedAt)),
+      },
+    };
   }
 
   private async requestEnvelope(
