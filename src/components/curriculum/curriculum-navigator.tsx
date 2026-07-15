@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Badge, Button, Card, Progress } from "@/components/ui";
 import { GenerationConfigForm } from "@/components/curriculum/generation-config";
 import type { Curriculum } from "@/domain/curriculum";
+import { parseLessonContent } from "@/domain/lesson-content";
 import {
   emptyCurriculumSelection,
   findSelectedLesson,
@@ -63,6 +64,14 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
   const weeks = getAvailableWeeks(curriculum, selection);
   const lessons = getAvailableLessons(curriculum, selection);
   const selectedLesson = findSelectedLesson(curriculum, selection);
+  const selectedLessonContent = selectedLesson
+    ? parseLessonContent(selectedLesson.content)
+    : undefined;
+  const selectedLessonTitle =
+    selectedLessonContent?.title &&
+    selectedLessonContent.title.trim() !== selectedLesson?.specificObjective.trim()
+      ? selectedLessonContent.title
+      : undefined;
   const selectionComplete = isCurriculumSelectionComplete(curriculum, selection);
   const hasMultipleWeeks = weeks.length > 1;
   const selectedLevels = [
@@ -235,10 +244,57 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
             </div>
             <h2 className="mt-5 text-2xl font-black">Objetivo específico</h2>
             <p className="mt-3 text-lead font-bold leading-8">{selectedLesson.specificObjective}</p>
-            <h3 className="mt-7 text-xl font-black">Conteúdo</h3>
-            <p className="mt-3 whitespace-pre-line font-medium leading-7 text-muted">
-              {selectedLesson.content}
-            </p>
+            <div className="mt-8 border-t-2 border-border pt-7">
+              <div className="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <h3 className="text-xl font-black">Atividades da aula (exemplo)</h3>
+                  {selectedLessonTitle ? (
+                    <p className="mt-1 font-medium leading-7 text-muted">
+                      {selectedLessonTitle}
+                    </p>
+                  ) : null}
+                </div>
+                {selectedLessonContent?.activities.length ? (
+                  <span className="text-sm font-extrabold text-muted">
+                    {selectedLessonContent.activities.length}{" "}
+                    {selectedLessonContent.activities.length === 1 ? "atividade" : "atividades"}
+                  </span>
+                ) : null}
+              </div>
+
+              {selectedLessonContent?.introduction ? (
+                <p className="mt-4 whitespace-pre-line font-medium leading-7 text-muted">
+                  {selectedLessonContent.introduction}
+                </p>
+              ) : null}
+
+              {selectedLessonContent?.activities.length ? (
+                <ol className="mt-5 grid gap-4">
+                  {selectedLessonContent.activities.map((activity) => (
+                    <li
+                      className="rounded-lg border-2 border-border bg-neutral-soft p-5"
+                      key={`${activity.number}-${activity.title}`}
+                    >
+                      <span className="text-sm font-black uppercase tracking-wide text-brand-strong">
+                        Atividade {activity.number}
+                      </span>
+                      <h4 className="mt-1 text-lg font-black leading-7 text-ink">
+                        {activity.title}
+                      </h4>
+                      {activity.description ? (
+                        <p className="mt-3 whitespace-pre-line font-medium leading-7 text-muted">
+                          {activity.description}
+                        </p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ol>
+              ) : selectedLessonContent?.introduction ? null : (
+                <p className="mt-4 font-medium leading-7 text-muted">
+                  Nenhuma atividade foi detalhada para esta aula.
+                </p>
+              )}
+            </div>
           </Card>
         ) : (
           <Card raised={false} tone="outlined">

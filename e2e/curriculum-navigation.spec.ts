@@ -41,6 +41,12 @@ test("percorre o currículo por teclado e só libera uma aula concreta", async (
   await expect(page.getByRole("heading", { name: "Objetivo específico" })).toBeVisible();
   await expect(page.getByText("Escuta e produção do fonema /f/.", { exact: true }).last()).toBeVisible();
   await expect(page.getByText("Música: A Formiga", { exact: false })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Atividades da aula (exemplo)" }),
+  ).toBeVisible();
+  await expect(page.getByText("Atividade 1", { exact: true })).toBeVisible();
+  await expect(page.getByText("Atividade 2", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Ficha de atividade impressa/i)).toHaveCount(0);
   await expect(advanceButton).toBeEnabled();
 });
 

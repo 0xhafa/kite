@@ -15,6 +15,8 @@ import {
   repairModelOutputSchema,
 } from "./model-contracts";
 import type { Activity } from "./generation";
+import { defaultAiModelSelection } from "./ai-models";
+import { parseLessonContent } from "./lesson-content";
 
 type MockActivityTemplate = {
   primaryChildAction: string;
@@ -148,23 +150,10 @@ function selectRepairTemplate(input: RepairModelInput): MockActivityTemplate {
 }
 
 function extractLessonActivities(content: string) {
-  return content
-    .split(/\n(?=Atividade\s*\d+\s*:)/i)
-    .map((section) => section.trim())
-    .filter((section) => /^Atividade\s*\d+\s*:/i.test(section))
-    .map((section) => {
-      const text = section
-        .replace(/^Atividade\s*\d+\s*:\s*/i, "")
-        .replace(/\n\s*[-–]\s*Ficha de atividade impressa\.?\s*$/i, "")
-        .trim();
-
-      const [title, ...description] = text.split("\n");
-
-      return {
-        title: title.trim(),
-        description: description.join("\n").trim() || title.trim(),
-      };
-    });
+  return parseLessonContent(content).activities.map(({ description, title }) => ({
+    title,
+    description: description || title,
+  }));
 }
 
 export function generateMockBatch(input: GenerationModelInput): GenerationModelOutput {
@@ -178,6 +167,7 @@ export function generateMockBatch(input: GenerationModelInput): GenerationModelO
   const configResult = generationConfigSchema.safeParse({
     requestedDurationMinutes: parsedInput.totalDurationMinutes,
     requestedActivityCount: parsedInput.activityCount,
+    ...defaultAiModelSelection,
   });
 
   if (!configResult.success) {
