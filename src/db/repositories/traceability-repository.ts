@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 
 import {
   type ActivityRuleApplication,
@@ -66,35 +66,55 @@ export class TraceabilityRepository {
     resultInput: unknown,
     applicationInput: unknown,
   ): Promise<{ result: ValidationResult; application: ActivityRuleApplication }> {
-    const result = validationResultSchema.parse(resultInput);
-    const application = activityRuleApplicationSchema.parse(applicationInput);
+    return (await this.saveValidations([{ result: resultInput, application: applicationInput }]))[0]!;
+  }
 
-    if (
-      application.validationResultId !== result.id ||
-      application.activityId !== result.activityId ||
-      application.activityVersion !== result.activityVersion ||
-      application.ruleId !== result.ruleId ||
-      application.ruleVersion !== result.ruleVersion ||
-      application.applicability !== result.applicability
-    ) {
-      throw new Error("A aplicação de regra deve corresponder exatamente ao resultado validado.");
+  async saveValidations(
+    inputs: readonly { result: unknown; application: unknown }[],
+  ): Promise<Array<{ result: ValidationResult; application: ActivityRuleApplication }>> {
+    if (inputs.length === 0) return [];
+
+    const parsed = inputs.map(({ result, application }) => ({
+      result: validationResultSchema.parse(result),
+      application: activityRuleApplicationSchema.parse(application),
+    }));
+
+    for (const { result, application } of parsed) {
+      if (
+        application.validationResultId !== result.id ||
+        application.activityId !== result.activityId ||
+        application.activityVersion !== result.activityVersion ||
+        application.ruleId !== result.ruleId ||
+        application.ruleVersion !== result.ruleVersion ||
+        application.applicability !== result.applicability
+      ) {
+        throw new Error("A aplicação de regra deve corresponder exatamente ao resultado validado.");
+      }
     }
 
     await this.db.transaction(async (transaction) => {
-      const [activity] = await transaction
-        .select({ version: activities.version })
+      const activityIds = [...new Set(parsed.map(({ result }) => result.activityId))];
+      const activityRows = await transaction
+        .select({ id: activities.id, version: activities.version })
         .from(activities)
-        .where(eq(activities.id, result.activityId))
-        .limit(1);
-      if (!activity || activity.version !== result.activityVersion) {
-        throw new Error("A validação deve referenciar uma versão existente da atividade.");
+        .where(inArray(activities.id, activityIds));
+      const versionsByActivity = new Map(
+        activityRows.map(({ id, version }) => [id, version]),
+      );
+
+      for (const { result } of parsed) {
+        if (versionsByActivity.get(result.activityId) !== result.activityVersion) {
+          throw new Error("A validação deve referenciar uma versão existente da atividade.");
+        }
       }
 
-      await transaction.insert(validationResults).values(result);
-      await transaction.insert(activityRuleApplications).values(application);
+      await transaction.insert(validationResults).values(parsed.map(({ result }) => result));
+      await transaction
+        .insert(activityRuleApplications)
+        .values(parsed.map(({ application }) => application));
     });
 
-    return { result, application };
+    return parsed;
   }
 
   async listValidationResults(activityId: string, activityVersion: number): Promise<ValidationResult[]> {
@@ -108,6 +128,23 @@ export class TraceabilityRepository {
         ),
       )
       .orderBy(asc(validationResults.ruleId), asc(validationResults.ruleVersion));
+    return rows.map((row) => validationResultSchema.parse(omitNullValues(row)));
+  }
+
+  async listValidationResultsByActivities(
+    activityIds: readonly string[],
+  ): Promise<ValidationResult[]> {
+    if (activityIds.length === 0) return [];
+
+    const rows = await this.db
+      .select()
+      .from(validationResults)
+      .where(inArray(validationResults.activityId, [...activityIds]))
+      .orderBy(
+        asc(validationResults.activityId),
+        asc(validationResults.ruleId),
+        asc(validationResults.ruleVersion),
+      );
     return rows.map((row) => validationResultSchema.parse(omitNullValues(row)));
   }
 
@@ -139,11 +176,19 @@ export class TraceabilityRepository {
   }
 
   async listReviewDecisions(activityId: string): Promise<ReviewDecision[]> {
+    return this.listReviewDecisionsByActivities([activityId]);
+  }
+
+  async listReviewDecisionsByActivities(
+    activityIds: readonly string[],
+  ): Promise<ReviewDecision[]> {
+    if (activityIds.length === 0) return [];
+
     const rows = await this.db
       .select()
       .from(reviewDecisions)
-      .where(eq(reviewDecisions.activityId, activityId))
-      .orderBy(asc(reviewDecisions.createdAt));
+      .where(inArray(reviewDecisions.activityId, [...activityIds]))
+      .orderBy(asc(reviewDecisions.activityId), asc(reviewDecisions.createdAt));
 
     return rows.map((row) => reviewDecisionSchema.parse(omitNullValues(row)));
   }

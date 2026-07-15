@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 
 import {
   type BatchTokenUsage,
@@ -31,62 +31,77 @@ function toCacheEntry(row: typeof generationCacheEntries.$inferSelect): Generati
   return generationCacheEntrySchema.parse(row);
 }
 
+function toModelRunInsert(run: ModelRun): typeof modelRuns.$inferInsert {
+  return {
+    id: run.id,
+    batchId: run.batchId,
+    activityId: run.activityId,
+    stage: run.stage,
+    provider: run.provider,
+    model: run.model,
+    reasoningEffort: run.reasoningEffort,
+    status: run.status,
+    normalizedInput: run.normalizedInput,
+    inputHash: run.inputHash,
+    promptTemplateId: run.promptTemplateId,
+    promptVersion: run.promptVersion,
+    renderedPrompt: run.renderedPrompt,
+    validatedResponse: run.validatedResponse,
+    ruleSetVersion: run.ruleSetVersion,
+    cacheKey: run.cacheKey,
+    reusedFromModelRunId: run.reusedFromModelRunId,
+    rawUsage: run.rawUsage,
+    inputTokens: run.tokenUsage.inputTokens,
+    outputTokens: run.tokenUsage.outputTokens,
+    otherTokens: run.tokenUsage.otherTokens,
+    totalTokens: run.tokenUsage.totalTokens,
+    latencyMilliseconds: run.latencyMilliseconds,
+    error: run.error,
+    createdAt: run.createdAt,
+  };
+}
+
 export class ModelRunRepository {
   constructor(private readonly db: KiteDatabase) {}
 
   async save(input: unknown): Promise<ModelRun> {
-    const run = modelRunSchema.parse(input);
+    return (await this.saveMany([input]))[0]!;
+  }
 
-    if (run.activityId) {
-      const [activity] = await this.db
-        .select({ batchId: activities.batchId })
-        .from(activities)
-        .where(eq(activities.id, run.activityId))
-        .limit(1);
-      if (!activity || activity.batchId !== run.batchId) {
+  async saveMany(inputs: readonly unknown[]): Promise<ModelRun[]> {
+    if (inputs.length === 0) return [];
+
+    const runs = inputs.map((input) => modelRunSchema.parse(input));
+    const activityIds = runs.flatMap(({ activityId }) => activityId ? [activityId] : []);
+    const activityRows = activityIds.length === 0
+      ? []
+      : await this.db
+          .select({ id: activities.id, batchId: activities.batchId })
+          .from(activities)
+          .where(inArray(activities.id, activityIds));
+    const activityBatchById = new Map(
+      activityRows.map(({ id, batchId }) => [id, batchId]),
+    );
+
+    for (const run of runs) {
+      if (run.activityId && activityBatchById.get(run.activityId) !== run.batchId) {
         throw new Error("A execução deve referenciar uma atividade existente no mesmo lote.");
       }
+
+      if (run.reusedFromModelRunId) {
+        const original = await this.get(run.reusedFromModelRunId);
+        if (!original || original.status !== "completed" || original.validatedResponse === undefined) {
+          throw new Error("A execução original precisa estar concluída e validada para ser reutilizada.");
+        }
+        if (original.reusedFromModelRunId) {
+          throw new Error("A reutilização deve apontar diretamente para a execução original.");
+        }
+      }
     }
 
-    if (run.reusedFromModelRunId) {
-      const original = await this.get(run.reusedFromModelRunId);
-      if (!original || original.status !== "completed" || original.validatedResponse === undefined) {
-        throw new Error("A execução original precisa estar concluída e validada para ser reutilizada.");
-      }
-      if (original.reusedFromModelRunId) {
-        throw new Error("A reutilização deve apontar diretamente para a execução original.");
-      }
-    }
+    await this.db.insert(modelRuns).values(runs.map(toModelRunInsert));
 
-    await this.db.insert(modelRuns).values({
-      id: run.id,
-      batchId: run.batchId,
-      activityId: run.activityId,
-      stage: run.stage,
-      provider: run.provider,
-      model: run.model,
-      reasoningEffort: run.reasoningEffort,
-      status: run.status,
-      normalizedInput: run.normalizedInput,
-      inputHash: run.inputHash,
-      promptTemplateId: run.promptTemplateId,
-      promptVersion: run.promptVersion,
-      renderedPrompt: run.renderedPrompt,
-      validatedResponse: run.validatedResponse,
-      ruleSetVersion: run.ruleSetVersion,
-      cacheKey: run.cacheKey,
-      reusedFromModelRunId: run.reusedFromModelRunId,
-      rawUsage: run.rawUsage,
-      inputTokens: run.tokenUsage.inputTokens,
-      outputTokens: run.tokenUsage.outputTokens,
-      otherTokens: run.tokenUsage.otherTokens,
-      totalTokens: run.tokenUsage.totalTokens,
-      latencyMilliseconds: run.latencyMilliseconds,
-      error: run.error,
-      createdAt: run.createdAt,
-    });
-
-    return run;
+    return runs;
   }
 
   async get(id: string): Promise<ModelRun | undefined> {
@@ -95,11 +110,17 @@ export class ModelRunRepository {
   }
 
   async listByBatch(batchId: string): Promise<ModelRun[]> {
+    return this.listByBatches([batchId]);
+  }
+
+  async listByBatches(batchIds: readonly string[]): Promise<ModelRun[]> {
+    if (batchIds.length === 0) return [];
+
     const rows = await this.db
       .select()
       .from(modelRuns)
-      .where(eq(modelRuns.batchId, batchId))
-      .orderBy(asc(modelRuns.createdAt));
+      .where(inArray(modelRuns.batchId, [...batchIds]))
+      .orderBy(asc(modelRuns.batchId), asc(modelRuns.createdAt));
     return rows.map(toModelRun);
   }
 

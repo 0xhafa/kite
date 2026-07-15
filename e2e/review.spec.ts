@@ -80,6 +80,12 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
   await expect(activityHeading).toBeFocused();
   await expect(activityHeading).not.toHaveText(firstActivityTitle ?? "");
   await expect(page.getByText("1 de 3 revisadas · 25 min")).toBeVisible();
+
+  await page.getByRole("button", { name: "Atividade anterior" }).click();
+  const approvedButton = page.getByRole("button", { name: "Aprovada", exact: true });
+  await expect(approvedButton).toHaveAttribute("aria-pressed", "true");
+  await approvedButton.click();
+  await expect(page.getByText("1 de 3 revisadas · 25 min")).toBeVisible();
 });
 
 test("exibe estados de carregamento, erro e vazio", async ({ page }) => {

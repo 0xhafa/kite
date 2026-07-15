@@ -22,7 +22,7 @@ const globalDatabase = globalThis as typeof globalThis & {
 
 async function initializeApplicationDatabase(): Promise<ApplicationDatabase> {
   const databaseUrl =
-  process.env.DATABASE_URL?.trim() || "file:.data/kite.db";
+    process.env.DATABASE_URL?.trim() || "file:.data/kite.db";
 
   if (databaseUrl.startsWith("file:")) {
     await mkdir(".data", { recursive: true });
@@ -32,6 +32,20 @@ async function initializeApplicationDatabase(): Promise<ApplicationDatabase> {
     url: databaseUrl,
     authToken: process.env.DATABASE_AUTH_TOKEN,
   });
+
+  if (
+    process.env.NODE_ENV !== "production" ||
+    process.env.KITE_RUNTIME_DB_SETUP === "1"
+  ) {
+    await prepareApplicationDatabase(db);
+  }
+
+  return { db };
+}
+
+export async function prepareApplicationDatabase(
+  db: KiteDatabase,
+): Promise<void> {
   await migrateDatabase(db);
 
   const [existingTheme] = await db.select({ id: themes.id }).from(themes).limit(1);
@@ -40,22 +54,18 @@ async function initializeApplicationDatabase(): Promise<ApplicationDatabase> {
   }
 
   const catalog = loadRuleCatalog(rulesData);
-  for (const rule of catalog.rules) {
-    await db.insert(rules).values({
-      id: rule.id,
-      version: rule.version,
-      title: rule.title,
-      description: rule.description,
-      applicabilityCondition: rule.applicabilityCondition,
-      generationInstruction: rule.generationInstruction,
-      validationCriterion: rule.validationCriterion,
-      severity: rule.severity,
-      origin: rule.origin,
-      status: rule.status,
-    }).onConflictDoNothing();
-  }
-
-  return { db };
+  await db.insert(rules).values(catalog.rules.map((rule) => ({
+    id: rule.id,
+    version: rule.version,
+    title: rule.title,
+    description: rule.description,
+    applicabilityCondition: rule.applicabilityCondition,
+    generationInstruction: rule.generationInstruction,
+    validationCriterion: rule.validationCriterion,
+    severity: rule.severity,
+    origin: rule.origin,
+    status: rule.status,
+  }))).onConflictDoNothing();
 }
 
 export function getApplicationDatabase(): Promise<ApplicationDatabase> {

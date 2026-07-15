@@ -190,21 +190,22 @@ describe("resumo da validação na atividade", () => {
     expect(html).toContain(">retome as palavras.</p>");
   });
 
-  it("encerra o lote com acesso à biblioteca sem reiniciar decisões já persistidas", () => {
+  it("encerra o lote com acesso à biblioteca e permite rever decisões persistidas", () => {
     const item = createItem("passed");
     const html = renderToStaticMarkup(
       createElement(ActivityReview, {
         decisionHistory: {
-          [item.activity.id]: [{ decision: "approved" }],
+          [item.activity.id]: [{ decision: "rejected" }],
         },
         state: { status: "ready", items: [item] },
       }),
     );
 
     expect(html).toContain("Lote revisado");
+    expect(html).toMatch(/0\s+aprovadas e 1\s+rejeitada/);
     expect(html).toContain("O lote foi concluído e permanece salvo na sua biblioteca.");
     expect(html).toContain('href="/atividades"');
     expect(html).toContain("Ver atividades revisadas");
-    expect(html).not.toContain("Rever atividades");
+    expect(html).toContain("Rever atividades");
   });
 });

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 
 import { aiModelSelectionSchema } from "@/domain/ai-models";
@@ -14,6 +14,11 @@ import {
   rejectActivity,
   rejectAndRegenerateActivity,
 } from "@/server/generation/integrated-flow";
+import { REVIEWED_ACTIVITY_LIBRARY_CACHE_TAG } from "@/server/generation/cache";
+import {
+  shouldUseDurableGenerationWorkflow,
+  startDurableGenerationWorkflow,
+} from "@/server/generation/workflow-dispatch";
 
 const generationActionInputSchema = z.object({
   selection: completeCurriculumSelectionSchema,
@@ -50,12 +55,19 @@ function actionError(error: unknown): { ok: false; message: string } {
   };
 }
 
+function invalidateReviewedActivityLibrary(): void {
+  updateTag(REVIEWED_ACTIVITY_LIBRARY_CACHE_TAG);
+}
+
 export async function generateBatchAction(
   input: unknown,
 ): Promise<ActionResult<{ batchId: string }>> {
   try {
     const parsed = generationActionInputSchema.parse(input);
-    const batchId = await generateAndPersistBatch(parsed);
+    const batchId = shouldUseDurableGenerationWorkflow()
+      ? await startDurableGenerationWorkflow(parsed)
+      : await generateAndPersistBatch(parsed);
+    invalidateReviewedActivityLibrary();
     revalidatePath("/");
     revalidatePath("/atividades");
     return { ok: true, data: { batchId } };
@@ -70,6 +82,7 @@ export async function approveActivityAction(
   try {
     const parsed = reviewActionInputSchema.parse(input);
     await approveActivity(parsed);
+    invalidateReviewedActivityLibrary();
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/revisar");
@@ -85,6 +98,7 @@ export async function rejectActivityAction(
   try {
     const parsed = reviewActionInputSchema.parse(input);
     await rejectActivity(parsed);
+    invalidateReviewedActivityLibrary();
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/revisar");
@@ -100,6 +114,7 @@ export async function rejectAndRegenerateActivityAction(
   try {
     const parsed = regenerationActionInputSchema.parse(input);
     const result = await rejectAndRegenerateActivity(parsed);
+    invalidateReviewedActivityLibrary();
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/revisar");
@@ -115,6 +130,7 @@ export async function deleteBatchAction(
   try {
     const parsed = deleteBatchActionInputSchema.parse(input);
     await deletePersistedBatch(parsed.batchId);
+    invalidateReviewedActivityLibrary();
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/planejar");

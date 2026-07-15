@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { join } from "node:path";
 
 import type {
   GenerationModelInput,
@@ -14,10 +14,10 @@ export type AiMessage = {
   content: string;
 };
 
-const contractPaths = {
-  generation: "prompts/generation-contract.md",
-  repair: "prompts/repair-contract.md",
-  validation: "prompts/validation-contract.md",
+const contractFiles = {
+  generation: "generation-contract.md",
+  repair: "repair-contract.md",
+  validation: "validation-contract.md",
 } as const satisfies Record<AiOperation, string>;
 
 const roleInstructions = {
@@ -30,7 +30,10 @@ const roleInstructions = {
 } as const satisfies Record<AiOperation, string>;
 
 function readContract(operation: AiOperation): string {
-  return readFileSync(resolve(process.cwd(), contractPaths[operation]), "utf8").trim();
+  return readFileSync(
+    join(process.cwd(), "prompts", contractFiles[operation]),
+    "utf8",
+  ).trim();
 }
 
 function createMessages(operation: AiOperation, input: unknown): AiMessage[] {

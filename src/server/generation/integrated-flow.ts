@@ -23,7 +23,11 @@ import {
   type ValidationResult,
 } from "@/domain/rules";
 import { loadRuleCatalog } from "@/domain/rules-catalog";
-import type { BatchTokenUsage, ModelRun } from "@/domain/usage";
+import {
+  aggregateBatchTokenUsage,
+  type BatchTokenUsage,
+  type ModelRun,
+} from "@/domain/usage";
 import {
   GenerationRepository,
   ModelRunRepository,
@@ -33,9 +37,11 @@ import {
 import { getApplicationDatabase } from "../application-database";
 import {
   createInitialGenerationArtifacts,
+  createPendingGenerationBatch,
   createRegenerationArtifacts,
   createReviewItem,
   resolveCurriculumContext,
+  type InitialGenerationArtifacts,
 } from "./pipeline";
 import type { GenerationConfig } from "@/domain/generation-config";
 
@@ -52,6 +58,12 @@ export type ReviewBatchData = {
   modelSelection: AiModelSelection;
   usage: BatchTokenUsage;
 };
+
+export type ReviewPageBatchData =
+  | { status: "missing" }
+  | { status: "generating"; modelSelection: AiModelSelection }
+  | { status: "failed" }
+  | { status: "ready"; data: ReviewBatchData };
 
 export type PersistedPlanningContext = {
   batchId: string;
@@ -93,6 +105,16 @@ export type ReviewedActivityLibraryBatch = {
   totalActivities: number;
 };
 
+export type GenerationRequestInput = {
+  selection: CompleteCurriculumSelection;
+  config: GenerationConfig;
+};
+
+export type PersistedGenerationRequest = GenerationRequestInput & {
+  batchId: string;
+  createdAt: string;
+};
+
 async function repositories() {
   const { db } = await getApplicationDatabase();
   return {
@@ -102,12 +124,13 @@ async function repositories() {
   };
 }
 
-async function persistReport(
+async function persistReports(
   traceability: TraceabilityRepository,
-  report: ValidationReport,
+  reports: readonly ValidationReport[],
 ): Promise<void> {
-  for (const result of report.results) {
-    await traceability.saveValidation(result, {
+  await traceability.saveValidations(reports.flatMap(({ results }) => results).map((result) => ({
+    result,
+    application: {
       activityId: result.activityId,
       activityVersion: result.activityVersion,
       ruleId: result.ruleId,
@@ -118,29 +141,74 @@ async function persistReport(
           ? "Regra selecionada pelo validador determinístico para este lote."
           : "Regra registrada como não aplicável pelo validador determinístico.",
       validationResultId: result.id,
-    });
+    },
+  })));
+}
+
+export async function createPersistedGenerationRequest(
+  input: GenerationRequestInput,
+): Promise<PersistedGenerationRequest> {
+  const batch = createPendingGenerationBatch({ curriculum, ...input });
+  const { generations } = await repositories();
+  await generations.createBatch(batch);
+
+  return {
+    ...input,
+    batchId: batch.id,
+    createdAt: batch.createdAt,
+  };
+}
+
+export async function generateArtifactsForPersistedBatch(
+  input: PersistedGenerationRequest,
+): Promise<InitialGenerationArtifacts> {
+  const { generations } = await repositories();
+  const batch = await generations.getBatch(input.batchId);
+
+  if (!batch) {
+    throw new Error("O lote pendente não foi encontrado.");
+  }
+  if (batch.status === "ready_for_review" || batch.status === "completed") {
+    throw new Error("O lote já foi gerado.");
+  }
+
+  try {
+    await generations.updateBatchStatus(batch.id, "generating");
+    return await createInitialGenerationArtifacts(
+      { curriculum, selection: input.selection, config: input.config },
+      { batchId: input.batchId, createdAt: input.createdAt },
+    );
+  } catch (error) {
+    await generations.updateBatchStatus(batch.id, "failed").catch(() => undefined);
+    throw error;
   }
 }
 
-export async function generateAndPersistBatch(input: {
-  selection: CompleteCurriculumSelection;
-  config: GenerationConfig;
-}): Promise<string> {
-  const artifacts = await createInitialGenerationArtifacts({ curriculum, ...input });
+export async function persistInitialGenerationArtifacts(
+  artifacts: InitialGenerationArtifacts,
+): Promise<string> {
   const { generations, runs, traceability } = await repositories();
+  let batch = await generations.getBatch(artifacts.batch.id);
 
-  await generations.createBatch({ ...artifacts.batch, status: "generating" });
+  if (batch?.status === "ready_for_review" || batch?.status === "completed") {
+    return artifacts.batch.id;
+  }
+
+  const existingRuns = batch ? await runs.listByBatch(batch.id) : [];
+  if (batch && (batch.status === "failed" || existingRuns.length > 0)) {
+    await generations.deleteBatch(batch.id);
+    batch = undefined;
+  }
+  if (!batch) {
+    await generations.createBatch({ ...artifacts.batch, status: "generating" });
+  }
 
   try {
     await runs.save(artifacts.generationRun);
     await generations.createInitialActivityGroup(artifacts.group);
 
-    for (const run of artifacts.validationRuns) {
-      await runs.save(run);
-    }
-    for (const report of artifacts.reports) {
-      await persistReport(traceability, report);
-    }
+    await runs.saveMany(artifacts.validationRuns);
+    await persistReports(traceability, artifacts.reports);
 
     await generations.updateBatchStatus(artifacts.batch.id, "ready_for_review");
   } catch (error) {
@@ -149,6 +217,23 @@ export async function generateAndPersistBatch(input: {
   }
 
   return artifacts.batch.id;
+}
+
+export async function generateAndPersistBatch(
+  input: GenerationRequestInput,
+): Promise<string> {
+  const persistedInput = await createPersistedGenerationRequest(input);
+  const artifacts = await generateArtifactsForPersistedBatch(persistedInput);
+  return persistInitialGenerationArtifacts(artifacts);
+}
+
+export async function markGenerationBatchFailed(batchId: string): Promise<void> {
+  const { generations } = await repositories();
+  const batch = await generations.getBatch(batchId);
+
+  if (batch && batch.status !== "ready_for_review" && batch.status !== "completed") {
+    await generations.updateBatchStatus(batch.id, "failed");
+  }
 }
 
 function reportCreatedAt(activity: Activity, runs: readonly ModelRun[]): string {
@@ -213,24 +298,33 @@ function requirePersistedValidationReport(
   return rebuildReport(activity, results, runs);
 }
 
-export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData | undefined> {
-  const { generations, runs, traceability } = await repositories();
-  const batch = await generations.getBatch(batchId);
-  if (
-    !batch ||
-    (batch.status !== "ready_for_review" && batch.status !== "completed")
-  ) return undefined;
-
-  const group = await generations.getCurrentActivityGroup(batchId);
+async function rebuildReviewBatch(
+  batch: GenerationBatch,
+  generations: GenerationRepository,
+  runs: ModelRunRepository,
+  traceability: TraceabilityRepository,
+): Promise<ReviewBatchData | undefined> {
+  const [[group], modelRuns] = await Promise.all([
+    generations.listCurrentActivityGroups([batch]),
+    runs.listByBatch(batch.id),
+  ]);
   if (!group) return undefined;
-  const modelRuns = await runs.listByBatch(batchId);
+  const activityIds = group.activities.map(({ id }) => id);
+  const [validationResults, reviewDecisions] = await Promise.all([
+    traceability.listValidationResultsByActivities(activityIds),
+    traceability.listReviewDecisionsByActivities(activityIds),
+  ]);
+  const resultsByActivity = groupBy(validationResults, ({ activityId }) => activityId);
+  const decisionsByActivity = groupBy(reviewDecisions, ({ activityId }) => activityId);
   const decisionHistory: Record<string, { decision: "approved" | "rejected"; feedback?: string }[]> = {};
   const items: ActivityReviewItem[] = [];
 
   for (const activity of group.activities) {
-    const results = await traceability.listValidationResults(activity.id, activity.version);
+    const results = (resultsByActivity.get(activity.id) ?? []).filter(
+      ({ activityVersion }) => activityVersion === activity.version,
+    );
     const report = requirePersistedValidationReport(activity, results, modelRuns);
-    const decisions = await traceability.listReviewDecisions(activity.id);
+    const decisions = decisionsByActivity.get(activity.id) ?? [];
     decisionHistory[activity.id] = decisions.map(({ decision, feedback }) => ({
       decision,
       ...(feedback ? { feedback } : {}),
@@ -243,8 +337,36 @@ export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData 
     items,
     decisionHistory,
     modelSelection: modelSelectionFromRuns(modelRuns, batch),
-    usage: await runs.aggregateBatchUsage(batchId),
+    usage: aggregateBatchTokenUsage(batch.id, modelRuns),
   };
+}
+
+export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData | undefined> {
+  const { generations, runs, traceability } = await repositories();
+  const batch = await generations.getBatch(batchId);
+  if (
+    !batch ||
+    (batch.status !== "ready_for_review" && batch.status !== "completed")
+  ) return undefined;
+
+  return rebuildReviewBatch(batch, generations, runs, traceability);
+}
+
+export async function loadReviewPageBatch(batchId: string): Promise<ReviewPageBatchData> {
+  const { generations, runs, traceability } = await repositories();
+  const batch = await generations.getBatch(batchId);
+
+  if (!batch) return { status: "missing" };
+  if (batch.status === "pending" || batch.status === "generating") {
+    return {
+      status: "generating",
+      modelSelection: modelSelectionFromBatch(batch),
+    };
+  }
+  if (batch.status === "failed") return { status: "failed" };
+
+  const data = await rebuildReviewBatch(batch, generations, runs, traceability);
+  return data ? { status: "ready", data } : { status: "missing" };
 }
 
 export async function loadPersistedPlanningContext(
@@ -280,10 +402,23 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
   const batches = (await generations.listBatches()).filter(
     ({ status }) => status === "ready_for_review" || status === "completed",
   );
+  if (batches.length === 0) return [];
+
+  const [groups, modelRuns] = await Promise.all([
+    generations.listCurrentActivityGroups(batches),
+    runs.listByBatches(batches.map(({ id }) => id)),
+  ]);
+  const groupsByBatch = new Map(groups.map((group) => [group.batchId, group]));
+  const runsByBatch = groupBy(modelRuns, ({ batchId }) => batchId);
+  const activities = groups.flatMap(({ activities: batchActivities }) => batchActivities);
+  const reviewDecisions = await traceability.listReviewDecisionsByActivities(
+    activities.map(({ id }) => id),
+  );
+  const decisionsByActivity = groupBy(reviewDecisions, ({ activityId }) => activityId);
   const library: ReviewedActivityLibraryBatch[] = [];
 
   for (const batch of batches) {
-    const group = await generations.getCurrentActivityGroup(batch.id);
+    const group = groupsByBatch.get(batch.id);
     const selection = completeCurriculumSelectionSchema.safeParse(
       batch.normalizedParameters.selection,
     );
@@ -298,9 +433,11 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
 
     const reviewedActivities: ReviewedActivityLibraryBatch["reviewedActivities"] = [];
     for (const activity of group.activities) {
-      const decision = (await traceability.listReviewDecisions(activity.id)).at(-1);
+      const decision = decisionsByActivity.get(activity.id)?.at(-1);
       if (decision) reviewedActivities.push({ activity, decision });
     }
+
+    const batchRuns = runsByBatch.get(batch.id) ?? [];
 
     library.push({
       batchId: batch.id,
@@ -309,7 +446,7 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
         (group.activities.length > 0 &&
           group.activities.every(({ status }) => isFinalReviewStatus(status))),
       createdAt: batch.createdAt,
-      usage: await runs.aggregateBatchUsage(batch.id),
+      usage: aggregateBatchTokenUsage(batch.id, batchRuns),
       theme: {
         id: theme.id,
         name: theme.name,
@@ -340,6 +477,20 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
   return library;
 }
 
+function groupBy<T, K>(
+  values: readonly T[],
+  keyFor: (value: T) => K,
+): Map<K, T[]> {
+  const grouped = new Map<K, T[]>();
+  for (const value of values) {
+    const key = keyFor(value);
+    const group = grouped.get(key) ?? [];
+    group.push(value);
+    grouped.set(key, group);
+  }
+  return grouped;
+}
+
 export async function deletePersistedBatch(batchId: string): Promise<void> {
   const { generations } = await repositories();
   await generations.deleteBatch(batchId);
@@ -353,7 +504,10 @@ export async function approveActivity(input: {
 }): Promise<void> {
   const { generations, runs, traceability } = await repositories();
   const batch = await generations.getBatch(input.batchId);
-  if (!batch || batch.status !== "ready_for_review") {
+  if (
+    !batch ||
+    (batch.status !== "ready_for_review" && batch.status !== "completed")
+  ) {
     throw new Error("O lote não está disponível para novas decisões de revisão.");
   }
   const group = await generations.getCurrentActivityGroup(input.batchId);
@@ -368,6 +522,7 @@ export async function approveActivity(input: {
     await traceability.listValidationResults(activity.id, activity.version),
     await runs.listByBatch(input.batchId),
   );
+  const previousDecisions = await traceability.listReviewDecisions(activity.id);
 
   await traceability.saveReviewDecision({
     activityId: activity.id,
@@ -375,7 +530,7 @@ export async function approveActivity(input: {
     decision: "approved",
     ...(input.feedback?.trim() ? { feedback: input.feedback.trim() } : {}),
     author: "revisor-poc",
-    createdAt: new Date().toISOString(),
+    createdAt: nextReviewDecisionCreatedAt(previousDecisions),
   });
 
   await completeBatchIfReviewed(generations, input.batchId);
@@ -389,7 +544,10 @@ export async function rejectActivity(input: {
 }): Promise<void> {
   const { generations, runs, traceability } = await repositories();
   const batch = await generations.getBatch(input.batchId);
-  if (!batch || batch.status !== "ready_for_review") {
+  if (
+    !batch ||
+    (batch.status !== "ready_for_review" && batch.status !== "completed")
+  ) {
     throw new Error("O lote não está disponível para novas decisões de revisão.");
   }
   const group = await generations.getCurrentActivityGroup(input.batchId);
@@ -404,6 +562,7 @@ export async function rejectActivity(input: {
     await traceability.listValidationResults(activity.id, activity.version),
     await runs.listByBatch(input.batchId),
   );
+  const previousDecisions = await traceability.listReviewDecisions(activity.id);
 
   await traceability.saveReviewDecision({
     activityId: activity.id,
@@ -411,7 +570,7 @@ export async function rejectActivity(input: {
     decision: "rejected",
     ...(input.feedback?.trim() ? { feedback: input.feedback.trim() } : {}),
     author: "revisor-poc",
-    createdAt: new Date().toISOString(),
+    createdAt: nextReviewDecisionCreatedAt(previousDecisions),
   });
 
   await completeBatchIfReviewed(generations, input.batchId);
@@ -453,6 +612,16 @@ function modelSelectionFromRuns(
   return modelSelectionFromBatch(batch);
 }
 
+function nextReviewDecisionCreatedAt(
+  decisions: readonly { createdAt: string }[],
+): string {
+  const latestTimestamp = decisions.reduce(
+    (latest, decision) => Math.max(latest, Date.parse(decision.createdAt)),
+    Number.NEGATIVE_INFINITY,
+  );
+  return new Date(Math.max(Date.now(), latestTimestamp + 1)).toISOString();
+}
+
 function isFinalReviewStatus(status: Activity["status"]): boolean {
   return status === "approved" || status === "rejected";
 }
@@ -482,7 +651,11 @@ export async function rejectAndRegenerateActivity(input: {
   const batch = await generations.getBatch(input.batchId);
   const group = await generations.getCurrentActivityGroup(input.batchId);
 
-  if (!batch || batch.status !== "ready_for_review" || !group) {
+  if (
+    !batch ||
+    (batch.status !== "ready_for_review" && batch.status !== "completed") ||
+    !group
+  ) {
     throw new Error("O lote de revisão não foi encontrado.");
   }
 
@@ -490,10 +663,6 @@ export async function rejectAndRegenerateActivity(input: {
   if (!currentActivity || currentActivity.version !== input.activityVersion) {
     throw new Error("A atividade mudou desde que a revisão foi carregada.");
   }
-  if (currentActivity.status === "approved") {
-    throw new Error("Uma atividade aprovada não pode ser regenerada.");
-  }
-
   const modelRuns = await runs.listByBatch(batch.id);
   const currentResults = await traceability.listValidationResults(
     currentActivity.id,
@@ -518,6 +687,7 @@ export async function rejectAndRegenerateActivity(input: {
       ? aiModelSelectionSchema.parse(input.modelSelection)
       : modelSelectionFromBatch(batch),
   });
+  const previousDecisions = await traceability.listReviewDecisions(currentActivity.id);
 
   await runs.save(artifacts.repairRun);
   await traceability.saveReviewDecision({
@@ -526,11 +696,14 @@ export async function rejectAndRegenerateActivity(input: {
     decision: "rejected",
     ...(input.feedback?.trim() ? { feedback: input.feedback.trim() } : {}),
     author: "revisor-poc",
-    createdAt: new Date().toISOString(),
+    createdAt: nextReviewDecisionCreatedAt(previousDecisions),
   });
   await generations.regenerateActivity(artifacts.replacement);
   await runs.save(artifacts.validationRun);
-  await persistReport(traceability, artifacts.report);
+  await persistReports(traceability, [artifacts.report]);
+  if (batch.status === "completed") {
+    await generations.updateBatchStatus(batch.id, "ready_for_review");
+  }
 
   return {
     item: createReviewItem(artifacts.replacement, artifacts.report),

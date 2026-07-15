@@ -6,7 +6,7 @@ import {
   ReviewedActivitiesIcon,
 } from "@/components/header-icon";
 import { brandAssets } from "@/lib/brand";
-import { loadReviewedActivityLibrary } from "@/server/generation/integrated-flow";
+import { loadCachedReviewedActivityLibrary } from "@/server/generation/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +29,7 @@ const principles = [
 ] as const;
 
 export default async function Home() {
-  const library = await loadReviewedActivityLibrary();
+  const library = await loadCachedReviewedActivityLibrary();
   const reviewedActivityCount = library.reduce(
     (total, batch) => total + batch.reviewedActivities.length,
     0,

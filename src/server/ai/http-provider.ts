@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 
 import type { AiProvider, AiProviderResult } from "@/domain/ai-provider";
 import {
@@ -56,8 +56,9 @@ export class AiProviderError extends Error {
     readonly operation: AiOperation,
     readonly details: readonly string[] = [],
     readonly statusCode?: number,
+    message: string = errorMessages[code],
   ) {
-    super(errorMessages[code]);
+    super(message);
   }
 }
 
@@ -78,6 +79,107 @@ type ChatCompletionEnvelope = {
   }>;
   usage?: unknown;
 };
+
+const supportedStrictJsonSchemaKeys = new Set([
+  "type",
+  "properties",
+  "items",
+  "required",
+  "additionalProperties",
+  "enum",
+  "anyOf",
+  "description",
+]);
+
+function sanitizeStrictJsonSchema(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sanitizeStrictJsonSchema);
+  }
+
+  if (typeof value !== "object" || value === null) {
+    return value;
+  }
+
+  const sanitized: Record<string, unknown> = {};
+
+  for (const [key, child] of Object.entries(value)) {
+    if (key === "properties" && typeof child === "object" && child !== null) {
+      sanitized.properties = Object.fromEntries(
+        Object.entries(child).map(([propertyName, propertySchema]) => [
+          propertyName,
+          sanitizeStrictJsonSchema(propertySchema),
+        ]),
+      );
+      continue;
+    }
+
+    if (supportedStrictJsonSchemaKeys.has(key)) {
+      sanitized[key] = sanitizeStrictJsonSchema(child);
+    }
+  }
+
+  return sanitized;
+}
+
+function responseFormatFor(
+  config: HttpProviderConfig,
+  operation: AiOperation,
+  outputSchema: z.ZodType,
+) {
+  if (
+    config.providerId === "groq" &&
+    config.model === "openai/gpt-oss-20b" &&
+    operation !== "validation"
+  ) {
+    return {
+      type: "json_schema",
+      json_schema: {
+        name: `kite_${operation}`,
+        strict: true,
+        schema: sanitizeStrictJsonSchema(z.toJSONSchema(outputSchema)),
+      },
+    };
+  }
+
+  return { type: "json_object" };
+}
+
+function httpErrorMessage(statusCode: number): string {
+  if (statusCode === 401 || statusCode === 403) {
+    return "O provedor de IA recusou a credencial configurada. Verifique a chave da API.";
+  }
+
+  if (statusCode === 429) {
+    return "O provedor de IA atingiu o limite de uso. Aguarde um instante e tente novamente.";
+  }
+
+  if (statusCode >= 500) {
+    return "O provedor de IA está temporariamente indisponível. Tente novamente em instantes.";
+  }
+
+  return errorMessages.http_error;
+}
+
+async function providerErrorDetails(response: Response): Promise<string[]> {
+  try {
+    const payload = await response.json() as {
+      error?: { code?: unknown; type?: unknown };
+    };
+    const code = typeof payload.error?.code === "string"
+      ? payload.error.code
+      : undefined;
+    const type = typeof payload.error?.type === "string"
+      ? payload.error.type
+      : undefined;
+
+    return [
+      ...(code ? [`Código do provedor: ${code}.`] : []),
+      ...(type && type !== code ? [`Tipo do erro: ${type}.`] : []),
+    ];
+  } catch {
+    return [];
+  }
+}
 
 function formatSchemaIssues(error: z.ZodError): string[] {
   return error.issues.map((issue) => {
@@ -268,12 +370,16 @@ export class HttpAiProvider implements AiProvider {
 
     let envelope: ChatCompletionEnvelope;
     const renderedMessages = messages(inputResult.data);
-    const maxAttempts = operation === "generation" ? 1 : 2;
+    const maxAttempts = 2;
     const startedAt = this.now();
 
     for (let attempt = 1; ; attempt += 1) {
       try {
-        envelope = await this.requestEnvelope(operation, renderedMessages);
+        envelope = await this.requestEnvelope(
+          operation,
+          renderedMessages,
+          outputSchema,
+        );
         break;
       } catch (error) {
         if (attempt < maxAttempts && isTransientProviderError(error)) {
@@ -353,6 +459,7 @@ export class HttpAiProvider implements AiProvider {
   private async requestEnvelope(
     operation: AiOperation,
     messages: readonly AiMessage[],
+    outputSchema: z.ZodType,
   ): Promise<ChatCompletionEnvelope> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
@@ -369,7 +476,11 @@ export class HttpAiProvider implements AiProvider {
           body: JSON.stringify({
             model: this.config.model,
             messages,
-            response_format: { type: "json_object" },
+            response_format: responseFormatFor(
+              this.config,
+              operation,
+              outputSchema,
+            ),
             ...(this.config.reasoningEffort
               ? { reasoning_effort: this.config.reasoningEffort }
               : {}),
@@ -383,7 +494,13 @@ export class HttpAiProvider implements AiProvider {
       );
 
       if (!response.ok) {
-        throw new AiProviderError("http_error", operation, [], response.status);
+        throw new AiProviderError(
+          "http_error",
+          operation,
+          await providerErrorDetails(response),
+          response.status,
+          httpErrorMessage(response.status),
+        );
       }
 
       try {

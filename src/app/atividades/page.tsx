@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { ReviewedActivityLibrary } from "@/components/review/reviewed-activity-library";
 import { Badge } from "@/components/ui";
-import { loadReviewedActivityLibrary } from "@/server/generation/integrated-flow";
+import { loadCachedReviewedActivityLibrary } from "@/server/generation/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ReviewedActivitiesPage() {
-  const library = await loadReviewedActivityLibrary();
+  const library = await loadCachedReviewedActivityLibrary();
 
   return (
     <AppShell mainClassName="max-w-5xl" sectionLabel="Biblioteca">

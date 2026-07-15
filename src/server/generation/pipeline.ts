@@ -4,6 +4,7 @@ import rulesData from "../../../data/rules.json";
 import type { AiProvider, AiRunMetadata } from "@/domain/ai-provider";
 import {
   aiModelSelectionSchema,
+  getAiModelDefinition,
   type AiModelSelection,
 } from "@/domain/ai-models";
 import { selectApplicableRuleInputs } from "@/domain/applicability";
@@ -45,6 +46,8 @@ export type GenerationPipelineInput = {
 };
 
 export type PipelineOptions = {
+  batchId?: string;
+  createdAt?: string;
   createId?: (prefix: string) => string;
   now?: () => string;
   provider?: AiProvider;
@@ -103,6 +106,47 @@ function createRuntime(options: PipelineOptions, modelSelection: AiModelSelectio
     now: options.now ?? (() => new Date().toISOString()),
     provider: options.provider ?? createAiProvider(modelSelection),
   };
+}
+
+export function createPendingGenerationBatch(
+  input: GenerationPipelineInput,
+  options: Pick<PipelineOptions, "batchId" | "createdAt" | "createId" | "now"> = {},
+) {
+  const config = generationConfigSchema.parse(input.config);
+  const modelSelection = aiModelSelectionSchema.parse({
+    model: config.model,
+    ...(config.reasoningEffort
+      ? { reasoningEffort: config.reasoningEffort }
+      : {}),
+  });
+  const curriculumContext = resolveCurriculumContext(input.curriculum, input.selection);
+  const batchId = options.batchId
+    ?? (options.createId ?? defaultCreateId)("batch");
+  const createdAt = options.createdAt
+    ?? (options.now ?? (() => new Date().toISOString()))();
+
+  return generationBatchSchema.parse({
+    id: batchId,
+    lessonId: curriculumContext.lesson.id,
+    themeId: curriculumContext.themeId,
+    curriculumVersion: curriculumContext.curriculumVersion,
+    requestedDurationMinutes: config.requestedDurationMinutes,
+    requestedActivityCount: config.requestedActivityCount,
+    normalizedParameters: {
+      durationMinutes: config.requestedDurationMinutes,
+      activityCount: config.requestedActivityCount,
+      model: config.model,
+      ...(config.reasoningEffort
+        ? { reasoningEffort: config.reasoningEffort }
+        : {}),
+      selection: input.selection,
+    },
+    status: "pending",
+    createdAt,
+    promptVersion,
+    ruleSetVersion,
+    cacheKey: `${getAiModelDefinition(modelSelection.model).provider}:${batchId}`,
+  });
 }
 
 export function resolveCurriculumContext(
@@ -221,8 +265,9 @@ export async function createInitialGenerationArtifacts(
   const runtime = createRuntime(options, modelSelection);
   const curriculumContext = resolveCurriculumContext(input.curriculum, input.selection);
   const applicableRules = applicableRulesFor(config.requestedActivityCount);
-  const createdAt = runtime.now();
-  const batchId = runtime.createId("batch");
+  const createdAt = options.createdAt ?? runtime.now();
+  const batchId = options.batchId ?? runtime.createId("batch");
+  const pendingBatch = createPendingGenerationBatch(input, { batchId, createdAt });
   const generationRunId = runtime.createId("run-generate");
   const modelInput = {
     curriculum: curriculumContext,
@@ -292,26 +337,8 @@ export async function createInitialGenerationArtifacts(
 
   return {
     batch: generationBatchSchema.parse({
-      id: batchId,
-      lessonId: curriculumContext.lesson.id,
-      themeId: curriculumContext.themeId,
-      curriculumVersion: curriculumContext.curriculumVersion,
-      requestedDurationMinutes: config.requestedDurationMinutes,
-      requestedActivityCount: config.requestedActivityCount,
-      normalizedParameters: {
-        durationMinutes: config.requestedDurationMinutes,
-        activityCount: config.requestedActivityCount,
-        model: config.model,
-        ...(config.reasoningEffort
-          ? { reasoningEffort: config.reasoningEffort }
-          : {}),
-        selection: input.selection,
-      },
+      ...pendingBatch,
       status: "ready_for_review",
-      createdAt,
-      promptVersion,
-      ruleSetVersion,
-      cacheKey: `${generationResult.run.provider}:${batchId}`,
     }),
     group,
     reports,

@@ -23,8 +23,12 @@ arquivos SQLite são ignorados pelo Git. Para criar ou atualizar o banco
 manualmente a partir das migrations versionadas:
 
 ```bash
-npm run db:migrate
+npm run db:setup
 ```
+
+O comando aplica migrations e importa, de forma idempotente, currículo e regras.
+Ele também é executado antes de `npm run build`, evitando migrations e seeds no
+cold start das funções de produção.
 
 Ao alterar o schema Drizzle durante uma tarefa que autorize essa mudança, gere a
 próxima migration com `npm run db:generate`.
@@ -46,6 +50,17 @@ lista permitida e a tabela versionada usada para estimar custos ficam em
 
 Não use prefixo `NEXT_PUBLIC_` em segredos. Respostas do provedor passam pelos
 schemas tipados antes de serem persistidas ou exibidas.
+
+## Produção na Vercel
+
+Na Vercel, a geração é despachada automaticamente para um Workflow durável. A
+Server Action cria o lote e retorna imediatamente; a revisão acompanha o status
+`pending`/`generating` até que a IA e a persistência terminem. Para exercitar o
+mesmo comportamento fora da Vercel, configure `KITE_ASYNC_GENERATION=1`.
+
+O projeto fixa as Functions em `cle1`, próxima ao banco Turso atual, por meio de
+`vercel.json`. Mantenha Fluid Compute habilitado no projeto para reduzir cold
+starts e permitir a suspensão eficiente dos Workflows.
 
 ## Qualidade
 

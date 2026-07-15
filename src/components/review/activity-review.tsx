@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import {
@@ -10,8 +11,12 @@ import {
 } from "@/app/actions";
 import { ActivityDescription } from "@/components/activity-description";
 import { useOptionalAiSettings } from "@/components/ai/ai-settings";
+import { GenerationProgress } from "@/components/curriculum/generation-progress";
 import { Badge, Button, Card, Progress } from "@/components/ui";
-import { defaultAiModelSelection } from "@/domain/ai-models";
+import {
+  defaultAiModelSelection,
+  type AiModelSelection,
+} from "@/domain/ai-models";
 import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
 import {
   createReviewSession,
@@ -28,6 +33,7 @@ import { BatchUsageSummary } from "./batch-usage-summary";
 
 export type ActivityReviewLoadState =
   | { status: "loading" }
+  | { status: "generating"; modelSelection: AiModelSelection }
   | { status: "error"; message: string }
   | { status: "ready"; items: readonly ActivityReviewItem[] };
 
@@ -53,6 +59,10 @@ export function ActivityReview({
     return <ReviewLoadingState />;
   }
 
+  if (state.status === "generating") {
+    return <ReviewGenerationPendingState modelSelection={state.modelSelection} />;
+  }
+
   if (state.status === "error") {
     return <ReviewErrorState message={state.message} />;
   }
@@ -75,6 +85,39 @@ export function ActivityReview({
       items={state.items}
       usage={usage}
     />
+  );
+}
+
+function ReviewGenerationPendingState({
+  modelSelection,
+}: {
+  modelSelection: AiModelSelection;
+}) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const interval = window.setInterval(() => router.refresh(), 2_000);
+    return () => window.clearInterval(interval);
+  }, [router]);
+
+  return (
+    <section aria-labelledby="lote-em-geracao">
+      <Badge tone="info">Geração em andamento</Badge>
+      <h1
+        className="mt-4 text-title font-black tracking-[-0.03em] sm:text-display"
+        id="lote-em-geracao"
+      >
+        Estamos preparando seu lote
+      </h1>
+      <p className="mt-3 max-w-2xl text-lead font-medium text-muted">
+        Você pode manter esta página aberta ou voltar mais tarde. O processamento continua na
+        Vercel mesmo se a conexão for interrompida.
+      </p>
+      <GenerationProgress
+        model={modelSelection.model}
+        reasoningEffort={modelSelection.reasoningEffort}
+      />
+    </section>
   );
 }
 
@@ -104,6 +147,9 @@ function ReadyActivityReview({
   const progress = getReviewProgress(session);
   const currentIndex = session.currentIndex;
   const feedback = currentItem ? feedbackByActivity[currentItem.activity.id] ?? "" : "";
+  const currentDecision = currentItem
+    ? session.decisionHistory[currentItem.activity.id]?.at(-1)?.decision
+    : undefined;
 
   useEffect(() => {
     if (currentItem) {
@@ -311,6 +357,7 @@ function ReadyActivityReview({
 
       {currentItem ? (
         <ActivityCard
+          approved={currentDecision === "approved"}
           busy={actionPending}
           detailsOpen={detailsOpen}
           feedback={feedback}
@@ -329,9 +376,10 @@ function ReadyActivityReview({
               ? () => navigateTo(currentIndex - 1)
               : undefined
           }
-          onAdjust={rejectAndRegenerate}
           onReject={reject}
+          onRejectAndRegenerate={rejectAndRegenerate}
           position={(currentIndex ?? 0) + 1}
+          rejected={currentDecision === "rejected"}
           titleRef={activityHeadingRef}
           total={progress.total}
         />
@@ -339,6 +387,7 @@ function ReadyActivityReview({
         <ReviewCompleteState
           approved={progress.approved}
           headingRef={completionHeadingRef}
+          onReview={() => navigateTo(0)}
           rejected={progress.rejected}
           total={progress.total}
         />
@@ -365,6 +414,7 @@ function ProgressCount({
 }
 
 function ActivityCard({
+  approved,
   busy,
   detailsOpen,
   feedback,
@@ -375,12 +425,14 @@ function ActivityCard({
   onNext,
   onOpenDetails,
   onPrevious,
-  onAdjust,
   onReject,
+  onRejectAndRegenerate,
   position,
+  rejected,
   titleRef,
   total,
 }: {
+  approved: boolean;
   busy: boolean;
   detailsOpen: boolean;
   feedback: string;
@@ -391,9 +443,10 @@ function ActivityCard({
   onNext?: () => void;
   onOpenDetails: () => void;
   onPrevious?: () => void;
-  onAdjust: () => void;
   onReject: () => void;
+  onRejectAndRegenerate: () => void;
   position: number;
+  rejected: boolean;
   titleRef: React.RefObject<HTMLHeadingElement | null>;
   total: number;
 }) {
@@ -499,21 +552,58 @@ function ActivityCard({
           value={feedback}
         />
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Button disabled={busy} fullWidth onClick={onReject} size="lg" variant="danger">
-            {busy ? "Salvando…" : "Rejeitar"}
+        <div
+          aria-label="Decisão da atividade"
+          className="mt-4 grid gap-3 sm:grid-cols-3"
+          role="group"
+        >
+          <Button
+            aria-pressed={rejected}
+            className="aria-pressed:border-danger-deep aria-pressed:bg-danger-deep"
+            disabled={busy}
+            fullWidth
+            onClick={onReject}
+            size="lg"
+            variant="danger"
+          >
+            {busy ? (
+              "Salvando…"
+            ) : rejected ? (
+              <>
+                <span aria-hidden="true">✓</span>
+                Rejeitada
+              </>
+            ) : (
+              "Rejeitar"
+            )}
           </Button>
           <Button
             disabled={busy}
             fullWidth
-            onClick={onAdjust}
+            onClick={onRejectAndRegenerate}
             size="lg"
             variant="secondary"
           >
             {busy ? "Ajustando…" : "Ajustar atividade"}
           </Button>
-          <Button disabled={busy} fullWidth onClick={onApprove} size="lg">
-            {busy ? "Salvando…" : "Aprovar"}
+          <Button
+            aria-pressed={approved}
+            className="aria-pressed:border-success aria-pressed:bg-success aria-pressed:shadow-none aria-pressed:hover:bg-success"
+            disabled={busy}
+            fullWidth
+            onClick={onApprove}
+            size="lg"
+          >
+            {busy ? (
+              "Salvando…"
+            ) : approved ? (
+              <>
+                <span aria-hidden="true">✓</span>
+                Aprovada
+              </>
+            ) : (
+              "Aprovar"
+            )}
           </Button>
         </div>
       </div>
@@ -774,11 +864,13 @@ function ReportCount({ label, value }: { label: string; value: number }) {
 function ReviewCompleteState({
   approved,
   headingRef,
+  onReview,
   rejected,
   total,
 }: {
   approved: number;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
+  onReview: () => void;
   rejected: number;
   total: number;
 }) {
@@ -803,6 +895,9 @@ function ReviewCompleteState({
         O lote foi concluído e permanece salvo na sua biblioteca.
       </p>
       <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+        <Button onClick={onReview} size="lg" variant="secondary">
+          Rever atividades
+        </Button>
         <Link
           className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-ink bg-ink px-6 py-3 font-extrabold text-surface shadow-action transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
           href="/atividades"

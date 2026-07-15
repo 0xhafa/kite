@@ -64,14 +64,29 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
   await page.reload();
   await expect(page.getByRole("heading", { name: "Lote revisado" })).toBeVisible();
   await expect(page.getByText("2 aprovadas e 1 rejeitada")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Rever atividades" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Rever atividades" }).click();
+  const approvedButton = page.getByRole("button", { name: "Aprovada", exact: true });
+  await expect(approvedButton).toHaveAttribute("aria-pressed", "true");
+  await page
+    .getByRole("textbox", { name: "Feedback opcional" })
+    .fill("Rejeitar depois da aprovação e gerar outra alternativa.");
+  await page.getByRole("button", { name: "Ajustar atividade" }).click();
+  await expect(page.getByText(/foi ajustada em uma nova versão, sem alterar as demais/)).toBeVisible();
+  await expect(page.getByTestId("current-activity-version")).toHaveText("Versão 3");
+  await expect(page.getByText("2 de 3 revisadas · 25 min")).toBeVisible();
+  const finalReplacementTitle = await activityHeading.textContent();
+  await page.getByRole("button", { name: "Aprovar" }).click();
+  await expect(page.getByRole("heading", { name: "Lote revisado" })).toBeVisible();
+  await expect(page.getByText("2 aprovadas e 1 rejeitada")).toBeVisible();
 
   await page.getByRole("link", { name: "Ver atividades revisadas" }).click();
   await expect(page).toHaveURL(/\/atividades$/);
   await expect(page.getByRole("heading", { level: 1, name: "Atividades revisadas" })).toBeVisible();
-  await expect(page.getByText(replacementTitle ?? "", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("Lote concluído", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("Rejeitada", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(finalReplacementTitle ?? "", { exact: true }).first()).toBeVisible();
+  const batchId = new URL(reviewUrl).searchParams.get("lote");
+  const reviewedBatch = page.locator(`section[aria-labelledby="lote-${batchId}"]`);
+  await expect(reviewedBatch.getByText("Lote concluído", { exact: true })).toBeVisible();
+  await expect(reviewedBatch.getByText("Rejeitada", { exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Kite", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);

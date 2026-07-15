@@ -184,14 +184,6 @@ export const activityRegenerationSchema = z
       return;
     }
 
-    if (replacedActivity.status === "approved") {
-      context.addIssue({
-        code: "custom",
-        message: "Uma atividade aprovada não pode ser substituída.",
-        path: ["replacement", "replacesActivityId"],
-      });
-    }
-
     const preservedFields = ["batchId", "logicalActivityId", "slotIndex", "durationMinutes"] as const;
 
     for (const field of preservedFields) {

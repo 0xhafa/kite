@@ -11,7 +11,7 @@ describe("ritmo visual da geração", () => {
       getExpectedGenerationDurationMilliseconds("gemini-3.5-flash", "medium"),
     );
     expect(getExpectedGenerationDurationMilliseconds("gemini-3.5-flash", "medium")).toBeGreaterThan(
-      getExpectedGenerationDurationMilliseconds("qwen/qwen3.6-27b", "default"),
+      getExpectedGenerationDurationMilliseconds("openai/gpt-oss-20b", "medium"),
     );
   });
 

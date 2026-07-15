@@ -81,6 +81,25 @@ describe("invariantes de atividades", () => {
     );
   });
 
+  it("permite preparar uma substituta quando uma atividade aprovada é rejeitada depois", () => {
+    const approvedReplacement: Activity = {
+      ...approvedActivity,
+      id: "activity-1-v2",
+      title: "Nova escuta inicial",
+      status: "draft",
+      version: 2,
+      replacesActivityId: approvedActivity.id,
+      generationRunId: "run-3",
+    };
+
+    const regeneratedGroup = applyActivityRegeneration({
+      group,
+      replacement: approvedReplacement,
+    });
+
+    expect(regeneratedGroup.activities).toEqual([approvedReplacement, rejectedActivity]);
+  });
+
   it("recusa uma substituta que altere a duração individual", () => {
     expect(
       (() =>

@@ -370,7 +370,7 @@ describe("adaptador HTTP estruturado", () => {
     expect(body).not.toHaveProperty("reasoning_effort");
   });
 
-  it("usa o endpoint, modelo e formato de raciocínio próprios da Groq", async () => {
+  it("usa o endpoint e o JSON Schema estrito do modelo configurado na Groq", async () => {
     const fetchImplementation = vi.fn<typeof fetch>(async () =>
       completionResponse(generationOutput),
     );
@@ -379,8 +379,8 @@ describe("adaptador HTTP estruturado", () => {
         ...httpConfig,
         providerId: "groq",
         baseUrl: "https://api.groq.com/openai/v1/",
-        model: "qwen/qwen3.6-27b",
-        reasoningEffort: "default",
+        model: "openai/gpt-oss-20b",
+        reasoningEffort: "medium",
       },
       fetchImplementation,
     );
@@ -388,8 +388,8 @@ describe("adaptador HTTP estruturado", () => {
     await expect(provider.generate(createGenerationInput())).resolves.toMatchObject({
       run: {
         provider: "groq",
-        model: "qwen/qwen3.6-27b",
-        reasoningEffort: "default",
+        model: "openai/gpt-oss-20b",
+        reasoningEffort: "medium",
       },
     });
 
@@ -397,11 +397,22 @@ describe("adaptador HTTP estruturado", () => {
     const body = JSON.parse(String(request?.body)) as Record<string, unknown>;
     expect(String(url)).toBe("https://api.groq.com/openai/v1/chat/completions");
     expect(body).toMatchObject({
-      model: "qwen/qwen3.6-27b",
-      reasoning_effort: "default",
-      reasoning_format: "hidden",
-      response_format: { type: "json_object" },
+      model: "openai/gpt-oss-20b",
+      reasoning_effort: "medium",
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "kite_generation",
+          strict: true,
+          schema: {
+            type: "object",
+            required: ["plan", "activities", "uncertainties"],
+            additionalProperties: false,
+          },
+        },
+      },
     });
+    expect(body).not.toHaveProperty("reasoning_format");
   });
 
   it("valida saídas estruturadas de reparo e avaliação", async () => {
@@ -539,7 +550,7 @@ describe("adaptador HTTP estruturado", () => {
       code: "http_error",
       statusCode: 429,
       message:
-        "O provedor de IA recusou a solicitação. Tente novamente; se o erro continuar, verifique a configuração do provedor.",
+        "O provedor de IA atingiu o limite de uso. Aguarde um instante e tente novamente.",
     });
   });
 

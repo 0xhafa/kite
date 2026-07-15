@@ -151,6 +151,34 @@ describe("repositórios libSQL", () => {
     });
   });
 
+  it("carrega grupos, execuções e decisões de vários itens em lote", async () => {
+    await saveInitialGroup();
+    await traceability.saveReviewDecision({
+      activityId: approvedActivity.id,
+      activityVersion: approvedActivity.version,
+      decision: "approved",
+      author: "revisor-poc",
+      createdAt,
+    });
+
+    const batch = (await generations.getBatch("batch-1"))!;
+    await expect(generations.listCurrentActivityGroups([batch])).resolves.toEqual([
+      {
+        batchId: batch.id,
+        requestedDurationMinutes: 25,
+        requestedActivityCount: 2,
+        activities: [approvedActivity, rejectedActivity],
+      },
+    ]);
+    await expect(runs.listByBatches([batch.id])).resolves.toHaveLength(2);
+    await expect(
+      traceability.listReviewDecisionsByActivities([
+        approvedActivity.id,
+        rejectedActivity.id,
+      ]),
+    ).resolves.toHaveLength(1);
+  });
+
   it("deleta um lote e todos os registros dependentes sem apagar lotes reutilizados", async () => {
     await saveInitialGroup();
     const rule = {
@@ -270,7 +298,7 @@ describe("repositórios libSQL", () => {
     expect(versions).toEqual([{ ...rejectedActivity, status: "superseded" }, replacement]);
   });
 
-  it("não permite substituir uma atividade aprovada", async () => {
+  it("exige uma decisão de rejeição antes de substituir uma atividade aprovada", async () => {
     await saveInitialGroup();
     await runs.save(createRun("run-3", { stage: "repair" }));
 
@@ -283,7 +311,7 @@ describe("repositórios libSQL", () => {
         replacesActivityId: approvedActivity.id,
         generationRunId: "run-3",
       }),
-    ).rejects.toThrow(/aprovada/);
+    ).rejects.toThrow(/decisão de rejeição/);
     expect(await generations.listActivityVersions("activity-1")).toEqual([approvedActivity]);
   });
 
@@ -449,7 +477,7 @@ describe("repositórios libSQL", () => {
       totalTokens: 100,
       callCount: 1,
       estimatedCostUsd: null,
-      pricingVersion: "multi-provider-standard-2026-07-15",
+      pricingVersion: "multi-provider-standard-2026-07-15-v2",
     });
     expect(await runs.findCacheEntry(original.cacheKey)).toEqual(cacheEntry);
     await expect(

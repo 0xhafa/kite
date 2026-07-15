@@ -11,9 +11,12 @@ import { getApplicationDatabase } from "@/server/application-database";
 
 import {
   approveActivity,
+  createPersistedGenerationRequest,
+  deletePersistedBatch,
   generateAndPersistBatch,
   loadPersistedPlanningContext,
   loadReviewBatch,
+  loadReviewPageBatch,
   loadReviewedActivityLibrary,
   rejectActivity,
   rejectAndRegenerateActivity,
@@ -60,6 +63,23 @@ describe("fluxo integrado persistido", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
+  });
+
+  it("expõe o estado pendente enquanto o workflow ainda não terminou", async () => {
+    const pending = await createPersistedGenerationRequest({
+      selection,
+      config: {
+        requestedDurationMinutes: 25,
+        requestedActivityCount: 3,
+        ...defaultAiModelSelection,
+      },
+    });
+
+    await expect(loadReviewPageBatch(pending.batchId)).resolves.toEqual({
+      status: "generating",
+      modelSelection: defaultAiModelSelection,
+    });
+    await deletePersistedBatch(pending.batchId);
   });
 
   it("reconstrói o lote, preserva aprovação e persiste a substituta", async () => {
@@ -155,6 +175,65 @@ describe("fluxo integrado persistido", () => {
       },
     });
     expect(libraryBatch?.reviewedActivities).toHaveLength(3);
+    expect(libraryBatch?.usage).toEqual(completed?.usage);
+  });
+
+  it("permite aprovar novamente e rejeitar uma atividade depois da aprovação", async () => {
+    const batchId = await generateAndPersistBatch({
+      selection,
+      config: {
+        requestedDurationMinutes: 5,
+        requestedActivityCount: 1,
+        ...defaultAiModelSelection,
+      },
+    });
+    const initial = await loadReviewBatch(batchId);
+    const approvedActivity = initial!.items[0].activity;
+
+    await approveActivity({
+      batchId,
+      activityId: approvedActivity.id,
+      activityVersion: approvedActivity.version,
+    });
+    await approveActivity({
+      batchId,
+      activityId: approvedActivity.id,
+      activityVersion: approvedActivity.version,
+      feedback: "Aprovação confirmada na releitura.",
+    });
+
+    const reapproved = await loadReviewBatch(batchId);
+    expect(reapproved?.batch.status).toBe("completed");
+    expect(reapproved?.decisionHistory[approvedActivity.id]).toMatchObject([
+      { decision: "approved" },
+      { decision: "approved", feedback: "Aprovação confirmada na releitura." },
+    ]);
+
+    const regeneration = await rejectAndRegenerateActivity({
+      batchId,
+      activityId: approvedActivity.id,
+      activityVersion: approvedActivity.version,
+      feedback: "Na nova leitura, é melhor trocar a ação da criança.",
+    });
+    const reopened = await loadReviewBatch(batchId);
+
+    expect(regeneration.item.activity).toMatchObject({
+      version: 2,
+      replacesActivityId: approvedActivity.id,
+      status: "draft",
+    });
+    expect(reopened?.batch.status).toBe("ready_for_review");
+    expect(reopened?.items[0].activity.id).toBe(regeneration.item.activity.id);
+    expect(reopened?.decisionHistory[regeneration.item.activity.id]).toEqual([]);
+
+    await approveActivity({
+      batchId,
+      activityId: regeneration.item.activity.id,
+      activityVersion: regeneration.item.activity.version,
+    });
+    await expect(loadReviewBatch(batchId)).resolves.toMatchObject({
+      batch: { status: "completed" },
+    });
   });
 
   it("conclui o lote quando todas as atividades foram aprovadas ou rejeitadas", async () => {

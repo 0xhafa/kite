@@ -163,19 +163,23 @@ export class GenerationRepository {
     }
 
     await this.db.transaction(async (transaction) => {
-      for (const activity of group.activities) {
-        const [run] = await transaction
-          .select({ batchId: modelRuns.batchId, status: modelRuns.status })
-          .from(modelRuns)
-          .where(eq(modelRuns.id, activity.generationRunId))
-          .limit(1);
+      const generationRunIds = [
+        ...new Set(group.activities.map(({ generationRunId }) => generationRunId)),
+      ];
+      const runRows = await transaction
+        .select({ id: modelRuns.id, batchId: modelRuns.batchId, status: modelRuns.status })
+        .from(modelRuns)
+        .where(inArray(modelRuns.id, generationRunIds));
+      const runsById = new Map(runRows.map((run) => [run.id, run]));
 
+      for (const activity of group.activities) {
+        const run = runsById.get(activity.generationRunId);
         if (!run || run.batchId !== group.batchId || run.status !== "completed") {
           throw new Error(`Execução ${activity.generationRunId} não é válida para o lote.`);
         }
-
-        await transaction.insert(activities).values(activity);
       }
+
+      await transaction.insert(activities).values(group.activities);
     });
 
     return group;
@@ -185,18 +189,37 @@ export class GenerationRepository {
     const batch = await this.getBatch(batchId);
     if (!batch) return undefined;
 
+    return (await this.listCurrentActivityGroups([batch]))[0];
+  }
+
+  async listCurrentActivityGroups(
+    batches: readonly GenerationBatch[],
+  ): Promise<ActivityGroup[]> {
+    if (batches.length === 0) return [];
+
     const rows = await this.db
       .select()
       .from(activities)
-      .where(and(eq(activities.batchId, batchId), ne(activities.status, "superseded")))
-      .orderBy(asc(activities.slotIndex));
+      .where(
+        and(
+          inArray(activities.batchId, batches.map(({ id }) => id)),
+          ne(activities.status, "superseded"),
+        ),
+      )
+      .orderBy(asc(activities.batchId), asc(activities.slotIndex));
+    const activitiesByBatch = new Map<string, Activity[]>();
+    for (const activity of rows.map(toActivity)) {
+      const batchActivities = activitiesByBatch.get(activity.batchId) ?? [];
+      batchActivities.push(activity);
+      activitiesByBatch.set(activity.batchId, batchActivities);
+    }
 
-    return activityGroupSchema.parse({
-      batchId,
+    return batches.map((batch) => activityGroupSchema.parse({
+      batchId: batch.id,
       requestedDurationMinutes: batch.requestedDurationMinutes,
       requestedActivityCount: batch.requestedActivityCount,
-      activities: rows.map(toActivity),
-    });
+      activities: activitiesByBatch.get(batch.id) ?? [],
+    }));
   }
 
   async listActivityVersions(logicalActivityId: string): Promise<Activity[]> {
@@ -237,6 +260,15 @@ export class GenerationRepository {
         requestedActivityCount: batch.requestedActivityCount,
         activities: currentRows.map(toActivity),
       });
+      const replacedActivity = group.activities.find(
+        ({ id }) => id === replacement.replacesActivityId,
+      );
+
+      if (replacedActivity?.status === "approved") {
+        throw new Error(
+          "A atividade aprovada deve receber uma decisão de rejeição antes da regeneração.",
+        );
+      }
 
       applyActivityRegeneration({ group, replacement });
 

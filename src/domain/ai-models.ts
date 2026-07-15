@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AI_MODEL_PRICING_VERSION = "multi-provider-standard-2026-07-15";
+export const AI_MODEL_PRICING_VERSION = "multi-provider-standard-2026-07-15-v2";
 
 export const AI_PROVIDER_IDS = ["openai", "gemini", "groq"] as const;
 
@@ -46,7 +46,7 @@ export const AI_MODEL_IDS = [
   "gpt-5.4-mini",
   "gpt-4.1-mini",
   "gemini-3.5-flash",
-  "qwen/qwen3.6-27b",
+  "openai/gpt-oss-20b",
 ] as const;
 
 export const aiModelIdSchema = z.enum(AI_MODEL_IDS);
@@ -129,13 +129,13 @@ export const AI_MODELS = [
     },
   },
   {
-    id: "qwen/qwen3.6-27b",
+    id: "openai/gpt-oss-20b",
     provider: "groq",
-    label: "Qwen 3.6 27B",
-    description: "Modelo multilíngue hospedado pela Groq para comparação independente.",
-    reasoningEfforts: ["none", "default"],
-    defaultReasoningEffort: "default",
-    pricingPerMillionTokensUsd: { input: 0.6, output: 3 },
+    label: "GPT-OSS 20B",
+    description: "Modelo rápido da Groq com saída JSON estritamente estruturada.",
+    reasoningEfforts: ["low", "medium", "high"],
+    defaultReasoningEffort: "medium",
+    pricingPerMillionTokensUsd: { input: 0.075, output: 0.3 },
     freeTier: {
       description: "Gratuito dentro da cota do plano Free da Groq.",
     },

@@ -16,14 +16,14 @@ describe("catálogo multiprovedor de modelos", () => {
       "gemini-3.5-flash",
     ]);
     expect(getAiModelsForProvider("groq").map(({ id }) => id)).toEqual([
-      "qwen/qwen3.6-27b",
+      "openai/gpt-oss-20b",
     ]);
   });
 
   it("define um modelo inicial válido para cada provedor", () => {
     expect(getDefaultAiModelForProvider("openai").id).toBe("gpt-5.6-sol");
     expect(getDefaultAiModelForProvider("gemini").id).toBe("gemini-3.5-flash");
-    expect(getDefaultAiModelForProvider("groq").id).toBe("qwen/qwen3.6-27b");
+    expect(getDefaultAiModelForProvider("groq").id).toBe("openai/gpt-oss-20b");
   });
 
   it("rejeita esforços que o modelo selecionado não oferece", () => {
@@ -35,8 +35,8 @@ describe("catálogo multiprovedor de modelos", () => {
     ).toBe(false);
     expect(
       aiModelSelectionSchema.safeParse({
-        model: "qwen/qwen3.6-27b",
-        reasoningEffort: "default",
+        model: "openai/gpt-oss-20b",
+        reasoningEffort: "medium",
       }).success,
     ).toBe(true);
     expect(

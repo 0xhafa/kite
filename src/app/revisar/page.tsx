@@ -12,7 +12,7 @@ import {
 } from "@/domain/ai-models";
 import type { ReviewSessionDecisionHistory } from "@/domain/review-session";
 import type { BatchTokenUsage } from "@/domain/usage";
-import { loadReviewBatch } from "@/server/generation/integrated-flow";
+import { loadReviewPageBatch } from "@/server/generation/integrated-flow";
 
 export const metadata: Metadata = {
   title: "Revisar atividades | Kite",
@@ -47,14 +47,26 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     reviewState = { status: "ready", items: [] };
   } else {
     try {
-      const reviewBatch = await loadReviewBatch(batchId);
+      const pageBatch = await loadReviewPageBatch(batchId);
 
-      if (!reviewBatch) {
+      if (pageBatch.status === "missing") {
         reviewState = {
           status: "error",
           message: "O lote informado não existe ou não possui atividades disponíveis.",
         };
+      } else if (pageBatch.status === "failed") {
+        reviewState = {
+          status: "error",
+          message: "Não foi possível gerar este lote. Volte ao planejamento e tente novamente.",
+        };
+      } else if (pageBatch.status === "generating") {
+        modelSelection = pageBatch.modelSelection;
+        reviewState = {
+          status: "generating",
+          modelSelection: pageBatch.modelSelection,
+        };
       } else {
+        const reviewBatch = pageBatch.data;
         reviewState = { status: "ready", items: reviewBatch.items };
         usage = reviewBatch.usage;
         decisionHistory = reviewBatch.decisionHistory;

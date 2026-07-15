@@ -9,6 +9,7 @@ import { aggregateBatchTokenUsage } from "@/domain/usage";
 
 import {
   createInitialGenerationArtifacts,
+  createPendingGenerationBatch,
   createRegenerationArtifacts,
 } from "./pipeline";
 
@@ -35,6 +36,31 @@ describe("pipeline integrado de geração", () => {
 
     expect(source).not.toContain("@/domain/mock-generator");
     expect(source).not.toMatch(/generateMock(?:Batch|Repair)/u);
+  });
+
+  it("prepara um lote pendente com identidade estável antes de chamar a IA", () => {
+    const batch = createPendingGenerationBatch(
+      {
+        curriculum,
+        selection,
+        config: {
+          requestedDurationMinutes: 25,
+          requestedActivityCount: 3,
+          ...defaultAiModelSelection,
+        },
+      },
+      {
+        batchId: "batch-pending-test",
+        createdAt: now(),
+      },
+    );
+
+    expect(batch).toMatchObject({
+      id: "batch-pending-test",
+      status: "pending",
+      createdAt: now(),
+      cacheKey: "openai:batch-pending-test",
+    });
   });
 
   it("gera um grupo válido com relatório por atividade e tokens por etapa", async () => {
