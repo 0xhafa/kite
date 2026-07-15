@@ -90,7 +90,7 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
-function isTransientValidationError(error: unknown): error is AiProviderError {
+function isTransientProviderError(error: unknown): error is AiProviderError {
   return error instanceof AiProviderError && (
     error.code === "timeout" ||
     error.code === "network_error" ||
@@ -268,7 +268,7 @@ export class HttpAiProvider implements AiProvider {
 
     let envelope: ChatCompletionEnvelope;
     const renderedMessages = messages(inputResult.data);
-    const maxAttempts = operation === "validation" ? 2 : 1;
+    const maxAttempts = operation === "generation" ? 1 : 2;
     const startedAt = this.now();
 
     for (let attempt = 1; ; attempt += 1) {
@@ -276,7 +276,7 @@ export class HttpAiProvider implements AiProvider {
         envelope = await this.requestEnvelope(operation, renderedMessages);
         break;
       } catch (error) {
-        if (attempt < maxAttempts && isTransientValidationError(error)) {
+        if (attempt < maxAttempts && isTransientProviderError(error)) {
           continue;
         }
 

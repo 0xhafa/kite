@@ -634,6 +634,23 @@ describe("adaptador HTTP estruturado", () => {
     expect(fetchImplementation).toHaveBeenCalledTimes(2);
   });
 
+  it("repete um reparo após uma recusa transitória do provedor", async () => {
+    const repairOutput = {
+      activity: generationOutput.activities[0],
+      uncertainties: [],
+    };
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status: 429 }))
+      .mockResolvedValueOnce(completionResponse(repairOutput));
+    const provider = new HttpAiProvider(httpConfig, fetchImplementation);
+
+    await expect(provider.repair(createRepairInput())).resolves.toMatchObject({
+      output: repairOutput,
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+  });
+
   it("mantém o timeout ativo enquanto consome o corpo após os headers", async () => {
     const fetchImplementation = vi.fn<typeof fetch>(async (_input, request) => {
       const body = new ReadableStream<Uint8Array>({
