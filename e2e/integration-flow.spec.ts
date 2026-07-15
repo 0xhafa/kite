@@ -21,8 +21,12 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
   await expect(page.getByText("0 de 3 revisadas · 25 min")).toBeVisible();
   await expect(activityDuration).toHaveText(firstDuration ?? "");
   await expect(activityHeading).not.toHaveText(firstTitle ?? "");
+  const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
+  await usageSummary
+    .getByRole("button", { name: "Detalhes técnicos do consumo de tokens" })
+    .click();
   await expect(
-    page.getByRole("region", { name: "Consumo de tokens do lote" })
+    usageSummary.getByRole("tooltip")
       .getByText("Reparos", { exact: true }).locator(".."),
   ).toContainText("180");
 

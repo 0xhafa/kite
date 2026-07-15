@@ -5,17 +5,41 @@ import { generateReviewBatch } from "./helpers";
 test("revisa uma atividade persistida por vez e exibe relatório e tokens", async ({ page }) => {
   await generateReviewBatch(page);
 
-  await expect(page.getByRole("heading", { name: "Olhar de investigador" })).toBeFocused();
+  const activityHeading = page.locator("article h2");
+  const firstActivityTitle = await activityHeading.textContent();
+  await expect(activityHeading).toBeFocused();
   const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
+  const technicalDetails = usageSummary.getByRole("tooltip");
+  const technicalDetailsTrigger = usageSummary.getByRole("button", {
+    name: "Detalhes técnicos do consumo de tokens",
+  });
   await expect(usageSummary.getByText("Total", { exact: true }).locator("..")).toContainText("750");
-  await expect(usageSummary.getByText("Geração", { exact: true }).locator("..")).toContainText("480");
-  await expect(usageSummary.getByText("Validação", { exact: true }).locator("..")).toContainText("270");
-  await expect(usageSummary.getByText("Reparos", { exact: true }).locator("..")).toContainText("0");
+  await expect(technicalDetails).toBeHidden();
+  await expect(usageSummary.getByText("Geração", { exact: true })).toBeHidden();
+  await expect(usageSummary.getByText("Validação", { exact: true })).toBeHidden();
+  await expect(usageSummary.getByText("Reparos", { exact: true })).toBeHidden();
+  await expect(usageSummary.getByText("Chamadas", { exact: true })).toBeHidden();
+
+  await technicalDetailsTrigger.hover();
+  await expect(technicalDetails).toBeVisible();
+  await expect(technicalDetails.getByText("Geração", { exact: true }).locator("..")).toContainText("480");
+  await activityHeading.hover();
+  await expect(technicalDetails).toBeHidden();
+
+  await technicalDetailsTrigger.focus();
+  await expect(technicalDetails).toBeVisible();
+  await activityHeading.focus();
+  await expect(technicalDetails).toBeHidden();
+
+  await technicalDetailsTrigger.click();
+  await expect(technicalDetails).toBeVisible();
+  await activityHeading.click();
+  await expect(technicalDetails).toBeVisible();
   await expect(page.getByText("Atividade 1 de 3")).toBeVisible();
   await expect(page.getByText("0 de 3 revisadas · 25 min")).toBeVisible();
   await expect(page.getByText("Validação aprovada", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Detalhes" }).click();
+  await page.getByRole("button", { name: "Detalhes", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Detalhes da validação" });
   await expect(dialog.getByText("Critérios", { exact: true }).locator("..")).toContainText("5");
   await expect(dialog.getByText("Atender ao padrão da atividade", { exact: true })).toBeVisible();
@@ -32,7 +56,8 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
   await page.keyboard.press("Escape");
 
   await page.getByRole("button", { name: "Aprovar" }).click();
-  await expect(page.getByRole("heading", { name: "Ouvidos atentos" })).toBeFocused();
+  await expect(activityHeading).toBeFocused();
+  await expect(activityHeading).not.toHaveText(firstActivityTitle ?? "");
   await expect(page.getByText("1 de 3 revisadas · 25 min")).toBeVisible();
 });
 
@@ -55,11 +80,24 @@ test("mantém as decisões acessíveis em tela pequena", async ({ page }) => {
   await generateReviewBatch(page);
 
   const approveButton = page.getByRole("button", { name: "Aprovar" });
-  const detailsButton = page.getByRole("button", { name: "Detalhes" });
+  const detailsButton = page.getByRole("button", { name: "Detalhes", exact: true });
 
   await expect(approveButton).toBeVisible();
   await expect(page.getByRole("button", { name: "Rejeitar e gerar nova versão" })).toBeVisible();
   await expect(detailsButton).toBeVisible();
+
+  const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
+  const technicalDetailsTrigger = usageSummary.getByRole("button", {
+    name: "Detalhes técnicos do consumo de tokens",
+  });
+  const technicalDetails = usageSummary.getByRole("tooltip");
+  await expect(technicalDetails).toBeHidden();
+  await technicalDetailsTrigger.focus();
+  await expect(technicalDetails).toBeVisible();
+  const widthWithTechnicalDetailsOpen = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(widthWithTechnicalDetailsOpen).toBeLessThanOrEqual(390);
 
   await detailsButton.focus();
   await page.keyboard.press("Enter");
@@ -69,7 +107,7 @@ test("mantém as decisões acessíveis em tela pequena", async ({ page }) => {
 
   await approveButton.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Ouvidos atentos" })).toBeFocused();
+  await expect(page.locator("article h2")).toBeFocused();
 
   const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(documentWidth).toBeLessThanOrEqual(390);

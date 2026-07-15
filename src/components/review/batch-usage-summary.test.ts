@@ -7,7 +7,7 @@ import { batchTokenUsageSchema } from "@/domain/usage";
 import { BatchUsageSummary } from "./batch-usage-summary";
 
 describe("resumo de consumo do lote", () => {
-  it("mostra total, etapas observáveis e número de chamadas", () => {
+  it("mantém somente o total no cartão e relaciona os detalhes ao controle acessível", () => {
     const usage = batchTokenUsageSchema.parse({
       batchId: "lote-1",
       byStage: { plan: 0, generate: 650, validate: 420, repair: 90 },
@@ -17,9 +17,28 @@ describe("resumo de consumo do lote", () => {
     const html = renderToStaticMarkup(createElement(BatchUsageSummary, { usage }));
 
     expect(html).toContain("Consumo de tokens do lote");
-    expect(html).toContain("Lote <span class=\"text-ink\">lote-1</span>");
     expect(html).toContain("Total");
     expect(html).toContain("1.160");
+    expect(html).toContain("Detalhes técnicos");
+    expect(html).toContain("role=\"tooltip\"");
+    expect(html).toContain("invisible opacity-0");
+    expect(html).toContain("aria-label=\"Detalhes técnicos do consumo de tokens\"");
+    const describedDetailsId = html.match(/aria-describedby="([^"]+)"/)?.[1];
+    expect(describedDetailsId).toBeTruthy();
+    expect(html).toContain(`id="${describedDetailsId}"`);
+  });
+
+  it("preserva lote, etapas e chamadas dentro dos detalhes técnicos", () => {
+    const usage = batchTokenUsageSchema.parse({
+      batchId: "lote-1",
+      byStage: { plan: 0, generate: 650, validate: 420, repair: 90 },
+      totalTokens: 1160,
+      callCount: 5,
+    });
+    const html = renderToStaticMarkup(createElement(BatchUsageSummary, { usage }));
+
+    expect(html).toContain("Identificador do lote");
+    expect(html).toContain("lote-1");
     expect(html).toContain("Geração");
     expect(html).toContain("650");
     expect(html).toContain("Validação");
