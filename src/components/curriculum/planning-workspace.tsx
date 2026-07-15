@@ -7,10 +7,13 @@ import { CurriculumNavigator } from "@/components/curriculum/curriculum-navigato
 import { Button, InfoTooltip, Modal } from "@/components/ui";
 import type { Curriculum } from "@/domain/curriculum";
 import {
-  AI_MODELS,
+  AI_PROVIDERS,
   aiModelIdSchema,
+  aiProviderIdSchema,
   defaultAiModelSelection,
   getAiModelDefinition,
+  getAiModelsForProvider,
+  getDefaultAiModelForProvider,
   getDefaultReasoningEffort,
   reasoningEffortSchema,
   type AiModelId,
@@ -23,6 +26,8 @@ type PlanningWorkspaceProps = {
 
 const reasoningEffortLabels = {
   none: "Nenhum",
+  minimal: "Mínimo",
+  default: "Padrão",
   low: "Baixo",
   medium: "Médio",
   high: "Alto",
@@ -39,6 +44,14 @@ export function PlanningWorkspace({ curriculum }: PlanningWorkspaceProps) {
   );
 
   const selectedModel = getAiModelDefinition(model);
+  const providerModels = getAiModelsForProvider(selectedModel.provider);
+
+  function updateProvider(value: string) {
+    const nextProvider = aiProviderIdSchema.parse(value);
+    const nextModel = getDefaultAiModelForProvider(nextProvider).id;
+    setModel(nextModel);
+    setReasoningEffort(getDefaultReasoningEffort(nextModel));
+  }
 
   function updateModel(value: string) {
     const nextModel = aiModelIdSchema.parse(value);
@@ -110,7 +123,7 @@ export function PlanningWorkspace({ curriculum }: PlanningWorkspaceProps) {
       <Modal
         className="sm:max-w-2xl"
         closeLabel="Fechar configurações"
-        description="Escolha o modelo usado para gerar e validar as atividades."
+        description="Escolha o provedor e o modelo usados para gerar e validar as atividades."
         footer={<Button onClick={() => setSettingsOpen(false)}>Concluir</Button>}
         initialFocusRef={modelSelectRef}
         onClose={() => setSettingsOpen(false)}
@@ -123,12 +136,31 @@ export function PlanningWorkspace({ curriculum }: PlanningWorkspaceProps) {
           </h3>
           <div className="mt-5 grid gap-6 sm:grid-cols-2">
             <div>
+              <label className="font-extrabold" htmlFor="provedor-ia">
+                Provedor
+              </label>
+              <select
+                className="mt-2 min-h-12 w-full rounded-md border-2 border-border bg-surface px-4 text-base font-extrabold text-ink focus-visible:border-focus focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                id="provedor-ia"
+                onChange={(event) => updateProvider(event.target.value)}
+                value={selectedModel.provider}
+              >
+                {AI_PROVIDERS.map((provider) => (
+                  <option key={provider.id} value={provider.id}>
+                    {provider.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <div className="relative flex w-full items-center gap-2">
                 <label className="font-extrabold" htmlFor="modelo-ia">
                   Modelo
                 </label>
                 <InfoTooltip label="Informações sobre o modelo selecionado">
                   <strong className="font-extrabold">{selectedModel.description}</strong>{" "}
+                  {selectedModel.freeTier ? `${selectedModel.freeTier.description} Preço pago: ` : ""}
                   Entrada: US$ {selectedModel.pricingPerMillionTokensUsd.input}/1M · saída: US${" "}
                   {
                     selectedModel.pricingPerMillionTokensUsd.output
@@ -142,7 +174,7 @@ export function PlanningWorkspace({ curriculum }: PlanningWorkspaceProps) {
                 ref={modelSelectRef}
                 value={model}
               >
-                {AI_MODELS.map((option) => (
+                {providerModels.map((option) => (
                   <option key={option.id} value={option.id}>
                     {option.label}
                   </option>

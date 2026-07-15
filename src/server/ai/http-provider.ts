@@ -339,7 +339,7 @@ export class HttpAiProvider implements AiProvider {
     return {
       output: outputResult.data,
       run: {
-        provider: "http",
+        provider: this.config.providerId,
         model: this.config.model,
         ...(this.config.reasoningEffort
           ? { reasoningEffort: this.config.reasoningEffort }
@@ -372,6 +372,10 @@ export class HttpAiProvider implements AiProvider {
             response_format: { type: "json_object" },
             ...(this.config.reasoningEffort
               ? { reasoning_effort: this.config.reasoningEffort }
+              : {}),
+            ...(this.config.providerId === "groq" &&
+            this.config.reasoningEffort === "default"
+              ? { reasoning_format: "hidden" }
               : {}),
           }),
           signal: controller.signal,

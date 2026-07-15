@@ -17,6 +17,7 @@ import { createAiProvider, mockAiProvider } from "./provider";
 
 const httpConfig: HttpProviderConfig = {
   provider: "http",
+  providerId: "openai",
   baseUrl: "https://ia.example.test/v1/",
   apiKey: "segredo-do-servidor",
   model: "gpt-5.6-terra",
@@ -179,31 +180,74 @@ describe("configuração do provedor de IA", () => {
     expect(
       loadAiProviderConfig({
         AI_PROVIDER: "http",
-        AI_BASE_URL: "https://ia.example.test/v1",
-        AI_API_KEY: "chave-servidor",
+        OPENAI_BASE_URL: "https://ia.example.test/v1",
+        OPENAI_API_KEY: "chave-servidor",
         AI_TIMEOUT_MS: "2500",
-        NEXT_PUBLIC_AI_API_KEY: "nao-deve-ser-lida",
+        NEXT_PUBLIC_OPENAI_API_KEY: "nao-deve-ser-lida",
       }),
     ).toEqual({
       provider: "http",
+      providerId: "openai",
       baseUrl: "https://ia.example.test/v1",
       apiKey: "chave-servidor",
       timeoutMs: 2500,
     });
   });
 
+  it("resolve conexões independentes para Gemini e Groq", () => {
+    const environment = {
+      AI_PROVIDER: "http",
+      OPENAI_API_KEY: "openai-nao-selecionada",
+      GEMINI_API_KEY: "gemini-selecionada",
+      GROQ_API_KEY: "groq-selecionada",
+    };
+
+    expect(loadAiProviderConfig(environment, "gemini")).toEqual({
+      provider: "http",
+      providerId: "gemini",
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
+      apiKey: "gemini-selecionada",
+      timeoutMs: 30_000,
+    });
+    expect(loadAiProviderConfig(environment, "groq")).toEqual({
+      provider: "http",
+      providerId: "groq",
+      baseUrl: "https://api.groq.com/openai/v1/",
+      apiKey: "groq-selecionada",
+      timeoutMs: 30_000,
+    });
+  });
+
+  it("não reutiliza a chave de outro provedor quando a selecionada está ausente", () => {
+    try {
+      loadAiProviderConfig(
+        {
+          AI_PROVIDER: "http",
+          OPENAI_API_KEY: "somente-openai",
+        },
+        "gemini",
+      );
+      throw new Error("A configuração sem a chave Gemini deveria falhar.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(AiConfigurationError);
+      expect(error).toMatchObject({
+        message: "Configure GEMINI_API_KEY no servidor para usar o provedor selecionado.",
+      });
+    }
+  });
+
   it("falha com erro tipado quando falta segredo no modo HTTP", () => {
     expect(() =>
       loadAiProviderConfig({
         AI_PROVIDER: "http",
-        AI_BASE_URL: "https://ia.example.test/v1",
+        OPENAI_BASE_URL: "https://ia.example.test/v1",
       }),
     ).toThrowError(AiConfigurationError);
 
     try {
       loadAiProviderConfig({
         AI_PROVIDER: "http",
-        AI_BASE_URL: "https://ia.example.test/v1",
+        OPENAI_BASE_URL: "https://ia.example.test/v1",
       });
       throw new Error("A configuração incompleta deveria falhar.");
     } catch (error) {
@@ -237,12 +281,28 @@ describe("seleção do provedor", () => {
         { model: "gpt-5.6-terra", reasoningEffort: "low" },
         {
           provider: "http",
+          providerId: "openai",
           baseUrl: httpConfig.baseUrl,
           apiKey: httpConfig.apiKey,
           timeoutMs: httpConfig.timeoutMs,
         },
       ),
     ).toBeInstanceOf(HttpAiProvider);
+  });
+
+  it("rejeita conexão que não pertence ao modelo selecionado", () => {
+    expect(() =>
+      createAiProvider(
+        { model: "gemini-3.5-flash", reasoningEffort: "medium" },
+        {
+          provider: "http",
+          providerId: "openai",
+          baseUrl: httpConfig.baseUrl,
+          apiKey: httpConfig.apiKey,
+          timeoutMs: httpConfig.timeoutMs,
+        },
+      ),
+    ).toThrowError(AiConfigurationError);
   });
 });
 
@@ -256,7 +316,7 @@ describe("adaptador HTTP estruturado", () => {
     await expect(provider.generate(createGenerationInput())).resolves.toMatchObject({
       output: generationOutput,
       run: {
-        provider: "http",
+        provider: "openai",
         model: "gpt-5.6-terra",
         reasoningEffort: "low",
       },
@@ -301,6 +361,40 @@ describe("adaptador HTTP estruturado", () => {
     expect(body).not.toHaveProperty("reasoning_effort");
   });
 
+  it("usa o endpoint, modelo e formato de raciocínio próprios da Groq", async () => {
+    const fetchImplementation = vi.fn<typeof fetch>(async () =>
+      completionResponse(generationOutput),
+    );
+    const provider = new HttpAiProvider(
+      {
+        ...httpConfig,
+        providerId: "groq",
+        baseUrl: "https://api.groq.com/openai/v1/",
+        model: "qwen/qwen3.6-27b",
+        reasoningEffort: "default",
+      },
+      fetchImplementation,
+    );
+
+    await expect(provider.generate(createGenerationInput())).resolves.toMatchObject({
+      run: {
+        provider: "groq",
+        model: "qwen/qwen3.6-27b",
+        reasoningEffort: "default",
+      },
+    });
+
+    const [url, request] = fetchImplementation.mock.calls[0];
+    const body = JSON.parse(String(request?.body)) as Record<string, unknown>;
+    expect(String(url)).toBe("https://api.groq.com/openai/v1/chat/completions");
+    expect(body).toMatchObject({
+      model: "qwen/qwen3.6-27b",
+      reasoning_effort: "default",
+      reasoning_format: "hidden",
+      response_format: { type: "json_object" },
+    });
+  });
+
   it("valida saídas estruturadas de reparo e avaliação", async () => {
     const repairOutput = {
       activity: generationOutput.activities[0],
@@ -337,7 +431,7 @@ describe("adaptador HTTP estruturado", () => {
     await expect(provider.generate(createGenerationInput())).resolves.toEqual({
       output: generationOutput,
       run: {
-        provider: "http",
+        provider: "openai",
         model: "gpt-5.6-terra",
         reasoningEffort: "low",
         rawUsage: usage,

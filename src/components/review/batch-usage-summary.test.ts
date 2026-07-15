@@ -14,7 +14,7 @@ describe("resumo de consumo do lote", () => {
       totalTokens: 1160,
       callCount: 5,
       estimatedCostUsd: 0.01234,
-      pricingVersion: "openai-standard-2026-07-14",
+      pricingVersion: "multi-provider-standard-2026-07-14",
     });
     const html = renderToStaticMarkup(createElement(BatchUsageSummary, { usage }));
 
@@ -39,7 +39,7 @@ describe("resumo de consumo do lote", () => {
       totalTokens: 1160,
       callCount: 5,
       estimatedCostUsd: 0.01234,
-      pricingVersion: "openai-standard-2026-07-14",
+      pricingVersion: "multi-provider-standard-2026-07-14",
     });
     const html = renderToStaticMarkup(createElement(BatchUsageSummary, { usage }));
 

@@ -184,8 +184,8 @@ describe("fluxo integrado persistido", () => {
       .mockResolvedValueOnce(completionResponse(repairOutput, repairUsage));
 
     vi.stubEnv("AI_PROVIDER", "http");
-    vi.stubEnv("AI_BASE_URL", "https://ia.example.test/v1/");
-    vi.stubEnv("AI_API_KEY", "segredo-que-nao-pode-ser-persistido");
+    vi.stubEnv("OPENAI_BASE_URL", "https://ia.example.test/v1/");
+    vi.stubEnv("OPENAI_API_KEY", "segredo-que-nao-pode-ser-persistido");
     vi.stubEnv("AI_TIMEOUT_MS", "1000");
     vi.stubGlobal("fetch", fetchImplementation);
 
@@ -225,7 +225,7 @@ describe("fluxo integrado persistido", () => {
     const repairRun = persistedRuns.find((run) => run.stage === "repair");
 
     expect(generationRun).toMatchObject({
-      provider: "http",
+      provider: "openai",
       model: "gpt-5.6-terra",
       reasoningEffort: "low",
       rawUsage: generationUsage,
@@ -238,7 +238,7 @@ describe("fluxo integrado persistido", () => {
       latencyMilliseconds: expect.any(Number),
     });
     expect(repairRun).toMatchObject({
-      provider: "http",
+      provider: "openai",
       model: "gpt-5.6-terra",
       reasoningEffort: "low",
       rawUsage: repairUsage,

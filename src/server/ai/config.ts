@@ -1,9 +1,12 @@
 import { z } from "zod";
 
 import {
+  aiProviderIdSchema,
   aiModelIdSchema,
   aiModelSelectionSchema,
+  getAiModelDefinition,
   reasoningEffortSchema,
+  type AiProviderId,
 } from "@/domain/ai-models";
 
 const mockProviderConfigSchema = z
@@ -15,6 +18,7 @@ const mockProviderConfigSchema = z
 export const httpProviderConfigSchema = z
   .object({
     provider: z.literal("http"),
+    providerId: aiProviderIdSchema,
     baseUrl: z.url(),
     apiKey: z.string().trim().min(1),
     model: aiModelIdSchema,
@@ -39,11 +43,20 @@ export const httpProviderConfigSchema = z
         });
       }
     }
+
+    if (getAiModelDefinition(config.model).provider !== config.providerId) {
+      context.addIssue({
+        code: "custom",
+        message: "O modelo não pertence ao provedor configurado.",
+        path: ["model"],
+      });
+    }
   });
 
 const httpProviderConnectionConfigSchema = z
   .object({
     provider: z.literal("http"),
+    providerId: aiProviderIdSchema,
     baseUrl: z.url(),
     apiKey: z.string().trim().min(1),
     timeoutMs: z.number().int().positive(),
@@ -64,8 +77,11 @@ export type HttpProviderConnectionConfig = z.infer<
 export class AiConfigurationError extends Error {
   readonly name = "AiConfigurationError";
 
-  constructor(readonly details: readonly string[]) {
-    super("A configuração do provedor de IA é inválida.");
+  constructor(
+    readonly details: readonly string[],
+    message = "A configuração do provedor de IA é inválida.",
+  ) {
+    super(message);
   }
 }
 
@@ -78,15 +94,53 @@ function formatConfigurationIssues(error: z.ZodError): string[] {
 
 export function loadAiProviderConfig(
   environment: Readonly<Record<string, string | undefined>> = process.env,
+  providerId: AiProviderId = "openai",
 ): AiProviderConfig {
   const provider = environment.AI_PROVIDER?.trim() || "mock";
+  const connections = {
+    openai: {
+      baseUrl:
+        environment.OPENAI_BASE_URL ??
+        environment.AI_BASE_URL ??
+        "https://api.openai.com/v1/",
+      apiKey: environment.OPENAI_API_KEY ?? environment.AI_API_KEY,
+    },
+    gemini: {
+      baseUrl:
+        environment.GEMINI_BASE_URL ??
+        "https://generativelanguage.googleapis.com/v1beta/openai/",
+      apiKey: environment.GEMINI_API_KEY,
+    },
+    groq: {
+      baseUrl:
+        environment.GROQ_BASE_URL ??
+        "https://api.groq.com/openai/v1/",
+      apiKey: environment.GROQ_API_KEY,
+    },
+  } as const;
+  const connection = connections[providerId];
+  const apiKeyNames = {
+    openai: "OPENAI_API_KEY",
+    gemini: "GEMINI_API_KEY",
+    groq: "GROQ_API_KEY",
+  } as const;
+
+  if (provider === "http" && !connection.apiKey?.trim()) {
+    const apiKeyName = apiKeyNames[providerId];
+    throw new AiConfigurationError(
+      [`apiKey (${apiKeyName}): chave ausente.`],
+      `Configure ${apiKeyName} no servidor para usar o provedor selecionado.`,
+    );
+  }
+
   const candidate =
     provider === "mock"
       ? { provider }
       : {
           provider,
-          baseUrl: environment.AI_BASE_URL,
-          apiKey: environment.AI_API_KEY,
+          providerId,
+          baseUrl: connection.baseUrl,
+          apiKey: connection.apiKey,
           timeoutMs:
             environment.AI_TIMEOUT_MS === undefined
               ? 30_000

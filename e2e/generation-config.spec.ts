@@ -27,8 +27,10 @@ test("configura duração, quantidade e distribuição antes da geração", asyn
 
   await page.getByRole("button", { name: "Abrir configurações" }).click();
   const settings = page.getByRole("dialog", { name: "Configurações" });
+  const providerSelect = settings.getByRole("combobox", { name: "Provedor" });
   const modelSelect = settings.getByRole("combobox", { name: "Modelo" });
   const effortSelect = settings.getByRole("combobox", { name: "Esforço de raciocínio" });
+  await expect(providerSelect).toHaveValue("openai");
   await expect(modelSelect).toHaveValue("gpt-5.6-sol");
   await expect(effortSelect).toHaveValue("medium");
 
@@ -41,6 +43,21 @@ test("configura duração, quantidade e distribuição antes da geração", asyn
     settings.getByRole("tooltip", { name: /Mais esforço pode melhorar tarefas difíceis/ }),
   ).toBeVisible();
 
+  await providerSelect.selectOption("gemini");
+  await expect(modelSelect).toHaveValue("gemini-3.5-flash");
+  await expect(effortSelect).toHaveValue("medium");
+  await settings.getByRole("button", { name: "Informações sobre o modelo selecionado" }).focus();
+  await expect(
+    settings.getByRole("tooltip", { name: /Gratuito dentro da cota do Gemini API/ }),
+  ).toBeVisible();
+
+  await providerSelect.selectOption("groq");
+  await expect(modelSelect).toHaveValue("qwen/qwen3.6-27b");
+  await expect(effortSelect).toHaveValue("default");
+  await effortSelect.selectOption("none");
+  await expect(effortSelect).toHaveValue("none");
+
+  await providerSelect.selectOption("openai");
   await modelSelect.selectOption("gpt-4.1-mini");
   await expect(effortSelect).toBeDisabled();
   await expect(effortSelect).toHaveValue("not-applicable");

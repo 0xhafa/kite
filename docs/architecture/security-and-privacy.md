@@ -1,6 +1,6 @@
 # Segurança e privacidade da POC
 
-- A chave do provedor de IA deve existir apenas no servidor.
+- As chaves dos provedores de IA devem existir apenas no servidor.
 - A URL autenticada e o token do Turso devem existir apenas no servidor.
 - Não enviar dados pessoais de crianças ao modelo.
 - O currículo e atividades devem usar exemplos genéricos ou nomes fictícios quando necessário.

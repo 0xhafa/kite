@@ -1,7 +1,9 @@
 import type { AiProvider } from "@/domain/ai-provider";
 import {
+  aiModelSelectionSchema,
   type AiModelSelection,
   defaultAiModelSelection,
+  getAiModelDefinition,
 } from "@/domain/ai-models";
 import {
   generateMockBatch,
@@ -11,6 +13,7 @@ import { evaluateSemanticsWithMock } from "@/domain/semantic-validator";
 
 import {
   type AiProviderConfig,
+  AiConfigurationError,
   loadAiProviderConfig,
 } from "./config";
 import { HttpAiProvider } from "./http-provider";
@@ -56,11 +59,21 @@ export const mockAiProvider: AiProvider = {
 
 export function createAiProvider(
   selection: AiModelSelection = defaultAiModelSelection,
-  config: AiProviderConfig = loadAiProviderConfig(),
+  config?: AiProviderConfig,
 ): AiProvider {
-  if (config.provider === "mock") {
+  const parsedSelection = aiModelSelectionSchema.parse(selection);
+  const modelProvider = getAiModelDefinition(parsedSelection.model).provider;
+  const resolvedConfig = config ?? loadAiProviderConfig(process.env, modelProvider);
+
+  if (resolvedConfig.provider === "mock") {
     return mockAiProvider;
   }
 
-  return new HttpAiProvider({ ...config, ...selection });
+  if (resolvedConfig.providerId !== modelProvider) {
+    throw new AiConfigurationError([
+      `O modelo ${parsedSelection.model} pertence ao provedor ${modelProvider}, não a ${resolvedConfig.providerId}.`,
+    ]);
+  }
+
+  return new HttpAiProvider({ ...resolvedConfig, ...parsedSelection });
 }

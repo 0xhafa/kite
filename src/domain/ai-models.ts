@@ -1,8 +1,36 @@
 import { z } from "zod";
 
-export const AI_MODEL_PRICING_VERSION = "openai-standard-2026-07-14";
+export const AI_MODEL_PRICING_VERSION = "multi-provider-standard-2026-07-14";
+
+export const AI_PROVIDER_IDS = ["openai", "gemini", "groq"] as const;
+
+export const aiProviderIdSchema = z.enum(AI_PROVIDER_IDS);
+
+export type AiProviderId = z.infer<typeof aiProviderIdSchema>;
+
+type AiProviderDefinition = {
+  id: AiProviderId;
+  label: string;
+};
+
+export const AI_PROVIDERS = [
+  { id: "openai", label: "OpenAI" },
+  { id: "gemini", label: "Google Gemini" },
+  { id: "groq", label: "Groq" },
+] as const satisfies readonly AiProviderDefinition[];
 
 export const AI_REASONING_EFFORTS = [
+  "none",
+  "minimal",
+  "default",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+] as const;
+
+const GPT_56_REASONING_EFFORTS = [
   "none",
   "low",
   "medium",
@@ -17,6 +45,8 @@ export const AI_MODEL_IDS = [
   "gpt-5.6-luna",
   "gpt-5.4-mini",
   "gpt-4.1-mini",
+  "gemini-3.5-flash",
+  "qwen/qwen3.6-27b",
 ] as const;
 
 export const aiModelIdSchema = z.enum(AI_MODEL_IDS);
@@ -27,6 +57,7 @@ export type ReasoningEffort = z.infer<typeof reasoningEffortSchema>;
 
 type AiModelDefinition = {
   id: AiModelId;
+  provider: AiProviderId;
   label: string;
   description: string;
   reasoningEfforts: readonly ReasoningEffort[];
@@ -35,35 +66,42 @@ type AiModelDefinition = {
     input: number;
     output: number;
   };
+  freeTier?: {
+    description: string;
+  };
 };
 
 export const AI_MODELS = [
   {
     id: "gpt-5.6-sol",
+    provider: "openai",
     label: "GPT-5.6 Sol",
     description: "Maior capacidade para comparar a qualidade máxima.",
-    reasoningEfforts: AI_REASONING_EFFORTS,
+    reasoningEfforts: GPT_56_REASONING_EFFORTS,
     defaultReasoningEffort: "medium",
     pricingPerMillionTokensUsd: { input: 5, output: 30 },
   },
   {
     id: "gpt-5.6-terra",
+    provider: "openai",
     label: "GPT-5.6 Terra",
     description: "Equilíbrio entre qualidade e custo.",
-    reasoningEfforts: AI_REASONING_EFFORTS,
+    reasoningEfforts: GPT_56_REASONING_EFFORTS,
     defaultReasoningEffort: "medium",
     pricingPerMillionTokensUsd: { input: 2.5, output: 15 },
   },
   {
     id: "gpt-5.6-luna",
+    provider: "openai",
     label: "GPT-5.6 Luna",
     description: "Opção da família 5.6 otimizada para menor custo.",
-    reasoningEfforts: AI_REASONING_EFFORTS,
+    reasoningEfforts: GPT_56_REASONING_EFFORTS,
     defaultReasoningEffort: "medium",
     pricingPerMillionTokensUsd: { input: 1, output: 6 },
   },
   {
     id: "gpt-5.4-mini",
+    provider: "openai",
     label: "GPT-5.4 mini",
     description: "Modelo anterior, econômico e com raciocínio configurável.",
     reasoningEfforts: ["none", "low", "medium", "high", "xhigh"],
@@ -72,12 +110,41 @@ export const AI_MODELS = [
   },
   {
     id: "gpt-4.1-mini",
+    provider: "openai",
     label: "GPT-4.1 mini",
     description: "Referência econômica sem controle de esforço de raciocínio.",
     reasoningEfforts: [],
     pricingPerMillionTokensUsd: { input: 0.4, output: 1.6 },
   },
+  {
+    id: "gemini-3.5-flash",
+    provider: "gemini",
+    label: "Gemini 3.5 Flash",
+    description: "Alternativa rápida com raciocínio e saída estruturada.",
+    reasoningEfforts: ["minimal", "low", "medium", "high"],
+    defaultReasoningEffort: "medium",
+    pricingPerMillionTokensUsd: { input: 1.5, output: 9 },
+    freeTier: {
+      description: "Gratuito dentro da cota do Gemini API.",
+    },
+  },
+  {
+    id: "qwen/qwen3.6-27b",
+    provider: "groq",
+    label: "Qwen 3.6 27B",
+    description: "Modelo multilíngue hospedado pela Groq para comparação independente.",
+    reasoningEfforts: ["none", "default"],
+    defaultReasoningEffort: "default",
+    pricingPerMillionTokensUsd: { input: 0.6, output: 3 },
+    freeTier: {
+      description: "Gratuito dentro da cota do plano Free da Groq.",
+    },
+  },
 ] as const satisfies readonly AiModelDefinition[];
+
+const aiProvidersById = new Map<AiProviderId, AiProviderDefinition>(
+  AI_PROVIDERS.map((provider) => [provider.id, provider]),
+);
 
 const aiModelsById = new Map<AiModelId, AiModelDefinition>(
   AI_MODELS.map((model) => [model.id, model]),
@@ -85,6 +152,20 @@ const aiModelsById = new Map<AiModelId, AiModelDefinition>(
 
 export function getAiModelDefinition(modelId: AiModelId): AiModelDefinition {
   return aiModelsById.get(modelId)!;
+}
+
+export function getAiProviderDefinition(providerId: AiProviderId): AiProviderDefinition {
+  return aiProvidersById.get(providerId)!;
+}
+
+export function getAiModelsForProvider(
+  providerId: AiProviderId,
+): readonly AiModelDefinition[] {
+  return AI_MODELS.filter((model) => model.provider === providerId);
+}
+
+export function getDefaultAiModelForProvider(providerId: AiProviderId): AiModelDefinition {
+  return getAiModelsForProvider(providerId)[0]!;
 }
 
 export function getDefaultReasoningEffort(

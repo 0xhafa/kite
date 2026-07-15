@@ -115,14 +115,14 @@ describe("observabilidade de tokens", () => {
       totalTokens: 150,
       callCount: 2,
       estimatedCostUsd: null,
-      pricingVersion: "openai-standard-2026-07-14",
+      pricingVersion: "multi-provider-standard-2026-07-14",
     });
   });
 
   it("estima o custo pelas tarifas do modelo e considera outros tokens como saída", () => {
     const usage = aggregateBatchTokenUsage("batch-1", [
       createRun({
-        provider: "http",
+        provider: "openai",
         model: "gpt-5.6-luna",
         tokenUsage: {
           inputTokens: 1_000_000,

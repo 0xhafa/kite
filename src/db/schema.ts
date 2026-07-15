@@ -135,7 +135,7 @@ export const modelRuns = sqliteTable(
     provider: text("provider").notNull(),
     model: text("model").notNull(),
     reasoningEffort: text("reasoning_effort", {
-      enum: ["none", "low", "medium", "high", "xhigh", "max"],
+      enum: ["none", "minimal", "default", "low", "medium", "high", "xhigh", "max"],
     }),
     status: text("status", { enum: ["completed", "failed", "cancelled"] }).notNull(),
     normalizedInput: text("normalized_input", { mode: "json" }).$type<unknown>().notNull(),

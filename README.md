@@ -34,12 +34,14 @@ próxima migration com `npm run db:generate`.
 O arquivo `.env.example` documenta os dois modos disponíveis:
 
 - `AI_PROVIDER=mock`: padrão local e dos testes, sem chave externa;
-- `AI_PROVIDER=http`: endpoint compatível com Chat Completions, configurado
-  somente no servidor com `AI_BASE_URL`, `AI_API_KEY` e, se
-  necessário, `AI_TIMEOUT_MS`.
+- `AI_PROVIDER=http`: ativa OpenAI, Gemini e Groq por endpoints compatíveis com
+  Chat Completions. Configure somente as chaves que pretende usar:
+  `OPENAI_API_KEY`, `GEMINI_API_KEY` e/ou `GROQ_API_KEY`.
 
-O modelo e o esforço de raciocínio são selecionados no painel de geração. A
-lista permitida e a tabela versionada usada para estimar custos ficam em
+O provedor, o modelo e o esforço de raciocínio são selecionados no painel de
+configurações. Os endpoints oficiais são usados por padrão e podem ser
+sobrescritos por `OPENAI_BASE_URL`, `GEMINI_BASE_URL` e `GROQ_BASE_URL`. A lista
+permitida e a tabela versionada usada para estimar custos ficam em
 `src/domain/ai-models.ts`; a chave da API nunca é enviada ao navegador.
 
 Não use prefixo `NEXT_PUBLIC_` em segredos. Respostas do provedor passam pelos
