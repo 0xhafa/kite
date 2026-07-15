@@ -10,6 +10,7 @@ import {
 } from "@/components/ai/ai-settings";
 import {
   HeaderIconTooltip,
+  PlanNewBatchIcon,
   ReviewedActivitiesIcon,
   SettingsIcon,
 } from "@/components/header-icon";
@@ -72,6 +73,15 @@ function AppShellFrame({
             <span>Kite</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            <HeaderIconTooltip align="right" label="Planejar novo lote">
+              <Link
+                aria-label="Planejar novo lote"
+                className="inline-flex size-touch items-center justify-center rounded-md text-brand-strong transition-colors hover:bg-brand-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                href="/planejar"
+              >
+                <PlanNewBatchIcon />
+              </Link>
+            </HeaderIconTooltip>
             <HeaderIconTooltip align="right" label="Atividades revisadas">
               <Link
                 aria-label="Atividades revisadas"

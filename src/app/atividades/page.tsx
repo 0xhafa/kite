@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { ActivityDescription } from "@/components/activity-description";
 import { AppShell } from "@/components/app-shell";
@@ -31,25 +30,17 @@ export default async function ReviewedActivitiesPage() {
   return (
     <AppShell mainClassName="max-w-5xl" sectionLabel="Biblioteca">
       <section aria-labelledby="titulo-atividades-revisadas">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <Badge tone="success">Biblioteca persistente</Badge>
-            <h1
-              className="mt-4 text-title font-black tracking-[-0.03em] sm:text-display"
-              id="titulo-atividades-revisadas"
-            >
-              Atividades revisadas
-            </h1>
-            <p className="mt-3 max-w-2xl text-lead font-medium text-muted">
-              Tudo o que você já revisou continua salvo e acessível aqui.
-            </p>
-          </div>
-          <Link
-            className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-ink bg-ink px-6 py-3 font-extrabold text-surface shadow-action transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
-            href="/planejar"
+        <div>
+          <Badge tone="success">Biblioteca persistente</Badge>
+          <h1
+            className="mt-4 text-title font-black tracking-[-0.03em] sm:text-display"
+            id="titulo-atividades-revisadas"
           >
-            Planejar novo lote
-          </Link>
+            Atividades revisadas
+          </h1>
+          <p className="mt-3 max-w-2xl text-lead font-medium text-muted">
+            Tudo o que você já revisou continua salvo e acessível aqui.
+          </p>
         </div>
 
         {reviewedActivityCount > 0 ? (
