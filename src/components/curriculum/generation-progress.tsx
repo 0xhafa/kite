@@ -26,7 +26,6 @@ const EXPECTED_GENERATION_DURATION_MILLISECONDS = {
   "gpt-4.1-mini": 25_000,
   "gemini-3.5-flash": 25_000,
   "qwen/qwen3.6-27b": 18_000,
-  "grok-4.3": 40_000,
 } as const satisfies Record<AiModelId, number>;
 
 const REASONING_EFFORT_DURATION_MULTIPLIER = {

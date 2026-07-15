@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const AI_MODEL_PRICING_VERSION = "multi-provider-standard-2026-07-15";
 
-export const AI_PROVIDER_IDS = ["openai", "gemini", "groq", "xai"] as const;
+export const AI_PROVIDER_IDS = ["openai", "gemini", "groq"] as const;
 
 export const aiProviderIdSchema = z.enum(AI_PROVIDER_IDS);
 
@@ -17,7 +17,6 @@ export const AI_PROVIDERS = [
   { id: "openai", label: "OpenAI" },
   { id: "gemini", label: "Google Gemini" },
   { id: "groq", label: "Groq" },
-  { id: "xai", label: "xAI" },
 ] as const satisfies readonly AiProviderDefinition[];
 
 export const AI_REASONING_EFFORTS = [
@@ -48,7 +47,6 @@ export const AI_MODEL_IDS = [
   "gpt-4.1-mini",
   "gemini-3.5-flash",
   "qwen/qwen3.6-27b",
-  "grok-4.3",
 ] as const;
 
 export const aiModelIdSchema = z.enum(AI_MODEL_IDS);
@@ -141,15 +139,6 @@ export const AI_MODELS = [
     freeTier: {
       description: "Gratuito dentro da cota do plano Free da Groq.",
     },
-  },
-  {
-    id: "grok-4.3",
-    provider: "xai",
-    label: "Grok 4.3",
-    description: "Modelo principal da xAI com raciocínio configurável e saída estruturada.",
-    reasoningEfforts: ["none", "low", "medium", "high"],
-    defaultReasoningEffort: "medium",
-    pricingPerMillionTokensUsd: { input: 1.25, output: 2.5 },
   },
 ] as const satisfies readonly AiModelDefinition[];
 

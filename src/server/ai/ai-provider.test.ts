@@ -194,13 +194,12 @@ describe("configuração do provedor de IA", () => {
     });
   });
 
-  it("resolve conexões independentes para Gemini, Groq e xAI", () => {
+  it("resolve conexões independentes para Gemini e Groq", () => {
     const environment = {
       AI_PROVIDER: "http",
       OPENAI_API_KEY: "openai-nao-selecionada",
       GEMINI_API_KEY: "gemini-selecionada",
       GROQ_API_KEY: "groq-selecionada",
-      XAI_API_KEY: "xai-selecionada",
     };
 
     expect(loadAiProviderConfig(environment, "gemini")).toEqual({
@@ -215,13 +214,6 @@ describe("configuração do provedor de IA", () => {
       providerId: "groq",
       baseUrl: "https://api.groq.com/openai/v1/",
       apiKey: "groq-selecionada",
-      timeoutMs: 300_000,
-    });
-    expect(loadAiProviderConfig(environment, "xai")).toEqual({
-      provider: "http",
-      providerId: "xai",
-      baseUrl: "https://api.x.ai/v1/",
-      apiKey: "xai-selecionada",
       timeoutMs: 300_000,
     });
   });
@@ -410,40 +402,6 @@ describe("adaptador HTTP estruturado", () => {
       reasoning_format: "hidden",
       response_format: { type: "json_object" },
     });
-  });
-
-  it("usa a API compatível da xAI com o modelo e esforço do Grok", async () => {
-    const fetchImplementation = vi.fn<typeof fetch>(async () =>
-      completionResponse(generationOutput),
-    );
-    const provider = new HttpAiProvider(
-      {
-        ...httpConfig,
-        providerId: "xai",
-        baseUrl: "https://api.x.ai/v1/",
-        model: "grok-4.3",
-        reasoningEffort: "high",
-      },
-      fetchImplementation,
-    );
-
-    await expect(provider.generate(createGenerationInput())).resolves.toMatchObject({
-      run: {
-        provider: "xai",
-        model: "grok-4.3",
-        reasoningEffort: "high",
-      },
-    });
-
-    const [url, request] = fetchImplementation.mock.calls[0];
-    const body = JSON.parse(String(request?.body)) as Record<string, unknown>;
-    expect(String(url)).toBe("https://api.x.ai/v1/chat/completions");
-    expect(body).toMatchObject({
-      model: "grok-4.3",
-      reasoning_effort: "high",
-      response_format: { type: "json_object" },
-    });
-    expect(body).not.toHaveProperty("reasoning_format");
   });
 
   it("valida saídas estruturadas de reparo e avaliação", async () => {

@@ -119,19 +119,12 @@ export function loadAiProviderConfig(
         "https://api.groq.com/openai/v1/",
       apiKey: environment.GROQ_API_KEY,
     },
-    xai: {
-      baseUrl:
-        environment.XAI_BASE_URL ??
-        "https://api.x.ai/v1/",
-      apiKey: environment.XAI_API_KEY,
-    },
   } as const;
   const connection = connections[providerId];
   const apiKeyNames = {
     openai: "OPENAI_API_KEY",
     gemini: "GEMINI_API_KEY",
     groq: "GROQ_API_KEY",
-    xai: "XAI_API_KEY",
   } as const;
 
   if (provider === "http" && !connection.apiKey?.trim()) {
