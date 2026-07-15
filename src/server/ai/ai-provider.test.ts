@@ -122,7 +122,7 @@ function createValidationInput(): ValidationModelInput {
 const generationOutput = {
   plan: {
     totalDurationMinutes: 5,
-    activities: [
+    slots: [
       {
         slotIndex: 0,
         durationMinutes: 5,
@@ -379,7 +379,7 @@ describe("adaptador HTTP estruturado", () => {
         ...httpConfig,
         providerId: "groq",
         baseUrl: "https://api.groq.com/openai/v1/",
-        model: "openai/gpt-oss-20b",
+        model: "openai/gpt-oss-120b",
         reasoningEffort: "medium",
       },
       fetchImplementation,
@@ -388,7 +388,7 @@ describe("adaptador HTTP estruturado", () => {
     await expect(provider.generate(createGenerationInput())).resolves.toMatchObject({
       run: {
         provider: "groq",
-        model: "openai/gpt-oss-20b",
+        model: "openai/gpt-oss-120b",
         reasoningEffort: "medium",
       },
     });
@@ -397,7 +397,7 @@ describe("adaptador HTTP estruturado", () => {
     const body = JSON.parse(String(request?.body)) as Record<string, unknown>;
     expect(String(url)).toBe("https://api.groq.com/openai/v1/chat/completions");
     expect(body).toMatchObject({
-      model: "openai/gpt-oss-20b",
+      model: "openai/gpt-oss-120b",
       reasoning_effort: "medium",
       response_format: {
         type: "json_schema",

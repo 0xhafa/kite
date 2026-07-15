@@ -115,7 +115,7 @@ describe("contrato de saída do gerador", () => {
   const output = {
     plan: {
       totalDurationMinutes: 25,
-      activities: [
+      slots: [
         {
           slotIndex: 0,
           durationMinutes: 10,

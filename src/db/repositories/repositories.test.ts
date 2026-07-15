@@ -477,7 +477,7 @@ describe("repositórios libSQL", () => {
       totalTokens: 100,
       callCount: 1,
       estimatedCostUsd: null,
-      pricingVersion: "multi-provider-standard-2026-07-15-v2",
+      pricingVersion: "multi-provider-standard-2026-07-15-v3",
     });
     expect(await runs.findCacheEntry(original.cacheKey)).toEqual(cacheEntry);
     await expect(

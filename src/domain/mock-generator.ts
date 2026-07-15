@@ -210,7 +210,7 @@ export function generateMockBatch(input: GenerationModelInput): GenerationModelO
   const outputResult = generationModelOutputSchema.safeParse({
     plan: {
       totalDurationMinutes: parsedInput.totalDurationMinutes,
-      activities: planActivities,
+      slots: planActivities,
     },
     activities,
     uncertainties: [],

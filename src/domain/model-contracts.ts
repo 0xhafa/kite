@@ -91,23 +91,32 @@ export const generationModelOutputSchema = z
     plan: z
       .object({
         totalDurationMinutes: positiveIntegerSchema,
-        activities: z.array(generationPlanActivitySchema).min(1),
+        slots: z
+          .array(generationPlanActivitySchema)
+          .min(1)
+          .describe("Posições resumidas do plano; não contém as atividades detalhadas."),
       })
-      .strict(),
-    activities: z.array(generatedActivityProposalSchema).min(1),
-    uncertainties: z.array(nonEmptyTextSchema),
+      .strict()
+      .describe("Resumo do planejamento; contém somente totalDurationMinutes e slots."),
+    activities: z
+      .array(generatedActivityProposalSchema)
+      .min(1)
+      .describe("Atividades detalhadas no nível raiz, fora de plan."),
+    uncertainties: z
+      .array(nonEmptyTextSchema)
+      .describe("Incertezas no nível raiz, fora de plan."),
   })
   .strict()
   .superRefine((output, context) => {
-    const planBySlot = new Map<number, (typeof output.plan.activities)[number]>();
+    const planBySlot = new Map<number, (typeof output.plan.slots)[number]>();
     let plannedDuration = 0;
 
-    output.plan.activities.forEach((activity, index) => {
+    output.plan.slots.forEach((activity, index) => {
       if (planBySlot.has(activity.slotIndex)) {
         context.addIssue({
           code: "custom",
           message: "O plano não pode repetir posições.",
-          path: ["plan", "activities", index, "slotIndex"],
+          path: ["plan", "slots", index, "slotIndex"],
         });
       }
       planBySlot.set(activity.slotIndex, activity);
@@ -122,7 +131,7 @@ export const generationModelOutputSchema = z
       });
     }
 
-    if (output.activities.length !== output.plan.activities.length) {
+    if (output.activities.length !== output.plan.slots.length) {
       context.addIssue({
         code: "custom",
         message: "O gerador deve entregar uma atividade para cada item do plano.",

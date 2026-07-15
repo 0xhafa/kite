@@ -16,7 +16,7 @@
 {
   "plan": {
     "totalDurationMinutes": 25,
-    "activities": [
+    "slots": [
       {
         "slotIndex": 0,
         "durationMinutes": 12,
@@ -58,6 +58,8 @@
 
 ## Restrições
 
+- manter `plan`, `activities` e `uncertainties` como campos irmãos no nível raiz; nunca colocar `activities` ou `uncertainties` dentro de `plan`;
+- usar `plan.slots` somente para o resumo de posições e `activities` somente para as atividades detalhadas;
 - não alterar objetivo ou conteúdo;
 - não declarar regras atendidas;
 - não incluir fontes acadêmicas inventadas;

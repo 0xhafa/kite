@@ -128,7 +128,7 @@ function responseFormatFor(
 ) {
   if (
     config.providerId === "groq" &&
-    config.model === "openai/gpt-oss-20b" &&
+    config.model === "openai/gpt-oss-120b" &&
     operation !== "validation"
   ) {
     return {

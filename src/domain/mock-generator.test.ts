@@ -112,7 +112,7 @@ describe("gerador mock estruturado", () => {
       );
 
       expect(output.activities).toHaveLength(activityCount);
-      expect(output.plan.activities).toHaveLength(activityCount);
+      expect(output.plan.slots).toHaveLength(activityCount);
       expect(output.plan.totalDurationMinutes).toBe(totalDurationMinutes);
       expect(
         output.activities.reduce(
@@ -127,7 +127,7 @@ describe("gerador mock estruturado", () => {
     const output = generateMockBatch(
       createInput({ totalDurationMinutes: 30, activityCount: 10 }),
     );
-    const actions = output.plan.activities.map(
+    const actions = output.plan.slots.map(
       (activity) => activity.primaryChildAction,
     );
 

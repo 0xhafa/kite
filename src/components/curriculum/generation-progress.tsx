@@ -25,7 +25,7 @@ const EXPECTED_GENERATION_DURATION_MILLISECONDS = {
   "gpt-5.4-mini": 35_000,
   "gpt-4.1-mini": 25_000,
   "gemini-3.5-flash": 25_000,
-  "openai/gpt-oss-20b": 18_000,
+  "openai/gpt-oss-120b": 20_000,
 } as const satisfies Record<AiModelId, number>;
 
 const REASONING_EFFORT_DURATION_MULTIPLIER = {

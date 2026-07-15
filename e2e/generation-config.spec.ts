@@ -56,7 +56,7 @@ test("configura duração, quantidade e distribuição antes da geração", asyn
   ).toBeVisible();
 
   await providerSelect.selectOption("groq");
-  await expect(modelSelect).toHaveValue("openai/gpt-oss-20b");
+  await expect(modelSelect).toHaveValue("openai/gpt-oss-120b");
   await expect(effortSelect).toHaveValue("medium");
   await effortSelect.selectOption("low");
   await expect(effortSelect).toHaveValue("low");

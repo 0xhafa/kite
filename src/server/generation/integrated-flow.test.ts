@@ -333,7 +333,7 @@ describe("fluxo integrado persistido", () => {
     const generationOutput = {
       plan: {
         totalDurationMinutes: 5,
-        activities: [{
+        slots: [{
           slotIndex: 0,
           durationMinutes: 5,
           primaryChildAction: "Apontar",
