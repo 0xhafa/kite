@@ -1,6 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import {
+  HeaderIconTooltip,
+  ReviewedActivitiesIcon,
+} from "@/components/header-icon";
 import { brandAssets } from "@/lib/brand";
 import { loadReviewedActivityLibrary } from "@/server/generation/integrated-flow";
 
@@ -52,13 +56,15 @@ export default async function Home() {
           />
         </a>
         <div className="flex items-center gap-3">
-          <Link
-            className="rounded-lg px-2 py-2 text-sm font-extrabold text-[#187b68] underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
-            href="/atividades"
-          >
-            <span className="hidden sm:inline">Atividades revisadas</span>
-            <span className="sm:hidden">Revisadas</span>
-          </Link>
+          <HeaderIconTooltip align="right" label="Atividades revisadas">
+            <Link
+              aria-label="Atividades revisadas"
+              className="inline-flex size-11 items-center justify-center rounded-lg text-[#187b68] transition-colors hover:bg-[#dff7ef] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
+              href="/atividades"
+            >
+              <ReviewedActivitiesIcon />
+            </Link>
+          </HeaderIconTooltip>
           <span className="hidden rounded-full border-2 border-[#dfe5ef] bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#526078] md:inline-flex">
             POC educacional
           </span>

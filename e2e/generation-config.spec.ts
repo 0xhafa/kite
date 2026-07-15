@@ -25,7 +25,10 @@ test("configura duração, quantidade e distribuição antes da geração", asyn
   await durationInput.fill("26");
   await countSelect.selectOption("4");
 
-  await page.getByRole("button", { name: "Abrir configurações" }).click();
+  const settingsButton = page.getByRole("button", { name: "Abrir configurações" });
+  await settingsButton.hover();
+  await expect(page.getByRole("tooltip", { name: "Configurações" })).toBeVisible();
+  await settingsButton.click();
   const settings = page.getByRole("dialog", { name: "Configurações" });
   const providerSelect = settings.getByRole("combobox", { name: "Provedor" });
   const modelSelect = settings.getByRole("combobox", { name: "Modelo" });

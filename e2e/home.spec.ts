@@ -10,7 +10,10 @@ test("exibe a página inicial e a identidade do Kite", async ({ page }) => {
   await expect(
     page.getByText("Você aprova, rejeita ou gera uma nova versão de cada proposta."),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Atividades revisadas" })).toBeVisible();
+  const reviewedActivitiesLink = page.getByRole("link", { name: "Atividades revisadas" });
+  await expect(reviewedActivitiesLink).toBeVisible();
+  await reviewedActivitiesLink.hover();
+  await expect(page.getByRole("tooltip", { name: "Atividades revisadas" })).toBeVisible();
   await expect(page.getByRole("status")).toContainText(
     /Nenhum lote gerado ainda|Lote pronto para revisão|atividades? revisadas?/,
   );
