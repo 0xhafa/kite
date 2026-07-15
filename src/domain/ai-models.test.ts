@@ -18,12 +18,16 @@ describe("catálogo multiprovedor de modelos", () => {
     expect(getAiModelsForProvider("groq").map(({ id }) => id)).toEqual([
       "qwen/qwen3.6-27b",
     ]);
+    expect(getAiModelsForProvider("xai").map(({ id }) => id)).toEqual([
+      "grok-4.3",
+    ]);
   });
 
   it("define um modelo inicial válido para cada provedor", () => {
     expect(getDefaultAiModelForProvider("openai").id).toBe("gpt-5.6-sol");
     expect(getDefaultAiModelForProvider("gemini").id).toBe("gemini-3.5-flash");
     expect(getDefaultAiModelForProvider("groq").id).toBe("qwen/qwen3.6-27b");
+    expect(getDefaultAiModelForProvider("xai").id).toBe("grok-4.3");
   });
 
   it("rejeita esforços que o modelo selecionado não oferece", () => {
@@ -45,6 +49,12 @@ describe("catálogo multiprovedor de modelos", () => {
         reasoningEffort: "default",
       }).success,
     ).toBe(false);
+    expect(
+      aiModelSelectionSchema.safeParse({
+        model: "grok-4.3",
+        reasoningEffort: "high",
+      }).success,
+    ).toBe(true);
   });
 
   it("estima o preço pago de referência para modelos com camada gratuita", () => {
@@ -57,5 +67,15 @@ describe("catálogo multiprovedor de modelos", () => {
         otherTokens: 0,
       }),
     ).toBe(10.5);
+
+    expect(
+      estimateAiUsageCostUsd({
+        provider: "xai",
+        model: "grok-4.3",
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
+        otherTokens: 0,
+      }),
+    ).toBe(3.75);
   });
 });

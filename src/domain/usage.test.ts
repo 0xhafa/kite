@@ -115,7 +115,7 @@ describe("observabilidade de tokens", () => {
       totalTokens: 150,
       callCount: 2,
       estimatedCostUsd: null,
-      pricingVersion: "multi-provider-standard-2026-07-14",
+      pricingVersion: "multi-provider-standard-2026-07-15",
     });
   });
 

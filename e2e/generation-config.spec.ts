@@ -57,6 +57,12 @@ test("configura duração, quantidade e distribuição antes da geração", asyn
   await effortSelect.selectOption("none");
   await expect(effortSelect).toHaveValue("none");
 
+  await providerSelect.selectOption("xai");
+  await expect(modelSelect).toHaveValue("grok-4.3");
+  await expect(effortSelect).toHaveValue("medium");
+  await effortSelect.selectOption("high");
+  await expect(effortSelect).toHaveValue("high");
+
   await providerSelect.selectOption("openai");
   await modelSelect.selectOption("gpt-4.1-mini");
   await expect(effortSelect).toBeDisabled();
