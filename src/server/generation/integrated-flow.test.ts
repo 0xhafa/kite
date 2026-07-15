@@ -15,6 +15,7 @@ import {
   loadPersistedPlanningContext,
   loadReviewBatch,
   loadReviewedActivityLibrary,
+  rejectActivity,
   rejectAndRegenerateActivity,
 } from "./integrated-flow";
 import { createInitialGenerationArtifacts } from "./pipeline";
@@ -145,6 +146,65 @@ describe("fluxo integrado persistido", () => {
       totalActivities: 3,
     });
     expect(libraryBatch?.reviewedActivities).toHaveLength(3);
+  });
+
+  it("conclui o lote quando todas as atividades foram aprovadas ou rejeitadas", async () => {
+    const batchId = await generateAndPersistBatch({
+      selection,
+      config: {
+        requestedDurationMinutes: 10,
+        requestedActivityCount: 2,
+        ...defaultAiModelSelection,
+      },
+    });
+    const initial = await loadReviewBatch(batchId);
+    const rejectedActivity = initial!.items[0].activity;
+    const approvedActivity = initial!.items[1].activity;
+
+    await rejectActivity({
+      batchId,
+      activityId: rejectedActivity.id,
+      activityVersion: rejectedActivity.version,
+      feedback: "Não atende à intenção pedagógica.",
+    });
+
+    await expect(loadReviewBatch(batchId)).resolves.toMatchObject({
+      batch: { status: "ready_for_review" },
+      items: [
+        { activity: { id: rejectedActivity.id, status: "rejected" } },
+        { activity: { id: approvedActivity.id, status: "draft" } },
+      ],
+    });
+
+    await approveActivity({
+      batchId,
+      activityId: approvedActivity.id,
+      activityVersion: approvedActivity.version,
+    });
+
+    const completed = await loadReviewBatch(batchId);
+    const libraryBatch = (await loadReviewedActivityLibrary()).find(
+      (entry) => entry.batchId === batchId,
+    );
+
+    expect(completed).toMatchObject({
+      batch: { status: "completed" },
+      decisionHistory: {
+        [rejectedActivity.id]: [{
+          decision: "rejected",
+          feedback: "Não atende à intenção pedagógica.",
+        }],
+        [approvedActivity.id]: [{ decision: "approved" }],
+      },
+    });
+    expect(libraryBatch).toMatchObject({
+      batchId,
+      completed: true,
+      reviewedActivities: [
+        { activity: { status: "rejected" }, decision: { decision: "rejected" } },
+        { activity: { status: "approved" }, decision: { decision: "approved" } },
+      ],
+    });
   });
 
   it("não entrega uma atividade cujo relatório validado ficou incompleto", async () => {

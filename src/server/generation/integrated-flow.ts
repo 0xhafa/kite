@@ -289,7 +289,7 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
       completed:
         batch.status === "completed" ||
         (group.activities.length > 0 &&
-          group.activities.every(({ status }) => status === "approved")),
+          group.activities.every(({ status }) => isFinalReviewStatus(status))),
       createdAt: batch.createdAt,
       lesson: {
         number: lesson.number,
@@ -337,14 +337,43 @@ export async function approveActivity(input: {
     createdAt: new Date().toISOString(),
   });
 
-  const reviewedGroup = await generations.getCurrentActivityGroup(input.batchId);
-  if (
-    reviewedGroup &&
-    reviewedGroup.activities.length > 0 &&
-    reviewedGroup.activities.every(({ status }) => status === "approved")
-  ) {
-    await generations.updateBatchStatus(input.batchId, "completed");
+  await completeBatchIfReviewed(generations, input.batchId);
+}
+
+export async function rejectActivity(input: {
+  batchId: string;
+  activityId: string;
+  activityVersion: number;
+  feedback?: string;
+}): Promise<void> {
+  const { generations, runs, traceability } = await repositories();
+  const batch = await generations.getBatch(input.batchId);
+  if (!batch || batch.status !== "ready_for_review") {
+    throw new Error("O lote não está disponível para novas decisões de revisão.");
   }
+  const group = await generations.getCurrentActivityGroup(input.batchId);
+  const activity = group?.activities.find(({ id }) => id === input.activityId);
+
+  if (!activity || activity.version !== input.activityVersion) {
+    throw new Error("A atividade mudou desde que a revisão foi carregada.");
+  }
+
+  requirePersistedValidationReport(
+    activity,
+    await traceability.listValidationResults(activity.id, activity.version),
+    await runs.listByBatch(input.batchId),
+  );
+
+  await traceability.saveReviewDecision({
+    activityId: activity.id,
+    activityVersion: activity.version,
+    decision: "rejected",
+    ...(input.feedback?.trim() ? { feedback: input.feedback.trim() } : {}),
+    author: "revisor-poc",
+    createdAt: new Date().toISOString(),
+  });
+
+  await completeBatchIfReviewed(generations, input.batchId);
 }
 
 function generationContextFromRuns(runs: readonly ModelRun[]) {
@@ -381,6 +410,24 @@ function modelSelectionFromRuns(
   }
 
   return modelSelectionFromBatch(batch);
+}
+
+function isFinalReviewStatus(status: Activity["status"]): boolean {
+  return status === "approved" || status === "rejected";
+}
+
+async function completeBatchIfReviewed(
+  generations: GenerationRepository,
+  batchId: string,
+): Promise<void> {
+  const reviewedGroup = await generations.getCurrentActivityGroup(batchId);
+  if (
+    reviewedGroup &&
+    reviewedGroup.activities.length > 0 &&
+    reviewedGroup.activities.every(({ status }) => isFinalReviewStatus(status))
+  ) {
+    await generations.updateBatchStatus(batchId, "completed");
+  }
 }
 
 export async function rejectAndRegenerateActivity(input: {

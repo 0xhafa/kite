@@ -10,6 +10,7 @@ import { identifierSchema, positiveIntegerSchema } from "@/domain/shared";
 import {
   approveActivity,
   generateAndPersistBatch,
+  rejectActivity,
   rejectAndRegenerateActivity,
 } from "@/server/generation/integrated-flow";
 
@@ -63,6 +64,21 @@ export async function approveActivityAction(
   try {
     const parsed = reviewActionInputSchema.parse(input);
     await approveActivity(parsed);
+    revalidatePath("/");
+    revalidatePath("/atividades");
+    revalidatePath("/revisar");
+    return { ok: true, data: {} };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function rejectActivityAction(
+  input: unknown,
+): Promise<ActionResult<Record<string, never>>> {
+  try {
+    const parsed = reviewActionInputSchema.parse(input);
+    await rejectActivity(parsed);
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/revisar");

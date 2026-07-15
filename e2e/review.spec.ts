@@ -106,7 +106,8 @@ test("mantém as decisões acessíveis em tela pequena", async ({ page }) => {
   const detailsButton = page.getByRole("button", { name: "Detalhes", exact: true });
 
   await expect(approveButton).toBeVisible();
-  await expect(page.getByRole("button", { name: "Rejeitar e gerar nova versão" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Rejeitar", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ajustar atividade" })).toBeVisible();
   await expect(detailsButton).toBeVisible();
 
   const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import {
   approveActivityAction,
+  rejectActivityAction,
   rejectAndRegenerateActivityAction,
 } from "@/app/actions";
 import { ActivityDescription } from "@/components/activity-description";
@@ -182,7 +183,41 @@ function ReadyActivityReview({
     });
     setCurrentUsage(result.data.usage);
     setDecisionFeedback({
-      message: `“${rejectedItem.activity.title}” foi rejeitada e substituída apenas nesta posição.`,
+      message: `“${rejectedItem.activity.title}” foi ajustada em uma nova versão, sem alterar as demais.`,
+      tone: "success",
+    });
+    setFeedbackByActivity((currentFeedback) => {
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[rejectedItem.activity.id];
+      return nextFeedback;
+    });
+    setDetailsOpen(false);
+  }
+
+  async function reject() {
+    if (!currentItem) return;
+
+    const rejectedItem = currentItem;
+    setActionError(null);
+    setActionPending(true);
+    const result = await rejectActivityAction({
+      batchId,
+      activityId: rejectedItem.activity.id,
+      activityVersion: rejectedItem.activity.version,
+      feedback,
+    });
+    setActionPending(false);
+
+    if (!result.ok) {
+      setActionError(result.message);
+      return;
+    }
+
+    setSession((currentSession) =>
+      decideCurrentReviewItem(currentSession, "rejected", feedback),
+    );
+    setDecisionFeedback({
+      message: `“${rejectedItem.activity.title}” foi rejeitada.`,
       tone: "danger",
     });
     setFeedbackByActivity((currentFeedback) => {
@@ -294,7 +329,8 @@ function ReadyActivityReview({
               ? () => navigateTo(currentIndex - 1)
               : undefined
           }
-          onReject={rejectAndRegenerate}
+          onAdjust={rejectAndRegenerate}
+          onReject={reject}
           position={(currentIndex ?? 0) + 1}
           titleRef={activityHeadingRef}
           total={progress.total}
@@ -339,6 +375,7 @@ function ActivityCard({
   onNext,
   onOpenDetails,
   onPrevious,
+  onAdjust,
   onReject,
   position,
   titleRef,
@@ -354,6 +391,7 @@ function ActivityCard({
   onNext?: () => void;
   onOpenDetails: () => void;
   onPrevious?: () => void;
+  onAdjust: () => void;
   onReject: () => void;
   position: number;
   titleRef: React.RefObject<HTMLHeadingElement | null>;
@@ -461,9 +499,18 @@ function ActivityCard({
           value={feedback}
         />
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Button disabled={busy} fullWidth onClick={onReject} size="lg" variant="danger">
-            {busy ? "Salvando…" : "Rejeitar e gerar nova versão"}
+            {busy ? "Salvando…" : "Rejeitar"}
+          </Button>
+          <Button
+            disabled={busy}
+            fullWidth
+            onClick={onAdjust}
+            size="lg"
+            variant="secondary"
+          >
+            {busy ? "Ajustando…" : "Ajustar atividade"}
           </Button>
           <Button disabled={busy} fullWidth onClick={onApprove} size="lg">
             {busy ? "Salvando…" : "Aprovar"}

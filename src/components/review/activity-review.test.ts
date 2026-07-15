@@ -167,6 +167,13 @@ describe("resumo da validação na atividade", () => {
     expect(html).toContain("Requer ajustes");
   });
 
+  it("oferece rejeição final separada do ajuste em uma nova versão", () => {
+    const html = renderReview("passed");
+
+    expect(html).toContain(">Rejeitar</button>");
+    expect(html).toContain(">Ajustar atividade</button>");
+  });
+
   it("apresenta as etapas reconhecidas em parágrafos com rótulos destacados", () => {
     const item = createItem("passed");
     item.activity.description =

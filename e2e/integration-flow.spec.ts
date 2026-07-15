@@ -22,9 +22,9 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
   await page
     .getByRole("textbox", { name: "Feedback opcional" })
     .fill("Criar uma alternativa com outra ação da criança.");
-  await page.getByRole("button", { name: "Rejeitar e gerar nova versão" }).click();
+  await page.getByRole("button", { name: "Ajustar atividade" }).click();
 
-  await expect(page.getByText(/foi rejeitada e substituída apenas nesta posição/)).toBeVisible();
+  await expect(page.getByText(/foi ajustada em uma nova versão, sem alterar as demais/)).toBeVisible();
   await expect(page.getByTestId("current-activity-version")).toHaveText("Versão 2");
   await expect(page.getByText("0 de 3 revisadas · 25 min")).toBeVisible();
   await expect(activityDuration).toHaveText(firstDuration ?? "");
@@ -57,13 +57,13 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
 
   await page.getByRole("button", { name: "Aprovar" }).click();
   await page.getByRole("button", { name: "Aprovar" }).click();
-  await page.getByRole("button", { name: "Aprovar" }).click();
+  await page.getByRole("button", { name: "Rejeitar", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Lote revisado" })).toBeFocused();
-  await expect(page.getByText("3 aprovadas e 0 rejeitadas")).toBeVisible();
+  await expect(page.getByText("2 aprovadas e 1 rejeitada")).toBeVisible();
 
   await page.reload();
   await expect(page.getByRole("heading", { name: "Lote revisado" })).toBeVisible();
-  await expect(page.getByText("3 aprovadas e 0 rejeitadas")).toBeVisible();
+  await expect(page.getByText("2 aprovadas e 1 rejeitada")).toBeVisible();
   await expect(page.getByRole("button", { name: "Rever atividades" })).toHaveCount(0);
 
   await page.getByRole("link", { name: "Ver atividades revisadas" }).click();
@@ -71,6 +71,7 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
   await expect(page.getByRole("heading", { level: 1, name: "Atividades revisadas" })).toBeVisible();
   await expect(page.getByText(replacementTitle ?? "", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Lote concluído", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Rejeitada", { exact: true }).first()).toBeVisible();
 
   await page.getByRole("link", { name: "Kite", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
