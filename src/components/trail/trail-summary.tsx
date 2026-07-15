@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 import { Badge, Card } from "@/components/ui";
 import type { TrailLessonSummary, TrailSummary as TrailSummaryData } from "@/server/generation/trail-summary";
@@ -23,6 +26,9 @@ function reviewedActivitiesHref(selection: {
 export function TrailSummary({ summary }: { summary: TrailSummaryData }) {
   const hasUsefulActivities =
     summary.reviewedActivities + summary.pendingActivities > 0;
+  const [expandedSkills, setExpandedSkills] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(summary.theme.skills.map(({ id }) => [id, true])),
+  );
 
   return (
     <section aria-labelledby="titulo-resumo-trilha">
@@ -68,79 +74,124 @@ export function TrailSummary({ summary }: { summary: TrailSummaryData }) {
       </div>
 
       <div className="mt-8 space-y-12">
-        {summary.theme.skills.map((skill, skillIndex) => (
-          <section aria-labelledby={`habilidade-trilha-${skill.id}`} key={skill.id}>
-            <div className="flex items-start gap-4 border-b-2 border-border pb-4">
-              <span
-                aria-hidden="true"
-                className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-brand-soft font-black text-brand-strong"
-              >
-                {skillIndex + 1}
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-muted">
-                  Habilidade {skillIndex + 1}
-                </p>
-                <h3
-                  className="mt-1 break-words text-2xl font-black tracking-[-0.02em]"
-                  id={`habilidade-trilha-${skill.id}`}
+        {summary.theme.skills.map((skill, skillIndex) => {
+          const expanded = expandedSkills[skill.id] ?? true;
+          const skillContentId = `conteudo-habilidade-trilha-${skill.id}`;
+
+          return (
+            <section
+              aria-labelledby={`habilidade-trilha-${skill.id}`}
+              data-testid="trail-skill-group"
+              key={skill.id}
+            >
+              <div className="flex flex-wrap items-start gap-4 border-b-2 border-border pb-4">
+                <span
+                  aria-hidden="true"
+                  className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-brand-soft font-black text-brand-strong"
                 >
-                  {skill.name}
-                </h3>
+                  {skillIndex + 1}
+                </span>
+                <div className="min-w-0 flex-1 basis-48">
+                  <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-muted">
+                    Habilidade {skillIndex + 1}
+                  </p>
+                  <h3
+                    className="mt-1 break-words text-2xl font-black tracking-[-0.02em]"
+                    id={`habilidade-trilha-${skill.id}`}
+                  >
+                    {skill.name}
+                  </h3>
+                </div>
+                <button
+                  aria-controls={skillContentId}
+                  aria-expanded={expanded}
+                  aria-label={`${expanded ? "Recolher" : "Expandir"} grupo Habilidade ${skillIndex + 1}: ${skill.name}`}
+                  className="inline-flex min-h-touch shrink-0 items-center gap-2 rounded-md border-2 border-border bg-surface px-4 py-2 font-extrabold text-brand-strong transition-colors hover:border-brand focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
+                  data-testid="trail-skill-toggle"
+                  onClick={() =>
+                    setExpandedSkills((current) => ({
+                      ...current,
+                      [skill.id]: !(current[skill.id] ?? true),
+                    }))
+                  }
+                  type="button"
+                >
+                  <span>{expanded ? "Recolher grupo" : "Expandir grupo"}</span>
+                  <svg
+                    aria-hidden="true"
+                    className={`size-5 transition-transform motion-reduce:transition-none ${expanded ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="m5 7.5 5 5 5-5"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </button>
               </div>
-            </div>
 
-            <div className="mt-6 space-y-7">
-              {skill.objectives.map((objective, objectiveIndex) => (
-                <Card key={objective.id} padding="none" raised={false} tone="outlined">
-                  <section aria-labelledby={`objetivo-trilha-${objective.id}`}>
-                    <div className="border-b-2 border-border bg-neutral-soft p-5 sm:p-6">
-                      <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-muted">
-                        Objetivo {objectiveIndex + 1}
-                      </p>
-                      <h4
-                        className="mt-2 break-words text-xl font-black"
-                        id={`objetivo-trilha-${objective.id}`}
-                      >
-                        {objective.name}
-                      </h4>
-                    </div>
-
-                    {objective.weeks.map((week) => (
-                      <section
-                        aria-labelledby={`semana-trilha-${week.id}`}
-                        className="p-4 sm:p-6"
-                        key={week.id}
-                      >
-                        <h5
-                          className="text-sm font-extrabold uppercase tracking-[0.08em] text-brand-strong"
-                          id={`semana-trilha-${week.id}`}
+              <div
+                className="mt-6 space-y-7"
+                data-testid="trail-skill-content"
+                hidden={!expanded}
+                id={skillContentId}
+              >
+                {skill.objectives.map((objective, objectiveIndex) => (
+                  <Card key={objective.id} padding="none" raised={false} tone="outlined">
+                    <section aria-labelledby={`objetivo-trilha-${objective.id}`}>
+                      <div className="border-b-2 border-border bg-neutral-soft p-5 sm:p-6">
+                        <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-muted">
+                          Objetivo {objectiveIndex + 1}
+                        </p>
+                        <h4
+                          className="mt-2 break-words text-xl font-black"
+                          id={`objetivo-trilha-${objective.id}`}
                         >
-                          {week.title}
-                        </h5>
-                        <ol className="mt-4 grid gap-3">
-                          {week.lessons.map((lesson) => (
-                            <TrailLesson
-                              key={lesson.id}
-                              lesson={lesson}
-                              selection={{
-                                lessonId: lesson.id,
-                                objectiveId: objective.id,
-                                skillId: skill.id,
-                                themeId: summary.theme.id,
-                                weekId: week.id,
-                              }}
-                            />
-                          ))}
-                        </ol>
-                      </section>
-                    ))}
-                  </section>
-                </Card>
-              ))}
-            </div>
-          </section>
-        ))}
+                          {objective.name}
+                        </h4>
+                      </div>
+
+                      {objective.weeks.map((week) => (
+                        <section
+                          aria-labelledby={`semana-trilha-${week.id}`}
+                          className="p-4 sm:p-6"
+                          key={week.id}
+                        >
+                          <h5
+                            className="text-sm font-extrabold uppercase tracking-[0.08em] text-brand-strong"
+                            id={`semana-trilha-${week.id}`}
+                          >
+                            {week.title}
+                          </h5>
+                          <ol className="mt-4 grid gap-3">
+                            {week.lessons.map((lesson) => (
+                              <TrailLesson
+                                key={lesson.id}
+                                lesson={lesson}
+                                selection={{
+                                  lessonId: lesson.id,
+                                  objectiveId: objective.id,
+                                  skillId: skill.id,
+                                  themeId: summary.theme.id,
+                                  weekId: week.id,
+                                }}
+                              />
+                            ))}
+                          </ol>
+                        </section>
+                      ))}
+                    </section>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </section>
   );

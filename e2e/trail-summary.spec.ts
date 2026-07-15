@@ -91,6 +91,39 @@ test("abre a trilha pelo topo e mantém as 80 aulas utilizáveis no celular", as
   expect(documentWidth).toBeLessThanOrEqual(390);
 });
 
+test("recolhe e reabre somente uma habilidade pelo teclado", async ({ page }) => {
+  await page.goto("/trilha");
+
+  const controls = page.getByTestId("trail-skill-toggle");
+  const groups = page.getByTestId("trail-skill-group");
+  await expect(controls).toHaveCount(4);
+  await expect(groups).toHaveCount(4);
+
+  for (let skillIndex = 0; skillIndex < 4; skillIndex += 1) {
+    await expect(controls.nth(skillIndex)).toHaveAttribute("aria-expanded", "true");
+    await expect(groups.nth(skillIndex).getByTestId("trail-skill-content")).toBeVisible();
+  }
+
+  const firstControl = controls.first();
+  const firstContent = groups.first().getByTestId("trail-skill-content");
+  const secondContent = groups.nth(1).getByTestId("trail-skill-content");
+
+  await firstControl.focus();
+  await firstControl.press("Enter");
+  await expect(firstControl).toHaveAttribute("aria-expanded", "false");
+  await expect(firstControl).toContainText("Expandir grupo");
+  await expect(firstContent).toBeHidden();
+  await expect(secondContent).toBeVisible();
+  await expect(controls.nth(1)).toHaveAttribute("aria-expanded", "true");
+
+  await firstControl.press("Space");
+  await expect(firstControl).toHaveAttribute("aria-expanded", "true");
+  await expect(firstControl).toContainText("Recolher grupo");
+  await expect(firstContent).toBeVisible();
+  await expect(secondContent).toBeVisible();
+  await expect(page.getByTestId("trail-lesson")).toHaveCount(80);
+});
+
 test("leva somente aprovadas para a biblioteca e exclui rejeitadas da contagem", async ({ page }) => {
   const initialCounts = await readTrailLessonCounts(page, 4);
   await generateReviewBatchForLesson(page, 4);
