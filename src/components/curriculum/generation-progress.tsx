@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { Card } from "@/components/ui";
+import { Card, InfoTooltip } from "@/components/ui";
 import type { AiModelId, ReasoningEffort } from "@/domain/ai-models";
 
 const GENERATION_PROGRESS_STEPS = [
@@ -132,7 +132,7 @@ export function GenerationProgress({ model, reasoningEffort }: GenerationProgres
       raised={false}
       tone="soft"
     >
-      <div className="flex items-center gap-3">
+      <div className="relative flex items-center gap-3">
         <span
           aria-hidden="true"
           className="size-5 shrink-0 animate-spin rounded-full border-[3px] border-brand border-r-transparent motion-reduce:animate-none"
@@ -140,6 +140,9 @@ export function GenerationProgress({ model, reasoningEffort }: GenerationProgres
         <p className="font-black" id="progresso-geracao-titulo">
           Gerando e validando o lote
         </p>
+        <InfoTooltip label="Informações sobre o salvamento do lote">
+          As atividades, os relatórios e o consumo de tokens serão salvos antes da revisão.
+        </InfoTooltip>
       </div>
 
       <div
@@ -161,10 +164,6 @@ export function GenerationProgress({ model, reasoningEffort }: GenerationProgres
           {currentMessage}
         </p>
       </div>
-
-      <p className="mt-4 text-sm font-medium text-muted">
-        As atividades, os relatórios e o consumo de tokens serão salvos antes da revisão.
-      </p>
     </Card>
   );
 }
