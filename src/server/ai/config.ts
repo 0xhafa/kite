@@ -9,6 +9,8 @@ import {
   type AiProviderId,
 } from "@/domain/ai-models";
 
+const DEFAULT_AI_TIMEOUT_MS = 300_000;
+
 const mockProviderConfigSchema = z
   .object({
     provider: z.literal("mock"),
@@ -150,7 +152,7 @@ export function loadAiProviderConfig(
           apiKey: connection.apiKey,
           timeoutMs:
             environment.AI_TIMEOUT_MS === undefined
-              ? 30_000
+              ? DEFAULT_AI_TIMEOUT_MS
               : Number(environment.AI_TIMEOUT_MS),
         };
   const result = aiProviderConfigSchema.safeParse(candidate);

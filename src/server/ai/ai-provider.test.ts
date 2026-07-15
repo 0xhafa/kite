@@ -208,21 +208,21 @@ describe("configuração do provedor de IA", () => {
       providerId: "gemini",
       baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
       apiKey: "gemini-selecionada",
-      timeoutMs: 30_000,
+      timeoutMs: 300_000,
     });
     expect(loadAiProviderConfig(environment, "groq")).toEqual({
       provider: "http",
       providerId: "groq",
       baseUrl: "https://api.groq.com/openai/v1/",
       apiKey: "groq-selecionada",
-      timeoutMs: 30_000,
+      timeoutMs: 300_000,
     });
     expect(loadAiProviderConfig(environment, "xai")).toEqual({
       provider: "http",
       providerId: "xai",
       baseUrl: "https://api.x.ai/v1/",
       apiKey: "xai-selecionada",
-      timeoutMs: 30_000,
+      timeoutMs: 300_000,
     });
   });
 

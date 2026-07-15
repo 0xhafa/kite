@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Mantém as Server Actions de geração alinhadas ao timeout de 5 minutos da IA.
+export const maxDuration = 300;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
