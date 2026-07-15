@@ -28,6 +28,7 @@ function createItem(status: ValidationStatus): ActivityReviewItem {
         ruleId: "PED-001",
         ruleVersion: 1,
         title: "Ação observável da criança",
+        description: "A criança deve realizar uma ação que possa ser observada.",
         origin: "pedagogical_inference",
         sources: [
           {
@@ -78,17 +79,54 @@ function renderModal(status: ValidationStatus) {
 }
 
 describe("detalhes da validação", () => {
-  it("renderiza regra, resultado e evidência com origem e fonte sob demanda", () => {
+  it("renderiza critério amigável e evidência com origem e fonte sob demanda", () => {
     const html = renderModal("passed");
 
     expect(html).toContain("Ação observável da criança");
-    expect(html).toContain("Regra PED-001 · versão 1");
+    expect(html).toContain("A criança deve realizar uma ação que possa ser observada.");
+    expect(html).not.toContain("PED-001");
+    expect(html).not.toContain("versão 1");
     expect(html).toContain("Atendido");
+    expect(html).toContain("✓");
+    expect(html).toContain("Ver evidência");
     expect(html).toContain("Evidência observada na descrição.");
     expect(html).toContain("Inferência pedagógica");
     expect(html).toContain("Referência pedagógica");
     expect(html).toContain("<details");
     expect(html).not.toMatch(/<details[^>]*\sopen(?:=|>)/);
+  });
+
+  it("substitui identificadores internos de evidências antigas por texto legível", () => {
+    const item = createItem("passed");
+    item.validationReport.results[0] = {
+      ...item.validationReport.results[0],
+      ruleId: "DET-001",
+      evidence:
+        "A atividade activity-1-v1-abc, versão 1, foi aceita por activitySchema e pertence ao lote batch-abc.",
+    };
+    item.ruleReferences[0] = {
+      ...item.ruleReferences[0],
+      ruleId: "DET-001",
+      title: "Atender ao padrão da atividade",
+      description:
+        "A atividade precisa ter todas as informações necessárias para ser salva e associada ao lote correto.",
+    };
+
+    const html = renderToStaticMarkup(
+      createElement(ValidationDetailsModal, {
+        item,
+        onClose: () => undefined,
+        open: true,
+      }),
+    );
+
+    expect(html).toContain("Atender ao padrão da atividade");
+    expect(html).toContain(
+      "A atividade contém todas as informações necessárias e está associada ao lote correto.",
+    );
+    expect(html).not.toContain("activity-1-v1-abc");
+    expect(html).not.toContain("activitySchema");
+    expect(html).not.toContain("DET-001");
   });
 
   it("distingue revisão humana de falha por rótulo e tratamento visual", () => {

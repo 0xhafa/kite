@@ -398,8 +398,8 @@
     {
       "id": "DET-001",
       "version": 1,
-      "title": "Atender ao schema persistível da atividade",
-      "description": "Toda atividade deve atender ao contrato estrutural necessário para ser armazenada e vinculada ao lote correto.",
+      "title": "Atender ao padrão da atividade",
+      "description": "A atividade precisa ter todas as informações necessárias para ser salva e associada ao lote correto.",
       "applicabilityCondition": "Aplica-se durante a validação determinística de atividades.",
       "applicability": {
         "mode": "conditional",

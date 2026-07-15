@@ -48,6 +48,7 @@ const ruleReferences = [
     ruleId: "PED-001",
     ruleVersion: 1,
     title: "Praticar a habilidade prioritária",
+    description: "A ação principal da criança deve praticar a habilidade da aula.",
     origin: "pedagogical_inference" as const,
     sources: [
       {

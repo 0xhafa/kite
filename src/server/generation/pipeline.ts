@@ -418,6 +418,7 @@ export function createReviewItem(
       ruleId: rule.id,
       ruleVersion: rule.version,
       title: rule.title,
+      description: rule.description,
       origin: rule.origin,
       sources: [traceabilitySource],
     };

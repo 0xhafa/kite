@@ -70,6 +70,7 @@ export const reviewRuleReferenceSchema = z
     ruleId: identifierSchema,
     ruleVersion: positiveIntegerSchema,
     title: nonEmptyTextSchema,
+    description: nonEmptyTextSchema,
     origin: ruleOriginSchema,
     sources: z.array(sourceSchema).min(1),
   })

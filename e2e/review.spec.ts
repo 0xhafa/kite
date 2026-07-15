@@ -18,8 +18,17 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
   await page.getByRole("button", { name: "Detalhes" }).click();
   const dialog = page.getByRole("dialog", { name: "Detalhes da validação" });
   await expect(dialog.getByText("Critérios", { exact: true }).locator("..")).toContainText("5");
-  await expect(dialog.getByText("Evidência", { exact: true }).first()).toBeVisible();
-  await expect(dialog.getByText("Ver origem e fonte").first()).toBeVisible();
+  await expect(dialog.getByText("Atender ao padrão da atividade", { exact: true })).toBeVisible();
+  await expect(dialog.getByText("DET-001")).toHaveCount(0);
+  await expect(dialog.getByText("Ver evidência", { exact: true }).first()).toBeVisible();
+  await dialog.getByText("Ver evidência", { exact: true }).first().click();
+  await expect(
+    dialog.getByText(
+      "A atividade contém todas as informações necessárias e está associada ao lote correto.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(dialog.getByText("Origem do critério", { exact: true }).first()).toBeVisible();
   await page.keyboard.press("Escape");
 
   await page.getByRole("button", { name: "Aprovar" }).click();

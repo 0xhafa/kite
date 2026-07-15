@@ -207,9 +207,11 @@ function evaluateRequiredContent(
   );
 
   if (missingFields.length > 0) {
+    const missingFieldLabels = missingFields.map(getActivityFieldLabel);
+
     return createResult(activity, structuralRules.requiredContent, decision, {
       status: "failed",
-      evidence: `Campos ausentes ou vazios: ${missingFields.join(", ")}.`,
+      evidence: `Informações ausentes ou vazias: ${missingFieldLabels.join(", ")}.`,
       explanation: "A atividade não contém todos os campos textuais obrigatórios.",
       confidence: 1,
     });
@@ -217,7 +219,7 @@ function evaluateRequiredContent(
 
   return createResult(activity, structuralRules.requiredContent, decision, {
     status: "passed",
-    evidence: "Os campos estruturais title e description contêm texto não vazio.",
+    evidence: "O título e a descrição estão preenchidos.",
     explanation: "A presença dos campos textuais obrigatórios foi confirmada estruturalmente.",
     confidence: 1,
   });
@@ -240,16 +242,16 @@ function evaluateActivitySchema(
   if (issues.length > 0) {
     return createResult(activity, structuralRules.activitySchema, decision, {
       status: "failed",
-      evidence: `Problemas estruturais: ${issues.join("; ")}.`,
-      explanation: "A atividade não atende integralmente ao schema persistível.",
+      evidence: "Há informações obrigatórias ausentes ou inválidas, ou o vínculo com o lote precisa ser corrigido.",
+      explanation: "A atividade não atende integralmente ao padrão necessário para ser salva.",
       confidence: 1,
     });
   }
 
   return createResult(activity, structuralRules.activitySchema, decision, {
     status: "passed",
-    evidence: `A atividade ${activity.id}, versão ${activity.version}, foi aceita por activitySchema e pertence ao lote ${expectedBatchId}.`,
-    explanation: "O contrato estrutural persistível da atividade foi atendido.",
+    evidence: "A atividade contém todas as informações necessárias e está associada ao lote correto.",
+    explanation: "O padrão necessário para salvar a atividade foi atendido.",
     confidence: 1,
   });
 }
@@ -273,7 +275,7 @@ function evaluateDuration(group: ActivityGroupCandidate): Evaluation {
   const evidence = [
     `Duração somada: ${totalDurationMinutes}; solicitada: ${group.requestedDurationMinutes} minutos.`,
     invalidDurationActivityIds.length > 0
-      ? `Atividades sem duração inteira positiva: ${invalidDurationActivityIds.join(", ")}.`
+      ? `Atividades com duração inválida: ${invalidDurationActivityIds.length}.`
       : "Todas as atividades declaram duração inteira positiva.",
   ].join(" ");
 
@@ -458,6 +460,15 @@ function normalizedText(value: unknown): string | undefined {
   }
 
   return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
+}
+
+function getActivityFieldLabel(field: string): string {
+  const labels: Record<string, string> = {
+    title: "título",
+    description: "descrição",
+  };
+
+  return labels[field] ?? field;
 }
 
 function isPositiveInteger(value: unknown): value is number {

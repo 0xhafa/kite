@@ -15,7 +15,7 @@ import {
   getReviewProgress,
   type ReviewSessionDecisionHistory,
 } from "@/domain/review-session";
-import type { ValidationStatus } from "@/domain/rules";
+import type { ValidationResult, ValidationStatus } from "@/domain/rules";
 import type { BatchTokenUsage } from "@/domain/usage";
 
 import { BatchUsageSummary } from "./batch-usage-summary";
@@ -430,29 +430,26 @@ export function ValidationDetailsModal({
                 data-validation-status={result.status}
                 key={result.id}
               >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h3 className="font-black">
-                      {ruleReference?.title ?? `Regra ${result.ruleId}`}
-                    </h3>
-                    <p className="mt-1 text-xs font-bold text-muted">
-                      Regra {result.ruleId} · versão {result.ruleVersion}
+                <div className="flex items-start gap-3">
+                  <span
+                    aria-hidden="true"
+                    className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-black ${status.iconClassName}`}
+                  >
+                    {status.icon}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <h3 className="font-black">
+                        {ruleReference?.title ?? "Critério da atividade"}
+                      </h3>
+                      <Badge tone={status.tone}>{status.label}</Badge>
+                    </div>
+                    <p className="mt-1 text-sm font-medium leading-6 text-muted">
+                      {ruleReference?.description ?? result.explanation}
                     </p>
                   </div>
-                  <Badge tone={status.tone}>{status.label}</Badge>
                 </div>
-                <p className="mt-2 text-sm font-medium leading-6 text-muted">
-                  {result.explanation}
-                </p>
-                <div className="mt-4 rounded-md bg-surface p-3">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.08em] text-muted">
-                    Evidência
-                  </p>
-                  <p className="mt-1 text-sm font-semibold leading-6">
-                    {result.evidence ?? "Nenhuma evidência foi registrada pelo avaliador."}
-                  </p>
-                </div>
-                {ruleReference ? <RuleTraceability reference={ruleReference} /> : null}
+                <CriterionEvidence reference={ruleReference} result={result} />
               </li>
             );
           })}
@@ -466,39 +463,70 @@ export function ValidationDetailsModal({
   );
 }
 
-function RuleTraceability({ reference }: { reference: ReviewRuleReference }) {
+function CriterionEvidence({
+  reference,
+  result,
+}: {
+  reference?: ReviewRuleReference;
+  result: ValidationResult;
+}) {
   return (
     <details className="mt-3 rounded-md bg-surface px-3 py-2">
       <summary className="cursor-pointer rounded-sm py-1 font-extrabold text-brand-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus">
-        Ver origem e fonte
+        Ver evidência
       </summary>
       <dl className="mt-3 space-y-3 border-t-2 border-border pt-3 text-sm">
         <div>
-          <dt className="font-extrabold">Tipo de origem</dt>
-          <dd className="mt-1 font-medium text-muted">
-            {getRuleOriginLabel(reference.origin)}
+          <dt className="font-extrabold">O que foi verificado</dt>
+          <dd className="mt-1 font-medium leading-6 text-muted">
+            {getUserFacingEvidence(result)}
           </dd>
         </div>
-        <div>
-          <dt className="font-extrabold">
-            {reference.sources.length === 1 ? "Fonte" : "Fontes"}
-          </dt>
-          <dd>
-            <ul className="mt-1 space-y-2 text-muted">
-              {reference.sources.map((source) => (
-                <li className="font-medium leading-6" key={source.id}>
-                  <cite className="font-bold not-italic text-ink">{source.title}</cite>
-                  {` — ${source.authors.join(", ")}`}
-                  {source.publicationYear ? ` (${source.publicationYear})` : ""}
-                  {source.locator ? `. ${source.locator}` : ""}
-                </li>
-              ))}
-            </ul>
-          </dd>
-        </div>
+        {reference ? (
+          <>
+            <div>
+              <dt className="font-extrabold">Origem do critério</dt>
+              <dd className="mt-1 font-medium text-muted">
+                {getRuleOriginLabel(reference.origin)}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-extrabold">
+                {reference.sources.length === 1 ? "Fonte" : "Fontes"}
+              </dt>
+              <dd>
+                <ul className="mt-1 space-y-2 text-muted">
+                  {reference.sources.map((source) => (
+                    <li className="font-medium leading-6" key={source.id}>
+                      <cite className="font-bold not-italic text-ink">{source.title}</cite>
+                      {` — ${source.authors.join(", ")}`}
+                      {source.publicationYear ? ` (${source.publicationYear})` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          </>
+        ) : null}
       </dl>
     </details>
   );
+}
+
+function getUserFacingEvidence(result: ValidationResult): string {
+  if (result.ruleId === "DET-001") {
+    return result.status === "passed"
+      ? "A atividade contém todas as informações necessárias e está associada ao lote correto."
+      : "Há informações obrigatórias ausentes ou inválidas, ou o vínculo com o lote precisa ser corrigido.";
+  }
+
+  if (result.ruleId === "DET-002") {
+    return result.status === "passed"
+      ? "O título e a descrição estão preenchidos."
+      : "O título ou a descrição precisa ser preenchido.";
+  }
+
+  return result.evidence ?? "Nenhuma evidência foi registrada pelo avaliador.";
 }
 
 function ReportCount({ label, value }: { label: string; value: number }) {
@@ -616,30 +644,40 @@ function getCriterionStatusPresentation(status: ValidationStatus) {
     case "passed":
       return {
         label: "Atendido",
+        icon: "✓",
+        iconClassName: "bg-success-soft text-success",
         tone: "success" as const,
         containerClassName: "border-border bg-surface",
       };
     case "failed":
       return {
         label: "Não atendido",
+        icon: "×",
+        iconClassName: "bg-danger-soft text-danger",
         tone: "danger" as const,
         containerClassName: "border-danger bg-danger-soft",
       };
     case "needs_review":
       return {
         label: "Revisar",
+        icon: "!",
+        iconClassName: "bg-warning-soft text-warning",
         tone: "warning" as const,
         containerClassName: "border-warning bg-warning-soft",
       };
     case "not_applicable":
       return {
         label: "Não aplicável",
+        icon: "—",
+        iconClassName: "bg-neutral-soft text-muted",
         tone: "neutral" as const,
         containerClassName: "border-border bg-neutral-soft",
       };
     case "not_evaluated":
       return {
         label: "Não avaliado",
+        icon: "?",
+        iconClassName: "bg-warning-soft text-warning",
         tone: "warning" as const,
         containerClassName: "border-warning bg-warning-soft",
       };

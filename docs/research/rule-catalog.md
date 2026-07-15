@@ -35,7 +35,7 @@ editoriais estritamente estruturais para a validação determinística.
 | EDIT-002 | Usar linguagem técnica usual nas orientações ao professor. | decisão editorial | required | sempre |
 | GOV-001 | Não promover feedback para regra global sem aprovação. | governança do produto | required | feedback |
 | VAL-001 | Não marcar regra como atendida sem evidência. | governança do produto | required | validação |
-| DET-001 | Atender ao schema persistível da atividade. | decisão editorial | required | validação determinística |
+| DET-001 | Atender ao padrão da atividade. | decisão editorial | required | validação determinística |
 | DET-002 | Preencher título e descrição obrigatórios. | decisão editorial | required | validação determinística |
 | DET-003 | Entregar a quantidade configurada de atividades. | requisito do produto | required | validação determinística |
 | DET-004 | Evitar duplicações literais de título ou descrição. | decisão editorial | required | validação determinística de lote com múltiplas atividades |
