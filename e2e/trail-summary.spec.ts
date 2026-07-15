@@ -18,10 +18,12 @@ async function generateReviewBatchForLesson(page: Page, lessonIndex: number) {
 async function readTrailLessonCounts(page: Page, lessonIndex: number) {
   await page.goto("/trilha");
   const lesson = page.getByTestId("trail-lesson").nth(lessonIndex);
-  const pendingText = await lesson.getByText(/^Pendentes: \d+$/).textContent();
-  const reviewedText = await lesson.getByText(/^Revisadas: \d+$/).textContent();
-  const pending = Number(pendingText?.replace("Pendentes: ", ""));
-  const reviewed = Number(reviewedText?.replace("Revisadas: ", ""));
+  const pendingChip = lesson.getByText(/^Pendentes: \d+$/);
+  const reviewedChip = lesson.getByText(/^Revisadas: \d+$/);
+  const pendingText = (await pendingChip.count()) > 0 ? await pendingChip.textContent() : null;
+  const reviewedText = (await reviewedChip.count()) > 0 ? await reviewedChip.textContent() : null;
+  const pending = pendingText ? Number(pendingText.replace("Pendentes: ", "")) : 0;
+  const reviewed = reviewedText ? Number(reviewedText.replace("Revisadas: ", "")) : 0;
 
   expect(pending).not.toBeNaN();
   expect(reviewed).not.toBeNaN();
@@ -34,6 +36,33 @@ async function readTrailLessonCounts(page: Page, lessonIndex: number) {
     pending,
     reviewed,
   };
+}
+
+async function expectTrailLessonChips(
+  page: Page,
+  lessonIndex: number,
+  counts: { pending: number; reviewed: number },
+) {
+  const lesson = page.getByTestId("trail-lesson").nth(lessonIndex);
+  const statuses = lesson.getByTestId("trail-lesson-statuses");
+  const pendingChip = lesson.getByText(`Pendentes: ${counts.pending}`, { exact: true });
+  const reviewedChip = lesson.getByText(`Revisadas: ${counts.reviewed}`, { exact: true });
+
+  if (counts.pending > 0) {
+    await expect(pendingChip).toHaveClass(/bg-warning-soft/);
+    await expect(pendingChip).toHaveClass(/text-warning/);
+  } else {
+    await expect(pendingChip).toHaveCount(0);
+  }
+
+  if (counts.reviewed > 0) {
+    await expect(reviewedChip).toHaveClass(/bg-success-soft/);
+    await expect(reviewedChip).toHaveClass(/text-success/);
+  } else {
+    await expect(reviewedChip).toHaveCount(0);
+  }
+
+  await expect(statuses).toHaveCount(counts.pending + counts.reviewed > 0 ? 1 : 0);
 }
 
 test("abre a trilha pelo topo e mantém as 80 aulas utilizáveis no celular", async ({ page }) => {
@@ -54,8 +83,9 @@ test("abre a trilha pelo topo e mantém as 80 aulas utilizáveis no celular", as
   await expect(page.getByTestId("trail-lesson")).toHaveCount(80);
 
   const lastLesson = page.getByTestId("trail-lesson").last();
-  await expect(lastLesson.getByText("Pendentes: 0", { exact: true })).toBeVisible();
-  await expect(lastLesson.getByText("Revisadas: 0", { exact: true })).toBeVisible();
+  await expect(lastLesson.getByText(/^Pendentes:/)).toHaveCount(0);
+  await expect(lastLesson.getByText(/^Revisadas:/)).toHaveCount(0);
+  await expect(lastLesson.getByTestId("trail-lesson-statuses")).toHaveCount(0);
 
   const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(documentWidth).toBeLessThanOrEqual(390);
@@ -78,6 +108,7 @@ test("leva somente aprovadas para a biblioteca e exclui rejeitadas da contagem",
     pending: initialCounts.pending + 1,
     reviewed: initialCounts.reviewed + 1,
   });
+  await expectTrailLessonChips(page, 4, currentCounts);
 
   const lesson = page.getByTestId("trail-lesson").nth(4);
   const reviewedLink = lesson.getByRole("link", {
@@ -137,6 +168,7 @@ test("não adiciona contagens nem ação por um lote contendo somente rejeiçõe
   const currentCounts = await readTrailLessonCounts(page, 3);
 
   expect(currentCounts).toEqual(initialCounts);
+  await expectTrailLessonChips(page, 3, currentCounts);
 });
 
 test("remove da trilha as contagens de um lote deletado", async ({ page }) => {
@@ -154,6 +186,7 @@ test("remove da trilha as contagens de um lote deletado", async ({ page }) => {
     pending: initialCounts.pending + 2,
     reviewed: initialCounts.reviewed + 1,
   });
+  await expectTrailLessonChips(page, 2, currentCounts);
 
   await page.goto("/atividades");
   const batch = page.locator(`section[aria-labelledby="lote-${batchId}"]`);
@@ -166,4 +199,5 @@ test("remove da trilha as contagens de um lote deletado", async ({ page }) => {
   const deletedCounts = await readTrailLessonCounts(page, 2);
 
   expect(deletedCounts).toEqual(initialCounts);
+  await expectTrailLessonChips(page, 2, deletedCounts);
 });

@@ -179,14 +179,23 @@ function TrailLesson({
           <p className="text-sm font-extrabold text-brand-strong">Aula {lesson.number}</p>
           <p className="mt-1 break-words font-black leading-6">{lesson.specificObjective}</p>
         </div>
-        <div className="flex shrink-0 flex-wrap gap-2 text-sm font-extrabold">
-          <span className="rounded-pill bg-neutral-soft px-3 py-2 text-muted">
-            Pendentes: {lesson.pendingActivities}
-          </span>
-          <span className="rounded-pill bg-success-soft px-3 py-2 text-success">
-            Revisadas: {lesson.reviewedActivities}
-          </span>
-        </div>
+        {lesson.pendingActivities + lesson.reviewedActivities > 0 ? (
+          <div
+            className="flex shrink-0 flex-wrap gap-2 text-sm font-extrabold"
+            data-testid="trail-lesson-statuses"
+          >
+            {lesson.pendingActivities > 0 ? (
+              <span className="rounded-pill bg-warning-soft px-3 py-2 text-warning">
+                Pendentes: {lesson.pendingActivities}
+              </span>
+            ) : null}
+            {lesson.reviewedActivities > 0 ? (
+              <span className="rounded-pill bg-success-soft px-3 py-2 text-success">
+                Revisadas: {lesson.reviewedActivities}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {lesson.reviewedActivities > 0 ? (
