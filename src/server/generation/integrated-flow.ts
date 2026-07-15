@@ -63,10 +63,28 @@ export type ReviewedActivityLibraryBatch = {
   batchId: string;
   completed: boolean;
   createdAt: string;
+  usage: BatchTokenUsage;
+  theme: {
+    id: string;
+    name: string;
+  };
+  skill: {
+    id: string;
+    name: string;
+  };
+  objective: {
+    id: string;
+    name: string;
+  };
+  week: {
+    id: string;
+    number: number;
+    title: string;
+  };
   lesson: {
+    id: string;
     number: number;
     specificObjective: string;
-    weekTitle: string;
   };
   reviewedActivities: Array<{
     activity: Activity;
@@ -258,7 +276,7 @@ export async function loadPersistedPlanningContext(
 }
 
 export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLibraryBatch[]> {
-  const { generations, traceability } = await repositories();
+  const { generations, runs, traceability } = await repositories();
   const batches = (await generations.listBatches()).filter(
     ({ status }) => status === "ready_for_review" || status === "completed",
   );
@@ -276,7 +294,7 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
     const objective = skill?.objectives.find(({ id }) => id === selection.data.objectiveId);
     const week = objective?.weeks.find(({ id }) => id === selection.data.weekId);
     const lesson = week?.lessons.find(({ id }) => id === selection.data.lessonId);
-    if (!week || !lesson) continue;
+    if (!theme || !skill || !objective || !week || !lesson) continue;
 
     const reviewedActivities: ReviewedActivityLibraryBatch["reviewedActivities"] = [];
     for (const activity of group.activities) {
@@ -291,10 +309,28 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
         (group.activities.length > 0 &&
           group.activities.every(({ status }) => isFinalReviewStatus(status))),
       createdAt: batch.createdAt,
+      usage: await runs.aggregateBatchUsage(batch.id),
+      theme: {
+        id: theme.id,
+        name: theme.name,
+      },
+      skill: {
+        id: skill.id,
+        name: skill.name,
+      },
+      objective: {
+        id: objective.id,
+        name: objective.name,
+      },
+      week: {
+        id: week.id,
+        number: week.number,
+        title: week.title,
+      },
       lesson: {
+        id: lesson.id,
         number: lesson.number,
         specificObjective: lesson.specificObjective,
-        weekTitle: week.title,
       },
       reviewedActivities,
       totalActivities: group.activities.length,
@@ -302,6 +338,11 @@ export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLib
   }
 
   return library;
+}
+
+export async function deletePersistedBatch(batchId: string): Promise<void> {
+  const { generations } = await repositories();
+  await generations.deleteBatch(batchId);
 }
 
 export async function approveActivity(input: {

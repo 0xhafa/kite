@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ne } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
 
 import {
   type Activity,
@@ -13,7 +13,16 @@ import {
 } from "../../domain/generation";
 
 import type { KiteDatabase } from "../client";
-import { activities, generationBatches, modelRuns } from "../schema";
+import {
+  activities,
+  activityRuleApplications,
+  feedbackProposals,
+  generationBatches,
+  generationCacheEntries,
+  modelRuns,
+  reviewDecisions,
+  validationResults,
+} from "../schema";
 import { omitNullValues } from "./mappers";
 
 function toBatch(row: typeof generationBatches.$inferSelect): GenerationBatch {
@@ -65,6 +74,75 @@ export class GenerationRepository {
     if (result.rowsAffected !== 1) {
       throw new Error(`Lote ${id} não encontrado.`);
     }
+  }
+
+  async deleteBatch(id: string): Promise<void> {
+    await this.db.transaction(async (transaction) => {
+      const [batch] = await transaction
+        .select({ id: generationBatches.id })
+        .from(generationBatches)
+        .where(eq(generationBatches.id, id))
+        .limit(1);
+
+      if (!batch) {
+        throw new Error(`Lote ${id} não encontrado.`);
+      }
+
+      const activityRows = await transaction
+        .select({ id: activities.id })
+        .from(activities)
+        .where(eq(activities.batchId, id));
+      const activityIds = activityRows.map(({ id: activityId }) => activityId);
+      const runRows = await transaction
+        .select({ id: modelRuns.id })
+        .from(modelRuns)
+        .where(eq(modelRuns.batchId, id));
+      const runIds = runRows.map(({ id: runId }) => runId);
+
+      await transaction
+        .update(generationBatches)
+        .set({ cachedFromBatchId: null })
+        .where(eq(generationBatches.cachedFromBatchId, id));
+
+      if (runIds.length > 0) {
+        await transaction
+          .delete(generationCacheEntries)
+          .where(inArray(generationCacheEntries.modelRunId, runIds));
+        await transaction
+          .update(modelRuns)
+          .set({ reusedFromModelRunId: null })
+          .where(inArray(modelRuns.reusedFromModelRunId, runIds));
+      }
+
+      if (activityIds.length > 0) {
+        await transaction
+          .delete(feedbackProposals)
+          .where(inArray(feedbackProposals.reviewActivityId, activityIds));
+        await transaction
+          .delete(reviewDecisions)
+          .where(inArray(reviewDecisions.activityId, activityIds));
+        await transaction
+          .delete(activityRuleApplications)
+          .where(inArray(activityRuleApplications.activityId, activityIds));
+        await transaction
+          .delete(validationResults)
+          .where(inArray(validationResults.activityId, activityIds));
+        await transaction
+          .update(activities)
+          .set({ replacesActivityId: null })
+          .where(inArray(activities.replacesActivityId, activityIds));
+        await transaction.delete(activities).where(eq(activities.batchId, id));
+      }
+
+      await transaction.delete(modelRuns).where(eq(modelRuns.batchId, id));
+      const result = await transaction
+        .delete(generationBatches)
+        .where(eq(generationBatches.id, id));
+
+      if (result.rowsAffected !== 1) {
+        throw new Error(`Lote ${id} não encontrado.`);
+      }
+    });
   }
 
   async createInitialActivityGroup(input: unknown): Promise<ActivityGroup> {

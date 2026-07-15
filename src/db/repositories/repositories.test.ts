@@ -151,6 +151,101 @@ describe("repositórios libSQL", () => {
     });
   });
 
+  it("deleta um lote e todos os registros dependentes sem apagar lotes reutilizados", async () => {
+    await saveInitialGroup();
+    const rule = {
+      id: "PED-DELETE",
+      version: 1,
+      title: "Regra para exclusão",
+      description: "Regra usada para validar a remoção transacional.",
+      applicabilityCondition: "Sempre aplicável.",
+      generationInstruction: "Descrever a ação.",
+      validationCriterion: "A ação está descrita.",
+      severity: "blocking" as const,
+      origin: "editorial" as const,
+      status: "active" as const,
+    };
+    const validation = {
+      id: "validation-delete",
+      activityId: approvedActivity.id,
+      activityVersion: approvedActivity.version,
+      ruleId: rule.id,
+      ruleVersion: rule.version,
+      applicability: "applicable" as const,
+      status: "passed" as const,
+      evidence: approvedActivity.description,
+      explanation: "A ação está explícita.",
+      confidence: 1,
+      evaluatorOrigin: "system" as const,
+      evaluatorId: "test",
+    };
+
+    await traceability.saveRule(rule);
+    await traceability.saveValidation(validation, {
+      activityId: validation.activityId,
+      activityVersion: validation.activityVersion,
+      ruleId: validation.ruleId,
+      ruleVersion: validation.ruleVersion,
+      applicability: validation.applicability,
+      applicabilityReason: "Regra de teste.",
+      validationResultId: validation.id,
+    });
+    await traceability.saveReviewDecision({
+      activityId: approvedActivity.id,
+      activityVersion: approvedActivity.version,
+      decision: "approved",
+      author: "revisor-poc",
+      createdAt,
+    });
+    await traceability.saveFeedbackProposal({
+      id: "feedback-delete",
+      reviewActivityId: approvedActivity.id,
+      normalizedText: "Manter a ação explícita.",
+      suggestedScope: "regeneration",
+      status: "pending",
+    });
+    await runs.saveCacheEntry({
+      cacheKey: "cache-run-1",
+      themeId: "fonemas",
+      lessonId: "fixture-aula-01",
+      curriculumVersion: "fixture-1.0",
+      normalizedParameters: { durationMinutes: 25, activityCount: 2 },
+      promptVersion: "generation-1",
+      ruleSetVersion: "rules-1",
+      provider: "provider-example",
+      model: "model-example",
+      modelRunId: "run-1",
+      createdAt,
+      lastUsedAt: createdAt,
+    });
+
+    await generations.createBatch(createBatch({
+      id: "batch-reused",
+      cacheKey: "batch-cache-reused",
+      cachedFromBatchId: "batch-1",
+    }));
+    await runs.save(createRun("run-reused-by-other-batch", {
+      batchId: "batch-reused",
+      reusedFromModelRunId: "run-1",
+      tokenUsage: { inputTokens: 0, outputTokens: 0, otherTokens: 0, totalTokens: 0 },
+    }));
+
+    await generations.deleteBatch("batch-1");
+
+    await expect(generations.getBatch("batch-1")).resolves.toBeUndefined();
+    await expect(generations.listActivityVersions(approvedActivity.logicalActivityId)).resolves.toEqual([]);
+    await expect(runs.listByBatch("batch-1")).resolves.toEqual([]);
+    await expect(traceability.listReviewDecisions(approvedActivity.id)).resolves.toEqual([]);
+    await expect(traceability.listValidationResults(approvedActivity.id, 1)).resolves.toEqual([]);
+    await expect(runs.findCacheEntry("cache-run-1")).resolves.toBeUndefined();
+    const reusedBatch = await generations.getBatch("batch-reused");
+    const reusedRun = await runs.get("run-reused-by-other-batch");
+    expect(reusedBatch?.id).toBe("batch-reused");
+    expect(reusedBatch?.cachedFromBatchId).toBeUndefined();
+    expect(reusedRun?.id).toBe("run-reused-by-other-batch");
+    expect(reusedRun?.reusedFromModelRunId).toBeUndefined();
+  });
+
   it("regenera apenas a rejeitada e preserva versões, aprovada e duração total", async () => {
     await saveInitialGroup();
     await runs.save(createRun("run-3", { stage: "repair" }));

@@ -9,6 +9,7 @@ import type { ReviewedActivityLibraryBatch } from "@/server/generation/integrate
 
 import { ActivityDescription } from "../activity-description";
 import { Badge, Button, Card, Modal } from "../ui";
+import { BatchUsageSummary } from "./batch-usage-summary";
 
 const DELETE_CONFIRMATION = "deletar";
 const selectClassName =
@@ -49,6 +50,32 @@ function normalizeSearch(value: string): string {
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLocaleLowerCase("pt-BR");
+}
+
+async function copyTextToClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    const previouslyFocused = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : undefined;
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.select();
+
+    const copied = document.execCommand("copy");
+    textArea.remove();
+    previouslyFocused?.focus();
+
+    if (!copied) {
+      throw new Error("Não foi possível copiar o texto.");
+    }
+  }
 }
 
 export function ReviewedActivityLibrary({
@@ -497,6 +524,67 @@ function TrashIcon() {
   );
 }
 
+function CopyIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect height="12" rx="2" stroke="currentColor" strokeWidth="1.8" width="12" x="8" y="8" />
+      <path
+        d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m5 12 4.25 4.25L19 6.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function ExpandIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={`size-5 transition-transform ${expanded ? "rotate-180" : ""}`}
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m6 9 6 6 6-6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
 function FilterSelect({
   label,
   onChange,
@@ -556,10 +644,11 @@ function ReviewedBatchCard({
                 </time>
               </p>
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="relative flex flex-wrap items-center justify-end gap-2">
               <Badge tone={batch.completed ? "success" : "warning"}>
                 {batch.completed ? "Lote concluído" : "Revisão em andamento"}
               </Badge>
+              <BatchUsageSummary usage={batch.usage} />
               <Button
                 aria-label={`Deletar lote da aula ${batch.lesson.number}: ${batch.lesson.specificObjective}`}
                 className="size-touch !px-0"
@@ -575,12 +664,10 @@ function ReviewedBatchCard({
         </div>
 
         <ol className="divide-y-2 divide-border">
-          {batch.reviewedActivities.map(({ activity, decision }, index) => (
+          {batch.reviewedActivities.map(({ activity, decision }) => (
             <ReviewedActivityItem
               activity={activity}
-              batchId={batch.batchId}
               decision={decision}
-              isLast={index === batch.reviewedActivities.length - 1}
               key={activity.id}
             />
           ))}
@@ -592,16 +679,22 @@ function ReviewedBatchCard({
 
 function ReviewedActivityItem({
   activity,
-  batchId,
   decision,
-  isLast,
-}: ReviewedActivityLibraryBatch["reviewedActivities"][number] & {
-  batchId: string;
-  isLast: boolean;
-}) {
+}: ReviewedActivityLibraryBatch["reviewedActivities"][number]) {
   const approved = decision.decision === "approved";
-  const [expanded, setExpanded] = useState(!approved);
+  const [expanded, setExpanded] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const contentId = `conteudo-atividade-revisada-${activity.id}`;
+
+  async function copyActivityText() {
+    try {
+      await copyTextToClipboard(`${activity.title}\n\n${activity.description}`);
+      setCopyStatus("copied");
+      window.setTimeout(() => setCopyStatus("idle"), 2_000);
+    } catch {
+      setCopyStatus("error");
+    }
+  }
 
   return (
     <li className="p-5 sm:p-7">
@@ -626,24 +719,38 @@ function ReviewedActivityItem({
           >
             {activity.title}
           </h3>
-          {approved ? (
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              aria-label={copyStatus === "copied" ? "Texto copiado" : "Copiar texto da atividade"}
+              className="size-touch !px-0"
+              onClick={copyActivityText}
+              size="sm"
+              title={copyStatus === "copied" ? "Texto copiado" : "Copiar texto"}
+              variant="ghost"
+            >
+              {copyStatus === "copied" ? <CheckIcon /> : <CopyIcon />}
+            </Button>
             <Button
               aria-controls={contentId}
               aria-expanded={expanded}
+              aria-label={expanded ? "Recolher atividade" : "Expandir atividade"}
+              className="size-touch !px-0"
               onClick={() => setExpanded((open) => !open)}
               size="sm"
-              variant="secondary"
+              title={expanded ? "Recolher atividade" : "Expandir atividade"}
+              variant="ghost"
             >
-              {expanded ? "Ocultar atividade completa" : "Ver atividade completa"}
-              <span
-                aria-hidden="true"
-                className={`text-base transition-transform ${expanded ? "rotate-180" : ""}`}
-              >
-                ↓
-              </span>
+              <ExpandIcon expanded={expanded} />
             </Button>
-          ) : null}
+          </div>
         </div>
+        <span aria-live="polite" className="sr-only">
+          {copyStatus === "copied"
+            ? "Texto da atividade copiado."
+            : copyStatus === "error"
+              ? "Não foi possível copiar o texto da atividade."
+              : ""}
+        </span>
         <div hidden={!expanded} id={contentId}>
           <ActivityDescription description={activity.description} />
           {decision.feedback ? (
@@ -657,14 +764,6 @@ function ReviewedActivityItem({
             </div>
           ) : null}
         </div>
-        {isLast ? (
-          <Link
-            className="mt-5 inline-flex min-h-touch items-center rounded-md font-extrabold text-brand-strong underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
-            href={`/revisar?lote=${encodeURIComponent(batchId)}`}
-          >
-            Abrir resumo do lote
-          </Link>
-        ) : null}
       </article>
     </li>
   );

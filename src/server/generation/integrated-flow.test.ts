@@ -144,6 +144,15 @@ describe("fluxo integrado persistido", () => {
       batchId,
       completed: true,
       totalActivities: 3,
+      theme: { id: theme.id, name: theme.name },
+      skill: { id: skill.id, name: skill.name },
+      objective: { id: objective.id, name: objective.name },
+      week: { id: week.id, number: week.number, title: week.title },
+      lesson: {
+        id: lesson.id,
+        number: lesson.number,
+        specificObjective: lesson.specificObjective,
+      },
     });
     expect(libraryBatch?.reviewedActivities).toHaveLength(3);
   });

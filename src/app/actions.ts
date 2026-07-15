@@ -9,6 +9,7 @@ import { completeCurriculumSelectionSchema } from "@/domain/curriculum-navigatio
 import { identifierSchema, positiveIntegerSchema } from "@/domain/shared";
 import {
   approveActivity,
+  deletePersistedBatch,
   generateAndPersistBatch,
   rejectActivity,
   rejectAndRegenerateActivity,
@@ -29,6 +30,11 @@ const reviewActionInputSchema = z.object({
 const regenerationActionInputSchema = reviewActionInputSchema.extend({
   modelSelection: aiModelSelectionSchema,
 });
+
+const deleteBatchActionInputSchema = z.object({
+  batchId: identifierSchema,
+  confirmation: z.literal("deletar"),
+}).strict();
 
 export type ActionResult<T> =
   | { ok: true; data: T }
@@ -98,6 +104,22 @@ export async function rejectAndRegenerateActivityAction(
     revalidatePath("/atividades");
     revalidatePath("/revisar");
     return { ok: true, data: result };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function deleteBatchAction(
+  input: unknown,
+): Promise<ActionResult<{ batchId: string }>> {
+  try {
+    const parsed = deleteBatchActionInputSchema.parse(input);
+    await deletePersistedBatch(parsed.batchId);
+    revalidatePath("/");
+    revalidatePath("/atividades");
+    revalidatePath("/planejar");
+    revalidatePath("/revisar");
+    return { ok: true, data: { batchId: parsed.batchId } };
   } catch (error) {
     return actionError(error);
   }
