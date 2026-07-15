@@ -1,22 +1,25 @@
 import type { Curriculum } from "@/domain/curriculum";
+import type { ReviewDecisionType } from "@/domain/review";
 
 export type TrailBatchCounts = {
   lesson: { id: string };
-  reviewedActivities: readonly unknown[];
+  reviewedActivities: ReadonlyArray<{
+    decision: { decision: ReviewDecisionType };
+  }>;
   theme: { id: string };
   totalActivities: number;
 };
 
 export type TrailLessonSummary = {
-  generatedActivities: number;
   id: string;
   number: number;
+  pendingActivities: number;
   reviewedActivities: number;
   specificObjective: string;
 };
 
 export type TrailSummary = {
-  generatedActivities: number;
+  pendingActivities: number;
   reviewedActivities: number;
   theme: {
     id: string;
@@ -40,7 +43,7 @@ export type TrailSummary = {
 };
 
 type LessonCounts = {
-  generatedActivities: number;
+  pendingActivities: number;
   reviewedActivities: number;
 };
 
@@ -59,17 +62,21 @@ export function buildTrailSummary(
     if (batch.theme.id !== theme.id) continue;
 
     const current = countsByLesson.get(batch.lesson.id) ?? {
-      generatedActivities: 0,
+      pendingActivities: 0,
       reviewedActivities: 0,
     };
+    const reviewedActivities = batch.reviewedActivities.filter(
+      ({ decision }) => decision.decision === "approved",
+    ).length;
+    const pendingActivities = batch.totalActivities - batch.reviewedActivities.length;
+
     countsByLesson.set(batch.lesson.id, {
-      generatedActivities: current.generatedActivities + batch.totalActivities,
-      reviewedActivities:
-        current.reviewedActivities + batch.reviewedActivities.length,
+      pendingActivities: current.pendingActivities + pendingActivities,
+      reviewedActivities: current.reviewedActivities + reviewedActivities,
     });
   }
 
-  let generatedActivities = 0;
+  let pendingActivities = 0;
   let reviewedActivities = 0;
   let totalLessons = 0;
 
@@ -85,10 +92,10 @@ export function buildTrailSummary(
         title: week.title,
         lessons: week.lessons.map((lesson) => {
           const counts = countsByLesson.get(lesson.id) ?? {
-            generatedActivities: 0,
+            pendingActivities: 0,
             reviewedActivities: 0,
           };
-          generatedActivities += counts.generatedActivities;
+          pendingActivities += counts.pendingActivities;
           reviewedActivities += counts.reviewedActivities;
           totalLessons += 1;
 
@@ -104,7 +111,7 @@ export function buildTrailSummary(
   }));
 
   return {
-    generatedActivities,
+    pendingActivities,
     reviewedActivities,
     theme: {
       id: theme.id,

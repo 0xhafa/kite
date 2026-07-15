@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Resumo da trilha | Kite",
-  description: "Visão curricular das atividades geradas e revisadas em cada aula de Fonemas.",
+  description: "Visão curricular das atividades revisadas e pendentes em cada aula de Fonemas.",
 };
 
 const curriculum = adaptCurriculum(curriculumData);

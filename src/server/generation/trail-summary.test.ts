@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import curriculumData from "../../../data/curriculum.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
+import type { ReviewDecisionType } from "@/domain/review";
 
 import { buildTrailSummary, type TrailBatchCounts } from "./trail-summary";
 
@@ -51,12 +52,14 @@ const curriculum = adaptCurriculum({
 function batch(
   lessonId: string,
   totalActivities: number,
-  reviewedActivities: number,
+  decisions: ReviewDecisionType[],
   themeId = "fonemas",
 ): TrailBatchCounts {
   return {
     lesson: { id: lessonId },
-    reviewedActivities: Array.from({ length: reviewedActivities }),
+    reviewedActivities: decisions.map((decision) => ({
+      decision: { decision },
+    })),
     theme: { id: themeId },
     totalActivities,
   };
@@ -91,42 +94,58 @@ describe("resumo da trilha", () => {
     const lessons = summary.theme.skills[0]?.objectives[0]?.weeks[0]?.lessons;
 
     expect(summary.totalLessons).toBe(2);
-    expect(summary.generatedActivities).toBe(0);
+    expect(summary.pendingActivities).toBe(0);
     expect(summary.reviewedActivities).toBe(0);
     expect(lessons).toEqual([
       expect.objectContaining({
         id: "aula-1",
-        generatedActivities: 0,
+        pendingActivities: 0,
         reviewedActivities: 0,
       }),
       expect.objectContaining({
         id: "aula-2",
-        generatedActivities: 0,
+        pendingActivities: 0,
         reviewedActivities: 0,
       }),
     ]);
   });
 
-  it("soma lotes diferentes da mesma aula sem duplicar a aula", () => {
+  it("soma aprovadas e pendentes entre lotes sem contar rejeitadas", () => {
     const summary = buildTrailSummary(curriculum, "fonemas", [
-      batch("aula-1", 3, 1),
-      batch("aula-1", 2, 2),
-      batch("aula-2", 4, 0, "outro-tema"),
+      batch("aula-1", 4, ["approved", "rejected"]),
+      batch("aula-1", 2, ["approved", "rejected"]),
+      batch("aula-2", 4, [], "outro-tema"),
+      batch("aula-ausente", 3, ["approved"]),
     ]);
     const lessons = summary.theme.skills[0]?.objectives[0]?.weeks[0]?.lessons;
 
     expect(summary.totalLessons).toBe(2);
-    expect(summary.generatedActivities).toBe(5);
-    expect(summary.reviewedActivities).toBe(3);
+    expect(summary.pendingActivities).toBe(2);
+    expect(summary.reviewedActivities).toBe(2);
     expect(lessons).toHaveLength(2);
     expect(lessons?.[0]).toEqual(expect.objectContaining({
       id: "aula-1",
-      generatedActivities: 5,
-      reviewedActivities: 3,
+      pendingActivities: 2,
+      reviewedActivities: 2,
     }));
     expect(lessons?.[1]).toEqual(expect.objectContaining({
       id: "aula-2",
-      generatedActivities: 0,
+      pendingActivities: 0,
+      reviewedActivities: 0,
+    }));
+  });
+
+  it("mantém uma aula com somente rejeições zerada e não conta lotes ausentes", () => {
+    const summary = buildTrailSummary(curriculum, "fonemas", [
+      batch("aula-2", 2, ["rejected", "rejected"]),
+    ]);
+    const lesson = summary.theme.skills[0]?.objectives[0]?.weeks[0]?.lessons[1];
+
+    expect(summary.pendingActivities).toBe(0);
+    expect(summary.reviewedActivities).toBe(0);
+    expect(lesson).toEqual(expect.objectContaining({
+      id: "aula-2",
+      pendingActivities: 0,
       reviewedActivities: 0,
     }));
   });

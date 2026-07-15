@@ -21,7 +21,8 @@ function reviewedActivitiesHref(selection: {
 }
 
 export function TrailSummary({ summary }: { summary: TrailSummaryData }) {
-  const hasGeneratedActivities = summary.generatedActivities > 0;
+  const hasUsefulActivities =
+    summary.reviewedActivities + summary.pendingActivities > 0;
 
   return (
     <section aria-labelledby="titulo-resumo-trilha">
@@ -33,16 +34,16 @@ export function TrailSummary({ summary }: { summary: TrailSummaryData }) {
         Resumo da trilha
       </h1>
       <p className="mt-3 max-w-3xl text-lead font-medium text-muted">
-        Acompanhe as atividades geradas e revisadas em cada aula, sem perder a ordem do currículo.
+        Acompanhe as atividades revisadas e pendentes em cada aula, sem perder a ordem do currículo.
       </p>
 
       <div className="mt-7 grid gap-3 sm:grid-cols-3" aria-label="Totais da trilha">
         <TrailTotal label="Aulas" value={summary.totalLessons} />
-        <TrailTotal label="Atividades geradas" value={summary.generatedActivities} />
         <TrailTotal label="Atividades revisadas" value={summary.reviewedActivities} />
+        <TrailTotal label="Atividades pendentes" value={summary.pendingActivities} />
       </div>
 
-      {!hasGeneratedActivities ? (
+      {!hasUsefulActivities ? (
         <Card className="mt-7" padding="md" raised={false} tone="soft">
           <h2 className="text-lg font-black">A trilha está pronta para começar</h2>
           <p className="mt-2 font-medium leading-7 text-muted">
@@ -180,7 +181,7 @@ function TrailLesson({
         </div>
         <div className="flex shrink-0 flex-wrap gap-2 text-sm font-extrabold">
           <span className="rounded-pill bg-neutral-soft px-3 py-2 text-muted">
-            Geradas: {lesson.generatedActivities}
+            Pendentes: {lesson.pendingActivities}
           </span>
           <span className="rounded-pill bg-success-soft px-3 py-2 text-success">
             Revisadas: {lesson.reviewedActivities}
