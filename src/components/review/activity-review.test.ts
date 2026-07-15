@@ -182,4 +182,22 @@ describe("resumo da validação na atividade", () => {
     expect(html).toContain(">mostre um cartão.</p>");
     expect(html).toContain(">retome as palavras.</p>");
   });
+
+  it("encerra o lote com acesso à biblioteca sem reiniciar decisões já persistidas", () => {
+    const item = createItem("passed");
+    const html = renderToStaticMarkup(
+      createElement(ActivityReview, {
+        decisionHistory: {
+          [item.activity.id]: [{ decision: "approved" }],
+        },
+        state: { status: "ready", items: [item] },
+      }),
+    );
+
+    expect(html).toContain("Lote revisado");
+    expect(html).toContain("O lote foi concluído e permanece salvo na sua biblioteca.");
+    expect(html).toContain('href="/atividades"');
+    expect(html).toContain("Ver atividades revisadas");
+    expect(html).not.toContain("Rever atividades");
+  });
 });

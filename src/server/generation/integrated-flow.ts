@@ -15,7 +15,7 @@ import {
   type GenerationBatch,
 } from "@/domain/generation";
 import { generationModelInputSchema } from "@/domain/model-contracts";
-import type { ActivityReviewItem } from "@/domain/review";
+import type { ActivityReviewItem, ReviewDecision } from "@/domain/review";
 import type { ReviewSessionDecisionHistory } from "@/domain/review-session";
 import {
   validationReportSchema,
@@ -57,6 +57,22 @@ export type PersistedPlanningContext = {
   batchId: string;
   modelSelection: AiModelSelection;
   selection: CompleteCurriculumSelection;
+};
+
+export type ReviewedActivityLibraryBatch = {
+  batchId: string;
+  completed: boolean;
+  createdAt: string;
+  lesson: {
+    number: number;
+    specificObjective: string;
+    weekTitle: string;
+  };
+  reviewedActivities: Array<{
+    activity: Activity;
+    decision: ReviewDecision;
+  }>;
+  totalActivities: number;
 };
 
 async function repositories() {
@@ -182,7 +198,10 @@ function requirePersistedValidationReport(
 export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData | undefined> {
   const { generations, runs, traceability } = await repositories();
   const batch = await generations.getBatch(batchId);
-  if (!batch || batch.status !== "ready_for_review") return undefined;
+  if (
+    !batch ||
+    (batch.status !== "ready_for_review" && batch.status !== "completed")
+  ) return undefined;
 
   const group = await generations.getCurrentActivityGroup(batchId);
   if (!group) return undefined;
@@ -215,7 +234,10 @@ export async function loadPersistedPlanningContext(
 ): Promise<PersistedPlanningContext | undefined> {
   const { generations, runs } = await repositories();
   const batch = await generations.getBatch(batchId);
-  if (!batch || batch.status !== "ready_for_review") return undefined;
+  if (
+    !batch ||
+    (batch.status !== "ready_for_review" && batch.status !== "completed")
+  ) return undefined;
 
   const selection = completeCurriculumSelectionSchema.safeParse(
     batch.normalizedParameters.selection,
@@ -235,6 +257,53 @@ export async function loadPersistedPlanningContext(
   };
 }
 
+export async function loadReviewedActivityLibrary(): Promise<ReviewedActivityLibraryBatch[]> {
+  const { generations, traceability } = await repositories();
+  const batches = (await generations.listBatches()).filter(
+    ({ status }) => status === "ready_for_review" || status === "completed",
+  );
+  const library: ReviewedActivityLibraryBatch[] = [];
+
+  for (const batch of batches) {
+    const group = await generations.getCurrentActivityGroup(batch.id);
+    const selection = completeCurriculumSelectionSchema.safeParse(
+      batch.normalizedParameters.selection,
+    );
+    if (!group || !selection.success) continue;
+
+    const theme = curriculum.themes.find(({ id }) => id === selection.data.themeId);
+    const skill = theme?.skills.find(({ id }) => id === selection.data.skillId);
+    const objective = skill?.objectives.find(({ id }) => id === selection.data.objectiveId);
+    const week = objective?.weeks.find(({ id }) => id === selection.data.weekId);
+    const lesson = week?.lessons.find(({ id }) => id === selection.data.lessonId);
+    if (!week || !lesson) continue;
+
+    const reviewedActivities: ReviewedActivityLibraryBatch["reviewedActivities"] = [];
+    for (const activity of group.activities) {
+      const decision = (await traceability.listReviewDecisions(activity.id)).at(-1);
+      if (decision) reviewedActivities.push({ activity, decision });
+    }
+
+    library.push({
+      batchId: batch.id,
+      completed:
+        batch.status === "completed" ||
+        (group.activities.length > 0 &&
+          group.activities.every(({ status }) => status === "approved")),
+      createdAt: batch.createdAt,
+      lesson: {
+        number: lesson.number,
+        specificObjective: lesson.specificObjective,
+        weekTitle: week.title,
+      },
+      reviewedActivities,
+      totalActivities: group.activities.length,
+    });
+  }
+
+  return library;
+}
+
 export async function approveActivity(input: {
   batchId: string;
   activityId: string;
@@ -242,6 +311,10 @@ export async function approveActivity(input: {
   feedback?: string;
 }): Promise<void> {
   const { generations, runs, traceability } = await repositories();
+  const batch = await generations.getBatch(input.batchId);
+  if (!batch || batch.status !== "ready_for_review") {
+    throw new Error("O lote não está disponível para novas decisões de revisão.");
+  }
   const group = await generations.getCurrentActivityGroup(input.batchId);
   const activity = group?.activities.find(({ id }) => id === input.activityId);
 
@@ -263,6 +336,15 @@ export async function approveActivity(input: {
     author: "revisor-poc",
     createdAt: new Date().toISOString(),
   });
+
+  const reviewedGroup = await generations.getCurrentActivityGroup(input.batchId);
+  if (
+    reviewedGroup &&
+    reviewedGroup.activities.length > 0 &&
+    reviewedGroup.activities.every(({ status }) => status === "approved")
+  ) {
+    await generations.updateBatchStatus(input.batchId, "completed");
+  }
 }
 
 function generationContextFromRuns(runs: readonly ModelRun[]) {
@@ -312,7 +394,7 @@ export async function rejectAndRegenerateActivity(input: {
   const batch = await generations.getBatch(input.batchId);
   const group = await generations.getCurrentActivityGroup(input.batchId);
 
-  if (!batch || !group) {
+  if (!batch || batch.status !== "ready_for_review" || !group) {
     throw new Error("O lote de revisão não foi encontrado.");
   }
 

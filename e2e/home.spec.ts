@@ -10,7 +10,10 @@ test("exibe a página inicial e a identidade do Kite", async ({ page }) => {
   await expect(
     page.getByText("Você aprova, rejeita ou gera uma nova versão de cada proposta."),
   ).toBeVisible();
-  await expect(page.getByText("Nenhum lote gerado ainda")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Atividades revisadas" })).toBeVisible();
+  await expect(page.getByRole("status")).toContainText(
+    /Nenhum lote gerado ainda|Lote pronto para revisão|atividades? revisadas?/,
+  );
 });
 
 test("mantém o início utilizável em tela pequena", async ({ page }) => {

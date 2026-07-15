@@ -2,6 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { brandAssets } from "@/lib/brand";
+import { loadReviewedActivityLibrary } from "@/server/generation/integrated-flow";
+
+export const dynamic = "force-dynamic";
 
 const principles = [
   {
@@ -21,7 +24,14 @@ const principles = [
   },
 ] as const;
 
-export default function Home() {
+export default async function Home() {
+  const library = await loadReviewedActivityLibrary();
+  const reviewedActivityCount = library.reduce(
+    (total, batch) => total + batch.reviewedActivities.length,
+    0,
+  );
+  const latestBatch = library[0];
+
   return (
     <div className="min-h-screen bg-[#fffdf8] text-[#28334a]">
       <a
@@ -31,7 +41,7 @@ export default function Home() {
         Ir para o conteúdo
       </a>
 
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5 lg:px-8">
+      <header className="sticky top-0 z-30 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 bg-[#fffdf8] px-6 py-5 lg:px-8">
         <a aria-label="Kite — página inicial" href="#conteudo">
           <Image
             alt="Kite"
@@ -41,9 +51,18 @@ export default function Home() {
             width={156}
           />
         </a>
-        <span className="rounded-full border-2 border-[#dfe5ef] bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#526078]">
-          POC educacional
-        </span>
+        <div className="flex items-center gap-3">
+          <Link
+            className="rounded-lg px-2 py-2 text-sm font-extrabold text-[#187b68] underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
+            href="/atividades"
+          >
+            <span className="hidden sm:inline">Atividades revisadas</span>
+            <span className="sm:hidden">Revisadas</span>
+          </Link>
+          <span className="hidden rounded-full border-2 border-[#dfe5ef] bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#526078] md:inline-flex">
+            POC educacional
+          </span>
+        </div>
       </header>
 
       <main id="conteudo">
@@ -119,23 +138,63 @@ export default function Home() {
               ))}
             </div>
 
-            <div
-              className="mt-8 flex flex-col gap-2 rounded-3xl border-2 border-dashed border-[#ced6e2] bg-[#f7f9fc] px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
-              role="status"
-            >
-              <div>
-                <p className="font-black">Nenhum lote gerado ainda</p>
-                <p className="mt-1 text-sm font-medium text-[#69768c]">
-                  Comece selecionando uma aula do currículo de Fonemas.
-                </p>
-              </div>
-              <Link
-                className="text-sm font-extrabold text-[#187b68] underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
-                href="/planejar"
+            {reviewedActivityCount > 0 ? (
+              <div
+                className="mt-8 flex flex-col gap-2 rounded-3xl border-2 border-[#b8dfd4] bg-[#eefaf6] px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
+                role="status"
               >
-                Selecionar aula
-              </Link>
-            </div>
+                <div>
+                  <p className="font-black">
+                    {reviewedActivityCount} {reviewedActivityCount === 1 ? "atividade revisada" : "atividades revisadas"}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-[#526078]">
+                    Seu trabalho está salvo e continua disponível na biblioteca.
+                  </p>
+                </div>
+                <Link
+                  className="text-sm font-extrabold text-[#187b68] underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
+                  href="/atividades"
+                >
+                  Ver atividades
+                </Link>
+              </div>
+            ) : latestBatch ? (
+              <div
+                className="mt-8 flex flex-col gap-2 rounded-3xl border-2 border-[#d6c67d] bg-[#fff9e5] px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
+                role="status"
+              >
+                <div>
+                  <p className="font-black">Lote pronto para revisão</p>
+                  <p className="mt-1 text-sm font-medium text-[#69768c]">
+                    As {latestBatch.totalActivities} atividades geradas continuam salvas.
+                  </p>
+                </div>
+                <Link
+                  className="text-sm font-extrabold text-[#187b68] underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
+                  href={`/revisar?lote=${encodeURIComponent(latestBatch.batchId)}`}
+                >
+                  Continuar revisão
+                </Link>
+              </div>
+            ) : (
+              <div
+                className="mt-8 flex flex-col gap-2 rounded-3xl border-2 border-dashed border-[#ced6e2] bg-[#f7f9fc] px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
+                role="status"
+              >
+                <div>
+                  <p className="font-black">Nenhum lote gerado ainda</p>
+                  <p className="mt-1 text-sm font-medium text-[#69768c]">
+                    Comece selecionando uma aula do currículo de Fonemas.
+                  </p>
+                </div>
+                <Link
+                  className="text-sm font-extrabold text-[#187b68] underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
+                  href="/planejar"
+                >
+                  Selecionar aula
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       </main>

@@ -1,4 +1,4 @@
-import { and, asc, eq, ne } from "drizzle-orm";
+import { and, asc, desc, eq, ne } from "drizzle-orm";
 
 import {
   type Activity,
@@ -41,6 +41,15 @@ export class GenerationRepository {
       .limit(1);
 
     return row ? toBatch(row) : undefined;
+  }
+
+  async listBatches(): Promise<GenerationBatch[]> {
+    const rows = await this.db
+      .select()
+      .from(generationBatches)
+      .orderBy(desc(generationBatches.createdAt));
+
+    return rows.map(toBatch);
   }
 
   async updateBatchStatus(

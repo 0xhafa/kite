@@ -48,7 +48,7 @@ function AppShellFrame({
         Ir para o conteúdo
       </a>
 
-      <header className="border-b-2 border-border bg-surface">
+      <header className="sticky top-0 z-30 border-b-2 border-border bg-surface">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <div className="flex items-center gap-3">
             <Button
@@ -82,9 +82,18 @@ function AppShellFrame({
               Kite
             </Link>
           </div>
-          <span className="rounded-pill bg-neutral-soft px-3 py-2 text-caption font-extrabold uppercase tracking-[0.08em] text-muted">
-            {sectionLabel}
-          </span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              className="rounded-md px-2 py-2 text-sm font-extrabold text-brand-strong underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              href="/atividades"
+            >
+              <span className="hidden sm:inline">Atividades revisadas</span>
+              <span className="sm:hidden">Revisadas</span>
+            </Link>
+            <span className="hidden rounded-pill bg-neutral-soft px-3 py-2 text-caption font-extrabold uppercase tracking-[0.08em] text-muted md:inline-flex">
+              {sectionLabel}
+            </span>
+          </div>
         </div>
       </header>
 

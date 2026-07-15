@@ -49,6 +49,8 @@ export async function generateBatchAction(
   try {
     const parsed = generationActionInputSchema.parse(input);
     const batchId = await generateAndPersistBatch(parsed);
+    revalidatePath("/");
+    revalidatePath("/atividades");
     return { ok: true, data: { batchId } };
   } catch (error) {
     return actionError(error);
@@ -61,7 +63,9 @@ export async function approveActivityAction(
   try {
     const parsed = reviewActionInputSchema.parse(input);
     await approveActivity(parsed);
-    revalidatePath(`/revisar?lote=${parsed.batchId}`);
+    revalidatePath("/");
+    revalidatePath("/atividades");
+    revalidatePath("/revisar");
     return { ok: true, data: {} };
   } catch (error) {
     return actionError(error);
@@ -74,7 +78,9 @@ export async function rejectAndRegenerateActivityAction(
   try {
     const parsed = regenerationActionInputSchema.parse(input);
     const result = await rejectAndRegenerateActivity(parsed);
-    revalidatePath(`/revisar?lote=${parsed.batchId}`);
+    revalidatePath("/");
+    revalidatePath("/atividades");
+    revalidatePath("/revisar");
     return { ok: true, data: result };
   } catch (error) {
     return actionError(error);

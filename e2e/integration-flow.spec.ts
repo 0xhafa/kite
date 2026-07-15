@@ -64,4 +64,16 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
   await page.reload();
   await expect(page.getByRole("heading", { name: "Lote revisado" })).toBeVisible();
   await expect(page.getByText("3 aprovadas e 0 rejeitadas")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Rever atividades" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Ver atividades revisadas" }).click();
+  await expect(page).toHaveURL(/\/atividades$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Atividades revisadas" })).toBeVisible();
+  await expect(page.getByText(replacementTitle ?? "", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Lote concluído", { exact: true }).first()).toBeVisible();
+
+  await page.getByRole("link", { name: "Kite", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("status")).toContainText(/atividades? revisadas?/);
+  await expect(page.getByText("Nenhum lote gerado ainda")).toHaveCount(0);
 });

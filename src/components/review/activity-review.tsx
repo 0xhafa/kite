@@ -1,14 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   approveActivityAction,
   rejectAndRegenerateActivityAction,
 } from "@/app/actions";
+import { ActivityDescription } from "@/components/activity-description";
 import { useOptionalAiSettings } from "@/components/ai/ai-settings";
 import { Badge, Button, Card, Modal, Progress } from "@/components/ui";
-import { parseActivityDescription } from "@/domain/activity-description";
 import { defaultAiModelSelection } from "@/domain/ai-models";
 import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
 import {
@@ -300,7 +301,6 @@ function ReadyActivityReview({
         <ReviewCompleteState
           approved={progress.approved}
           headingRef={completionHeadingRef}
-          onReviewAgain={() => navigateTo(0)}
           rejected={progress.rejected}
           total={progress.total}
         />
@@ -471,21 +471,6 @@ function ActivityCard({
   );
 }
 
-function ActivityDescription({ description }: { description: string }) {
-  const paragraphs = parseActivityDescription(description);
-
-  return (
-    <div className="mt-4 max-w-3xl space-y-4 font-medium leading-7 text-muted">
-      {paragraphs.map(({ label, text }, index) => (
-        <p className="whitespace-pre-line" key={`${label ?? "paragrafo"}-${index}`}>
-          {label ? <strong className="font-extrabold text-ink">{label}: </strong> : null}
-          {text}
-        </p>
-      ))}
-    </div>
-  );
-}
-
 export function ValidationDetailsModal({
   item,
   onClose,
@@ -637,18 +622,16 @@ function ReportCount({ label, value }: { label: string; value: number }) {
 function ReviewCompleteState({
   approved,
   headingRef,
-  onReviewAgain,
   rejected,
   total,
 }: {
   approved: number;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
-  onReviewAgain: () => void;
   rejected: number;
   total: number;
 }) {
   return (
-    <Card aria-live="polite" className="mt-6 text-center" padding="lg" role="status">
+    <Card aria-live="polite" className="mt-6 text-center" padding="lg">
       <span aria-hidden="true" className="text-4xl">
         ✓
       </span>
@@ -664,9 +647,23 @@ function ReviewCompleteState({
         {approved === 1 ? "aprovada" : "aprovadas"} e {rejected} {" "}
         {rejected === 1 ? "rejeitada" : "rejeitadas"}.
       </p>
-      <Button className="mt-6" onClick={onReviewAgain} variant="secondary">
-        Rever atividades
-      </Button>
+      <p className="mx-auto mt-2 max-w-xl text-sm font-bold leading-6 text-muted">
+        O lote foi concluído e permanece salvo na sua biblioteca.
+      </p>
+      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+        <Link
+          className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-ink bg-ink px-6 py-3 font-extrabold text-surface shadow-action transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
+          href="/atividades"
+        >
+          Ver atividades revisadas
+        </Link>
+        <Link
+          className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-border bg-surface px-6 py-3 font-extrabold text-ink shadow-raised transition-transform hover:-translate-y-0.5 hover:border-muted focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
+          href="/planejar"
+        >
+          Planejar novo lote
+        </Link>
+      </div>
     </Card>
   );
 }

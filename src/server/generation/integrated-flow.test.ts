@@ -14,6 +14,7 @@ import {
   generateAndPersistBatch,
   loadPersistedPlanningContext,
   loadReviewBatch,
+  loadReviewedActivityLibrary,
   rejectAndRegenerateActivity,
 } from "./integrated-flow";
 import { createInitialGenerationArtifacts } from "./pipeline";
@@ -119,6 +120,31 @@ describe("fluxo integrado persistido", () => {
     )).toBe(originalTotal);
     expect(regeneration.usage.byStage.repair).toBeGreaterThan(0);
     expect(reloaded?.usage).toEqual(regeneration.usage);
+
+    for (const item of reloaded!.items.filter(({ activity }) => activity.status !== "approved")) {
+      await approveActivity({
+        batchId,
+        activityId: item.activity.id,
+        activityVersion: item.activity.version,
+      });
+    }
+
+    const completed = await loadReviewBatch(batchId);
+    const libraryBatch = (await loadReviewedActivityLibrary()).find(
+      (entry) => entry.batchId === batchId,
+    );
+
+    expect(completed?.batch.status).toBe("completed");
+    expect(completed?.decisionHistory).toMatchObject({
+      [approved.id]: [{ decision: "approved" }],
+      [replacement.id]: [{ decision: "approved" }],
+    });
+    expect(libraryBatch).toMatchObject({
+      batchId,
+      completed: true,
+      totalActivities: 3,
+    });
+    expect(libraryBatch?.reviewedActivities).toHaveLength(3);
   });
 
   it("não entrega uma atividade cujo relatório validado ficou incompleto", async () => {
