@@ -5,8 +5,7 @@ export async function selectFirstLesson(page: Page) {
   await page.getByRole("group", { name: "1. Tema" }).getByRole("button").first().click();
   await page.getByRole("group", { name: "2. Habilidade" }).getByRole("button").first().click();
   await page.getByRole("group", { name: "3. Objetivo" }).getByRole("button").first().click();
-  await page.getByRole("group", { name: "4. Semana" }).getByRole("button").first().click();
-  await page.getByRole("group", { name: "5. Aula" }).getByRole("button").first().click();
+  await page.getByRole("group", { name: "4. Aula" }).getByRole("button").first().click();
   await page.getByRole("button", { name: "Avançar para configuração" }).click();
 }
 

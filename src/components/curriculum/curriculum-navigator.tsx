@@ -64,10 +64,31 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
   const lessons = getAvailableLessons(curriculum, selection);
   const selectedLesson = findSelectedLesson(curriculum, selection);
   const selectionComplete = isCurriculumSelectionComplete(curriculum, selection);
-  const selectedLevels = Object.values(selection).filter(Boolean).length;
+  const hasMultipleWeeks = weeks.length > 1;
+  const selectedLevels = [
+    selection.themeId,
+    selection.skillId,
+    selection.objectiveId,
+    ...(hasMultipleWeeks ? [selection.weekId] : []),
+    selection.lessonId,
+  ].filter(Boolean).length;
+  const totalLevels = hasMultipleWeeks ? 5 : 4;
 
   function select(level: CurriculumSelectionLevel, id: string) {
     setSelection((currentSelection) => selectCurriculumLevel(currentSelection, level, id));
+  }
+
+  function selectObjective(id: string) {
+    const objective = objectives.find((option) => option.id === id);
+
+    setSelection((currentSelection) => {
+      const objectiveSelection = selectCurriculumLevel(currentSelection, "objectiveId", id);
+      const onlyWeek = objective?.weeks.length === 1 ? objective.weeks[0] : undefined;
+
+      return onlyWeek
+        ? selectCurriculumLevel(objectiveSelection, "weekId", onlyWeek.id)
+        : objectiveSelection;
+    });
   }
 
   if (step === "configuration" && selectedLesson) {
@@ -95,7 +116,11 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
           exatamente como foi definido.
         </p>
         <Card className="mt-6" padding="sm" raised={false} tone="soft">
-          <Progress label="Caminho curricular selecionado" max={5} value={selectedLevels} />
+          <Progress
+            label="Caminho curricular selecionado"
+            max={totalLevels}
+            value={selectedLevels}
+          />
         </Card>
       </section>
 
@@ -148,7 +173,7 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
                   description={objective.priorityStatement}
                   key={objective.id}
                   label={objective.name}
-                  onSelect={() => select("objectiveId", objective.id)}
+                  onSelect={() => selectObjective(objective.id)}
                   selected={selection.objectiveId === objective.id}
                 />
               ))}
@@ -156,7 +181,7 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
           </fieldset>
         ) : null}
 
-        {selection.objectiveId ? (
+        {selection.objectiveId && hasMultipleWeeks ? (
           <fieldset className="min-w-0">
             <legend className="text-xl font-black">4. Semana</legend>
             <p className="mt-1 text-sm font-medium text-muted">
@@ -178,7 +203,9 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
 
         {selection.weekId ? (
           <fieldset className="min-w-0">
-            <legend className="text-xl font-black">5. Aula</legend>
+            <legend className="text-xl font-black">
+              {hasMultipleWeeks ? "5. Aula" : "4. Aula"}
+            </legend>
             <p className="mt-1 text-sm font-medium text-muted">
               Selecione uma aula concreta para conferir o objetivo e o conteúdo.
             </p>

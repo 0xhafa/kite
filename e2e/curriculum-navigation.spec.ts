@@ -28,15 +28,10 @@ test("percorre o currículo por teclado e só libera uma aula concreta", async (
   await objectiveButton.focus();
   await page.keyboard.press("Enter");
 
-  const weekButton = page
-    .getByRole("group", { name: "4. Semana" })
-    .getByRole("button")
-    .first();
-  await weekButton.focus();
-  await page.keyboard.press("Enter");
+  await expect(page.getByRole("group", { name: "4. Semana" })).toHaveCount(0);
 
   const lessonButton = page
-    .getByRole("group", { name: "5. Aula" })
+    .getByRole("group", { name: "4. Aula" })
     .getByRole("button", { name: /Aula 1/ })
     .first();
   await lessonButton.focus();
