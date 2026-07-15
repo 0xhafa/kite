@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -14,6 +15,7 @@ import {
 } from "@/components/header-icon";
 import { Button } from "@/components/ui";
 import type { AiModelSelection } from "@/domain/ai-models";
+import { brandAssets } from "@/lib/brand";
 
 type AppShellProps = {
   children: ReactNode;
@@ -55,14 +57,20 @@ function AppShellFrame({
 
       <header className="sticky top-0 z-30 border-b-2 border-border bg-surface">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
-          <div className="flex items-center gap-3">
-            <Link
-              className="rounded-md text-xl font-black tracking-[-0.03em] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
-              href="/"
-            >
-              Kite
-            </Link>
-          </div>
+          <Link
+            className="inline-flex items-center gap-2 rounded-md text-xl font-black tracking-[-0.03em] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
+            href="/"
+          >
+            <Image
+              alt=""
+              aria-hidden="true"
+              className="h-10 w-auto"
+              height={40}
+              src={brandAssets.simbolo}
+              width={33}
+            />
+            <span>Kite</span>
+          </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <HeaderIconTooltip align="right" label="Atividades revisadas">
               <Link
