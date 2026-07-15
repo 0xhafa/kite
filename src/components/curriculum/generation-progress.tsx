@@ -155,13 +155,10 @@ export function GenerationProgress({ model, reasoningEffort }: GenerationProgres
 
       <div aria-hidden="true" className="mt-4 min-h-6">
         <p
-          className="generation-step-enter flex items-center gap-3 text-sm font-bold text-ink"
+          className="generation-step-enter text-sm font-bold text-ink"
           key={currentMessage}
         >
-          <span className="flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-brand bg-surface text-brand">
-            <span className="size-2 animate-pulse rounded-full bg-brand motion-reduce:animate-none" />
-          </span>
-          <span>{currentMessage}</span>
+          {currentMessage}
         </p>
       </div>
 
