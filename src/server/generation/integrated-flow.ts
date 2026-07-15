@@ -65,6 +65,12 @@ export type ReviewPageBatchData =
   | { status: "failed" }
   | { status: "ready"; data: ReviewBatchData };
 
+export type GenerationBatchLoadStatus =
+  | "missing"
+  | "generating"
+  | "failed"
+  | "ready";
+
 export type PersistedPlanningContext = {
   batchId: string;
   modelSelection: AiModelSelection;
@@ -367,6 +373,18 @@ export async function loadReviewPageBatch(batchId: string): Promise<ReviewPageBa
 
   const data = await rebuildReviewBatch(batch, generations, runs, traceability);
   return data ? { status: "ready", data } : { status: "missing" };
+}
+
+export async function loadGenerationBatchStatus(
+  batchId: string,
+): Promise<GenerationBatchLoadStatus> {
+  const { generations } = await repositories();
+  const batch = await generations.getBatch(batchId);
+
+  if (!batch) return "missing";
+  if (batch.status === "pending" || batch.status === "generating") return "generating";
+  if (batch.status === "failed") return "failed";
+  return "ready";
 }
 
 export async function loadPersistedPlanningContext(

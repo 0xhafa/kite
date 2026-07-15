@@ -11,6 +11,7 @@ import {
   approveActivity,
   deletePersistedBatch,
   generateAndPersistBatch,
+  loadGenerationBatchStatus,
   rejectActivity,
   rejectAndRegenerateActivity,
 } from "@/server/generation/integrated-flow";
@@ -23,6 +24,10 @@ import {
 const generationActionInputSchema = z.object({
   selection: completeCurriculumSelectionSchema,
   config: generationConfigSchema,
+}).strict();
+
+const generationStatusActionInputSchema = z.object({
+  batchId: identifierSchema,
 }).strict();
 
 const reviewActionInputSchema = z.object({
@@ -71,6 +76,18 @@ export async function generateBatchAction(
     revalidatePath("/");
     revalidatePath("/atividades");
     return { ok: true, data: { batchId } };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function getGenerationStatusAction(
+  input: unknown,
+): Promise<ActionResult<{ status: Awaited<ReturnType<typeof loadGenerationBatchStatus>> }>> {
+  try {
+    const parsed = generationStatusActionInputSchema.parse(input);
+    const status = await loadGenerationBatchStatus(parsed.batchId);
+    return { ok: true, data: { status } };
   } catch (error) {
     return actionError(error);
   }

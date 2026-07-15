@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 
-import { generateBatchAction } from "@/app/actions";
+import { generateBatchAction, getGenerationStatusAction } from "@/app/actions";
 import { GenerationProgress } from "@/components/curriculum/generation-progress";
 import { Badge, Button, Card } from "@/components/ui";
 import {
@@ -23,6 +23,8 @@ import {
   estimateActivityDistribution,
   generationConfigSchema,
 } from "@/domain/generation-config";
+
+const GENERATION_STATUS_POLL_INTERVAL_MILLISECONDS = 2_000;
 
 type GenerationConfigFormProps = {
   lesson: Lesson;
@@ -71,11 +73,65 @@ export function GenerationConfigForm({
   const [activityCount, setActivityCount] = useState(String(DEFAULT_ACTIVITY_COUNT));
   const [durationTouched, setDurationTouched] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [generationBatchId, setGenerationBatchId] = useState<string | null>(null);
   const [isGenerating, startGeneration] = useTransition();
 
   useEffect(() => {
     headingRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (!generationBatchId) return;
+
+    const batchId = generationBatchId;
+    let active = true;
+    let timeout: number | undefined;
+
+    async function checkGenerationStatus() {
+      let result: Awaited<ReturnType<typeof getGenerationStatusAction>>;
+
+      try {
+        result = await getGenerationStatusAction({ batchId });
+      } catch {
+        if (active) {
+          timeout = window.setTimeout(
+            checkGenerationStatus,
+            GENERATION_STATUS_POLL_INTERVAL_MILLISECONDS,
+          );
+        }
+        return;
+      }
+
+      if (!active) return;
+
+      if (!result.ok || result.data.status === "generating") {
+        timeout = window.setTimeout(
+          checkGenerationStatus,
+          GENERATION_STATUS_POLL_INTERVAL_MILLISECONDS,
+        );
+        return;
+      }
+
+      if (result.data.status === "ready") {
+        router.push(`/revisar?lote=${encodeURIComponent(batchId)}`);
+        return;
+      }
+
+      setGenerationBatchId(null);
+      setGenerationError(
+        result.data.status === "failed"
+          ? "A geração não foi concluída. Suas escolhas foram mantidas; tente gerar novamente."
+          : "O lote em geração não foi encontrado. Suas escolhas foram mantidas; tente gerar novamente.",
+      );
+    }
+
+    void checkGenerationStatus();
+
+    return () => {
+      active = false;
+      if (timeout !== undefined) window.clearTimeout(timeout);
+    };
+  }, [generationBatchId, router]);
 
   const selectedModel = getAiModelDefinition(model);
   const candidate = {
@@ -122,9 +178,11 @@ export function GenerationConfigForm({
         return;
       }
 
-      router.push(`/revisar?lote=${encodeURIComponent(result.data.batchId)}`);
+      setGenerationBatchId(result.data.batchId);
     });
   }
+
+  const generationPending = isGenerating || generationBatchId !== null;
 
   return (
     <section aria-labelledby="configuracao-geracao">
@@ -249,7 +307,7 @@ export function GenerationConfigForm({
           )}
         </Card>
 
-        {isGenerating ? (
+        {generationPending ? (
           <GenerationProgress model={model} reasoningEffort={reasoningEffort} />
         ) : null}
 
@@ -269,7 +327,7 @@ export function GenerationConfigForm({
         <div className="mt-8 flex flex-col-reverse gap-3 border-t-2 border-border pt-6 sm:flex-row">
           <Button
             className="sm:w-auto"
-            disabled={isGenerating}
+            disabled={generationPending}
             onClick={onBack}
             size="lg"
             variant="secondary"
@@ -278,11 +336,11 @@ export function GenerationConfigForm({
           </Button>
           <Button
             className="sm:flex-1"
-            disabled={!validation.success || isGenerating}
+            disabled={!validation.success || generationPending}
             size="lg"
             type="submit"
           >
-            {isGenerating ? "Gerando atividades…" : "Confirmar e gerar atividades"}
+            {generationPending ? "Gerando atividades…" : "Confirmar e gerar atividades"}
           </Button>
         </div>
       </form>

@@ -14,10 +14,12 @@ import {
   createPersistedGenerationRequest,
   deletePersistedBatch,
   generateAndPersistBatch,
+  loadGenerationBatchStatus,
   loadPersistedPlanningContext,
   loadReviewBatch,
   loadReviewPageBatch,
   loadReviewedActivityLibrary,
+  markGenerationBatchFailed,
   rejectActivity,
   rejectAndRegenerateActivity,
 } from "./integrated-flow";
@@ -79,7 +81,11 @@ describe("fluxo integrado persistido", () => {
       status: "generating",
       modelSelection: defaultAiModelSelection,
     });
+    await expect(loadGenerationBatchStatus(pending.batchId)).resolves.toBe("generating");
+    await markGenerationBatchFailed(pending.batchId);
+    await expect(loadGenerationBatchStatus(pending.batchId)).resolves.toBe("failed");
     await deletePersistedBatch(pending.batchId);
+    await expect(loadGenerationBatchStatus(pending.batchId)).resolves.toBe("missing");
   });
 
   it("reconstrói o lote, preserva aprovação e persiste a substituta", async () => {
@@ -93,6 +99,8 @@ describe("fluxo integrado persistido", () => {
     });
     const initial = await loadReviewBatch(batchId);
     const planningContext = await loadPersistedPlanningContext(batchId);
+
+    await expect(loadGenerationBatchStatus(batchId)).resolves.toBe("ready");
 
     expect(initial?.items).toHaveLength(3);
     expect(planningContext).toEqual({
