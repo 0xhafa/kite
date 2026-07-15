@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import {
   approveActivityAction,
@@ -9,7 +9,7 @@ import {
 } from "@/app/actions";
 import { ActivityDescription } from "@/components/activity-description";
 import { useOptionalAiSettings } from "@/components/ai/ai-settings";
-import { Badge, Button, Card, Modal, Progress } from "@/components/ui";
+import { Badge, Button, Card, Progress } from "@/components/ui";
 import { defaultAiModelSelection } from "@/domain/ai-models";
 import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
 import {
@@ -277,9 +277,11 @@ function ReadyActivityReview({
       {currentItem ? (
         <ActivityCard
           busy={actionPending}
+          detailsOpen={detailsOpen}
           feedback={feedback}
           item={currentItem}
           onApprove={approve}
+          onCloseDetails={closeDetails}
           onFeedbackChange={updateFeedback}
           onNext={
             currentIndex !== null && currentIndex < session.items.length - 1
@@ -305,14 +307,6 @@ function ReadyActivityReview({
           total={progress.total}
         />
       )}
-
-      {currentItem ? (
-        <ValidationDetailsModal
-          item={currentItem}
-          onClose={closeDetails}
-          open={detailsOpen}
-        />
-      ) : null}
     </section>
   );
 }
@@ -336,9 +330,11 @@ function ProgressCount({
 
 function ActivityCard({
   busy,
+  detailsOpen,
   feedback,
   item,
   onApprove,
+  onCloseDetails,
   onFeedbackChange,
   onNext,
   onOpenDetails,
@@ -349,9 +345,11 @@ function ActivityCard({
   total,
 }: {
   busy: boolean;
+  detailsOpen: boolean;
   feedback: string;
   item: ActivityReviewItem;
   onApprove: () => void;
+  onCloseDetails: () => void;
   onFeedbackChange: (feedback: string) => void;
   onNext?: () => void;
   onOpenDetails: () => void;
@@ -365,7 +363,7 @@ function ActivityCard({
   const feedbackHelpId = `ajuda-feedback-${item.activity.id}`;
 
   return (
-    <Card className="mt-6 overflow-hidden" padding="none">
+    <Card className="mt-6" padding="none">
       <article aria-labelledby={`atividade-${item.activity.id}`} className="p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -390,6 +388,14 @@ function ActivityCard({
           {item.activity.title}
         </h2>
         <ActivityDescription description={item.activity.description} />
+
+        <ActivityDetailsPopover
+          busy={busy}
+          item={item}
+          onClose={onCloseDetails}
+          onOpen={onOpenDetails}
+          open={detailsOpen}
+        />
 
         {total > 1 ? (
           <nav
@@ -435,7 +441,7 @@ function ActivityCard({
         ) : null}
       </article>
 
-      <div className="border-t-2 border-border bg-canvas p-4 sm:p-6">
+      <div className="rounded-b-lg border-t-2 border-border bg-canvas p-4 sm:p-6">
         <label
           className="block text-sm font-extrabold"
           htmlFor={`feedback-${item.activity.id}`}
@@ -455,12 +461,9 @@ function ActivityCard({
           value={feedback}
         />
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <Button disabled={busy} fullWidth onClick={onReject} size="lg" variant="danger">
             {busy ? "Salvando…" : "Rejeitar e gerar nova versão"}
-          </Button>
-          <Button disabled={busy} fullWidth onClick={onOpenDetails} size="lg" variant="secondary">
-            Detalhes
           </Button>
           <Button disabled={busy} fullWidth onClick={onApprove} size="lg">
             {busy ? "Salvando…" : "Aprovar"}
@@ -471,26 +474,128 @@ function ActivityCard({
   );
 }
 
-export function ValidationDetailsModal({
+function ActivityDetailsPopover({
+  busy,
+  item,
+  onClose,
+  onOpen,
+  open,
+}: {
+  busy: boolean;
+  item: ActivityReviewItem;
+  onClose: () => void;
+  onOpen: () => void;
+  open: boolean;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (
+        event.target instanceof Node &&
+        !containerRef.current?.contains(event.target)
+      ) {
+        onClose();
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+
+      event.preventDefault();
+      onClose();
+      window.requestAnimationFrame(() => triggerRef.current?.focus());
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose, open]);
+
+  return (
+    <div className="relative z-30 mt-6 flex justify-end" ref={containerRef}>
+      <Button
+        aria-controls={panelId}
+        aria-expanded={open}
+        disabled={busy}
+        onClick={open ? onClose : onOpen}
+        ref={triggerRef}
+        size="sm"
+        variant="secondary"
+      >
+        Detalhes
+      </Button>
+
+      <ValidationDetailsPanel
+        id={panelId}
+        item={item}
+        onClose={onClose}
+        open={open}
+      />
+    </div>
+  );
+}
+
+export function ValidationDetailsPanel({
+  id,
   item,
   onClose,
   open,
 }: {
+  id?: string;
   item: ActivityReviewItem;
   onClose: () => void;
   open: boolean;
 }) {
+  const generatedId = useId();
+  const panelId = id ?? generatedId;
+  const titleId = `${panelId}-title`;
+  const descriptionId = `${panelId}-description`;
   const report = item.validationReport;
 
+  if (!open) return null;
+
   return (
-    <Modal
-      description={`Resumo dos critérios avaliados para “${item.activity.title}”.`}
-      footer={<Button onClick={onClose}>Voltar à atividade</Button>}
-      onClose={onClose}
-      open={open}
-      title="Detalhes da validação"
+    <section
+      aria-describedby={descriptionId}
+      aria-labelledby={titleId}
+      className="absolute right-0 top-[calc(100%+0.75rem)] z-30 max-h-[70vh] w-full overflow-y-auto rounded-lg border-2 border-border bg-surface p-5 text-left shadow-2xl sm:w-[42rem] sm:max-w-[calc(100vw-4rem)] sm:p-6"
+      id={panelId}
+      role="dialog"
     >
-      <dl className="grid grid-cols-3 gap-2 text-center">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-xl font-black text-ink" id={titleId}>
+            Detalhes da validação
+          </h3>
+          <p
+            className="mt-2 text-sm font-medium leading-6 text-muted"
+            id={descriptionId}
+          >
+            Resumo dos critérios avaliados para “{item.activity.title}”.
+          </p>
+        </div>
+        <Button
+          aria-label="Fechar detalhes"
+          className="shrink-0 px-3"
+          onClick={onClose}
+          variant="ghost"
+        >
+          <span aria-hidden="true" className="text-2xl leading-none">
+            ×
+          </span>
+        </Button>
+      </div>
+
+      <dl className="mt-6 grid grid-cols-3 gap-2 text-center">
         <ReportCount label="Critérios" value={report.results.length} />
         <ReportCount label="Bloqueios" value={report.summary.blockingFailures} />
         <ReportCount label="Revisar" value={report.summary.needsHumanReview} />
@@ -540,7 +645,7 @@ export function ValidationDetailsModal({
           Nenhum critério individual foi registrado neste relatório.
         </p>
       )}
-    </Modal>
+    </section>
   );
 }
 

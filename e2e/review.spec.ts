@@ -53,7 +53,12 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
   await expect(page.getByText("0 de 3 revisadas · 25 min")).toBeVisible();
   await expect(page.getByText("Validação aprovada", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Detalhes", exact: true }).click();
+  const detailsButton = page
+    .locator("article")
+    .getByRole("button", { name: "Detalhes", exact: true });
+  await expect(detailsButton).toHaveAttribute("aria-expanded", "false");
+  await detailsButton.click();
+  await expect(detailsButton).toHaveAttribute("aria-expanded", "true");
   const dialog = page.getByRole("dialog", { name: "Detalhes da validação" });
   await expect(dialog.getByText("Critérios", { exact: true }).locator("..")).toContainText("5");
   await expect(dialog.getByText("Atender ao padrão da atividade", { exact: true })).toBeVisible();
@@ -68,6 +73,8 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
   ).toBeVisible();
   await expect(dialog.getByText("Origem do critério", { exact: true }).first()).toBeVisible();
   await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(detailsButton).toBeFocused();
 
   await page.getByRole("button", { name: "Aprovar" }).click();
   await expect(activityHeading).toBeFocused();

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { activityReviewItemSchema, type ActivityReviewItem } from "@/domain/review";
 import type { ValidationStatus } from "@/domain/rules";
 
-import { ActivityReview, ValidationDetailsModal } from "./activity-review";
+import { ActivityReview, ValidationDetailsPanel } from "./activity-review";
 
 function createItem(status: ValidationStatus): ActivityReviewItem {
   const activityId = `atividade-${status}`;
@@ -68,9 +68,9 @@ function createItem(status: ValidationStatus): ActivityReviewItem {
   });
 }
 
-function renderModal(status: ValidationStatus) {
+function renderDetails(status: ValidationStatus) {
   return renderToStaticMarkup(
-    createElement(ValidationDetailsModal, {
+    createElement(ValidationDetailsPanel, {
       item: createItem(status),
       onClose: () => undefined,
       open: true,
@@ -80,7 +80,7 @@ function renderModal(status: ValidationStatus) {
 
 describe("detalhes da validação", () => {
   it("renderiza critério amigável e evidência com origem e fonte sob demanda", () => {
-    const html = renderModal("passed");
+    const html = renderDetails("passed");
 
     expect(html).toContain("Ação observável da criança");
     expect(html).toContain("A criança deve realizar uma ação que possa ser observada.");
@@ -113,7 +113,7 @@ describe("detalhes da validação", () => {
     };
 
     const html = renderToStaticMarkup(
-      createElement(ValidationDetailsModal, {
+      createElement(ValidationDetailsPanel, {
         item,
         onClose: () => undefined,
         open: true,
@@ -130,8 +130,8 @@ describe("detalhes da validação", () => {
   });
 
   it("distingue revisão humana de falha por rótulo e tratamento visual", () => {
-    const reviewHtml = renderModal("needs_review");
-    const failedHtml = renderModal("failed");
+    const reviewHtml = renderDetails("needs_review");
+    const failedHtml = renderDetails("failed");
 
     expect(reviewHtml).toMatch(
       /<li class="[^"]*border-warning bg-warning-soft" data-validation-status="needs_review">/,
