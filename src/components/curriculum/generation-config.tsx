@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 
 import { generateBatchAction } from "@/app/actions";
+import { GenerationProgress } from "@/components/curriculum/generation-progress";
 import { Badge, Button, Card } from "@/components/ui";
 import {
   getAiModelDefinition,
@@ -249,19 +250,7 @@ export function GenerationConfigForm({
         </Card>
 
         {isGenerating ? (
-          <Card
-            aria-live="polite"
-            aria-busy="true"
-            className="mt-6"
-            padding="sm"
-            raised={false}
-            tone="soft"
-          >
-            <p className="font-black">Gerando e validando o lote</p>
-            <p className="mt-1 text-sm font-medium text-muted">
-              As atividades, os relatórios e o consumo de tokens serão salvos antes da revisão.
-            </p>
-          </Card>
+          <GenerationProgress model={model} reasoningEffort={reasoningEffort} />
         ) : null}
 
         {generationError ? (
