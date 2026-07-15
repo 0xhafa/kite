@@ -7,12 +7,14 @@ import {
   rejectAndRegenerateActivityAction,
 } from "@/app/actions";
 import { Badge, Button, Card, Modal, Progress } from "@/components/ui";
+import { parseActivityDescription } from "@/domain/activity-description";
 import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
 import {
   createReviewSession,
   decideCurrentReviewItem,
   getCurrentReviewItem,
   getReviewProgress,
+  goToReviewItem,
   type ReviewSessionDecisionHistory,
 } from "@/domain/review-session";
 import type { ValidationResult, ValidationStatus } from "@/domain/rules";
@@ -85,7 +87,7 @@ function ReadyActivityReview({
   const [currentUsage, setCurrentUsage] = useState(usage);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [decisionFeedback, setDecisionFeedback] = useState<DecisionFeedback | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const [feedbackByActivity, setFeedbackByActivity] = useState<Record<string, string>>({});
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
   const activityHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -93,6 +95,8 @@ function ReadyActivityReview({
   const closeDetails = useCallback(() => setDetailsOpen(false), []);
   const currentItem = getCurrentReviewItem(session);
   const progress = getReviewProgress(session);
+  const currentIndex = session.currentIndex;
+  const feedback = currentItem ? feedbackByActivity[currentItem.activity.id] ?? "" : "";
 
   useEffect(() => {
     if (currentItem) {
@@ -130,7 +134,11 @@ function ReadyActivityReview({
       message: `“${title}” foi aprovada.`,
       tone: "success",
     });
-    setFeedback("");
+    setFeedbackByActivity((currentFeedback) => {
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[currentItem.activity.id];
+      return nextFeedback;
+    });
     setDetailsOpen(false);
   }
 
@@ -154,20 +162,44 @@ function ReadyActivityReview({
     }
 
     setSession((currentSession) => {
+      const replacedIndex = currentSession.items.findIndex(
+        (item) => item.activity.id === rejectedItem.activity.id,
+      );
       const nextItems = currentSession.items.map((item) =>
         item.activity.id === rejectedItem.activity.id ? result.data.item : item,
       );
       const nextHistory = { ...currentSession.decisionHistory };
       delete nextHistory[rejectedItem.activity.id];
-      return createReviewSession(nextItems, nextHistory);
+      const nextSession = createReviewSession(nextItems, nextHistory);
+      return replacedIndex >= 0 ? goToReviewItem(nextSession, replacedIndex) : nextSession;
     });
     setCurrentUsage(result.data.usage);
     setDecisionFeedback({
       message: `“${rejectedItem.activity.title}” foi rejeitada e substituída apenas nesta posição.`,
       tone: "danger",
     });
-    setFeedback("");
+    setFeedbackByActivity((currentFeedback) => {
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[rejectedItem.activity.id];
+      return nextFeedback;
+    });
     setDetailsOpen(false);
+  }
+
+  function navigateTo(index: number) {
+    setSession((currentSession) => goToReviewItem(currentSession, index));
+    setActionError(null);
+    setDecisionFeedback(null);
+    setDetailsOpen(false);
+  }
+
+  function updateFeedback(value: string) {
+    if (!currentItem) return;
+
+    setFeedbackByActivity((currentFeedback) => ({
+      ...currentFeedback,
+      [currentItem.activity.id]: value,
+    }));
   }
 
   const totalDurationMinutes = session.items.reduce(
@@ -240,10 +272,20 @@ function ReadyActivityReview({
           feedback={feedback}
           item={currentItem}
           onApprove={approve}
-          onFeedbackChange={setFeedback}
+          onFeedbackChange={updateFeedback}
+          onNext={
+            currentIndex !== null && currentIndex < session.items.length - 1
+              ? () => navigateTo(currentIndex + 1)
+              : undefined
+          }
           onOpenDetails={() => setDetailsOpen(true)}
+          onPrevious={
+            currentIndex !== null && currentIndex > 0
+              ? () => navigateTo(currentIndex - 1)
+              : undefined
+          }
           onReject={rejectAndRegenerate}
-          position={progress.reviewed + 1}
+          position={(currentIndex ?? 0) + 1}
           titleRef={activityHeadingRef}
           total={progress.total}
         />
@@ -251,6 +293,7 @@ function ReadyActivityReview({
         <ReviewCompleteState
           approved={progress.approved}
           headingRef={completionHeadingRef}
+          onReviewAgain={() => navigateTo(0)}
           rejected={progress.rejected}
           total={progress.total}
         />
@@ -290,7 +333,9 @@ function ActivityCard({
   item,
   onApprove,
   onFeedbackChange,
+  onNext,
   onOpenDetails,
+  onPrevious,
   onReject,
   position,
   titleRef,
@@ -301,7 +346,9 @@ function ActivityCard({
   item: ActivityReviewItem;
   onApprove: () => void;
   onFeedbackChange: (feedback: string) => void;
+  onNext?: () => void;
   onOpenDetails: () => void;
+  onPrevious?: () => void;
   onReject: () => void;
   position: number;
   titleRef: React.RefObject<HTMLHeadingElement | null>;
@@ -335,9 +382,36 @@ function ActivityCard({
         >
           {item.activity.title}
         </h2>
-        <p className="mt-4 max-w-3xl whitespace-pre-line font-medium leading-7 text-muted">
-          {item.activity.description}
-        </p>
+        <ActivityDescription description={item.activity.description} />
+
+        {total > 1 ? (
+          <nav
+            aria-label="Navegação entre atividades"
+            className="mt-6 flex items-center justify-between gap-3 border-t-2 border-border pt-5"
+          >
+            <Button
+              aria-label="Atividade anterior"
+              disabled={busy || !onPrevious}
+              onClick={onPrevious}
+              size="sm"
+              variant="secondary"
+            >
+              ← Anterior
+            </Button>
+            <span className="text-sm font-extrabold text-muted" aria-live="polite">
+              {position} de {total}
+            </span>
+            <Button
+              aria-label="Próxima atividade"
+              disabled={busy || !onNext}
+              onClick={onNext}
+              size="sm"
+              variant="secondary"
+            >
+              Próxima →
+            </Button>
+          </nav>
+        ) : null}
 
         {validationIssue ? (
           <div className="mt-6 flex flex-col gap-3 rounded-md bg-neutral-soft p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -387,6 +461,21 @@ function ActivityCard({
         </div>
       </div>
     </Card>
+  );
+}
+
+function ActivityDescription({ description }: { description: string }) {
+  const paragraphs = parseActivityDescription(description);
+
+  return (
+    <div className="mt-4 max-w-3xl space-y-4 font-medium leading-7 text-muted">
+      {paragraphs.map(({ label, text }, index) => (
+        <p className="whitespace-pre-line" key={`${label ?? "paragrafo"}-${index}`}>
+          {label ? <strong className="font-extrabold text-ink">{label}: </strong> : null}
+          {text}
+        </p>
+      ))}
+    </div>
   );
 }
 
@@ -541,11 +630,13 @@ function ReportCount({ label, value }: { label: string; value: number }) {
 function ReviewCompleteState({
   approved,
   headingRef,
+  onReviewAgain,
   rejected,
   total,
 }: {
   approved: number;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
+  onReviewAgain: () => void;
   rejected: number;
   total: number;
 }) {
@@ -566,6 +657,9 @@ function ReviewCompleteState({
         {approved === 1 ? "aprovada" : "aprovadas"} e {rejected} {" "}
         {rejected === 1 ? "rejeitada" : "rejeitadas"}.
       </p>
+      <Button className="mt-6" onClick={onReviewAgain} variant="secondary">
+        Rever atividades
+      </Button>
     </Card>
   );
 }

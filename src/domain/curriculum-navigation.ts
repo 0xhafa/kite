@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import type {
   Curriculum,
   Lesson,
@@ -6,6 +8,21 @@ import type {
   Theme,
   Week,
 } from "./curriculum";
+import { identifierSchema } from "./shared";
+
+export const completeCurriculumSelectionSchema = z
+  .object({
+    themeId: identifierSchema,
+    skillId: identifierSchema,
+    objectiveId: identifierSchema,
+    weekId: identifierSchema,
+    lessonId: identifierSchema,
+  })
+  .strict();
+
+export type CompleteCurriculumSelection = z.infer<
+  typeof completeCurriculumSelectionSchema
+>;
 
 export type CurriculumSelection = {
   themeId: string | null;

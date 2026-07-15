@@ -15,6 +15,7 @@ import {
   repairModelOutputSchema,
 } from "./model-contracts";
 import type { Activity } from "./generation";
+import { formatActivityDescription } from "./activity-description";
 import { defaultAiModelSelection } from "./ai-models";
 import { parseLessonContent } from "./lesson-content";
 
@@ -197,9 +198,10 @@ export function generateMockBatch(input: GenerationModelInput): GenerationModelO
     return {
       slotIndex,
       title: lessonActivities[slotIndex]?.title ?? template.title,
-      description:
-         lessonActivities[slotIndex]?.description ??
-         `A criança ${template.instruction} para trabalhar ${lesson.specificObjective}.`,
+      description: formatActivityDescription(
+        lessonActivities[slotIndex]?.description ??
+          `A criança ${template.instruction} para trabalhar ${lesson.specificObjective}.`,
+      ),
       durationMinutes,
       consideredRuleIds,
     };

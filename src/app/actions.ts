@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { generationConfigSchema } from "@/domain/generation-config";
+import { completeCurriculumSelectionSchema } from "@/domain/curriculum-navigation";
 import { identifierSchema, positiveIntegerSchema } from "@/domain/shared";
 import {
   approveActivity,
@@ -11,16 +12,8 @@ import {
   rejectAndRegenerateActivity,
 } from "@/server/generation/integrated-flow";
 
-const completeSelectionSchema = z.object({
-  themeId: identifierSchema,
-  skillId: identifierSchema,
-  objectiveId: identifierSchema,
-  weekId: identifierSchema,
-  lessonId: identifierSchema,
-}).strict();
-
 const generationActionInputSchema = z.object({
-  selection: completeSelectionSchema,
+  selection: completeCurriculumSelectionSchema,
   config: generationConfigSchema,
 }).strict();
 

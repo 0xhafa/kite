@@ -166,4 +166,20 @@ describe("resumo da validação na atividade", () => {
     expect(html).toContain("Validação geral");
     expect(html).toContain("Requer ajustes");
   });
+
+  it("apresenta as etapas reconhecidas em parágrafos com rótulos destacados", () => {
+    const item = createItem("passed");
+    item.activity.description =
+      "Recursos: cartões. Apresentação: mostre um cartão. Ações: peça que a turma nomeie. Transição e encerramento: retome as palavras.";
+    const html = renderToStaticMarkup(
+      createElement(ActivityReview, {
+        state: { status: "ready", items: [item] },
+      }),
+    );
+
+    expect(html).toContain("<strong class=\"font-extrabold text-ink\">Recursos: </strong>");
+    expect(html).toContain(">cartões.</p>");
+    expect(html).toContain(">mostre um cartão.</p>");
+    expect(html).toContain(">retome as palavras.</p>");
+  });
 });

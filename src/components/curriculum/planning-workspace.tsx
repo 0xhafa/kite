@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { CurriculumNavigator } from "@/components/curriculum/curriculum-navigator";
 import { Button, InfoTooltip, Modal } from "@/components/ui";
 import type { Curriculum } from "@/domain/curriculum";
+import type { CurriculumSelection } from "@/domain/curriculum-navigation";
 import {
   AI_PROVIDERS,
   aiModelIdSchema,
@@ -22,6 +23,8 @@ import {
 
 type PlanningWorkspaceProps = {
   curriculum: Curriculum;
+  initialSelection?: CurriculumSelection;
+  reviewBatchId?: string;
 };
 
 const reasoningEffortLabels = {
@@ -35,7 +38,11 @@ const reasoningEffortLabels = {
   max: "Máximo",
 } as const satisfies Record<ReasoningEffort, string>;
 
-export function PlanningWorkspace({ curriculum }: PlanningWorkspaceProps) {
+export function PlanningWorkspace({
+  curriculum,
+  initialSelection,
+  reviewBatchId,
+}: PlanningWorkspaceProps) {
   const modelSelectRef = useRef<HTMLSelectElement>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [model, setModel] = useState<AiModelId>(defaultAiModelSelection.model);
@@ -115,8 +122,10 @@ export function PlanningWorkspace({ curriculum }: PlanningWorkspaceProps) {
       <main className="mx-auto w-full max-w-5xl px-5 py-10 sm:px-8 sm:py-14" id="conteudo">
         <CurriculumNavigator
           curriculum={curriculum}
+          initialSelection={initialSelection}
           model={model}
           reasoningEffort={reasoningEffort}
+          reviewBatchId={reviewBatchId}
         />
       </main>
 

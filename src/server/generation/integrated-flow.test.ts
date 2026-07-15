@@ -12,6 +12,7 @@ import { getApplicationDatabase } from "@/server/application-database";
 import {
   approveActivity,
   generateAndPersistBatch,
+  loadPersistedPlanningContext,
   loadReviewBatch,
   rejectAndRegenerateActivity,
 } from "./integrated-flow";
@@ -69,8 +70,10 @@ describe("fluxo integrado persistido", () => {
       },
     });
     const initial = await loadReviewBatch(batchId);
+    const planningContext = await loadPersistedPlanningContext(batchId);
 
     expect(initial?.items).toHaveLength(3);
+    expect(planningContext).toEqual({ batchId, selection });
     expect(initial?.items.every((item) => item.validationReport.results.length > 0)).toBe(true);
     expect(initial?.usage.byStage.generate).toBeGreaterThan(0);
     expect(initial?.usage.byStage.validate).toBeGreaterThan(0);

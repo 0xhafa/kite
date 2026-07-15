@@ -3,6 +3,10 @@ import rulesData from "../../../data/rules.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
 import { aiModelSelectionSchema } from "@/domain/ai-models";
 import {
+  completeCurriculumSelectionSchema,
+  type CompleteCurriculumSelection,
+} from "@/domain/curriculum-navigation";
+import {
   activityGroupSchema,
   type Activity,
   type GenerationBatch,
@@ -28,7 +32,7 @@ import {
   createInitialGenerationArtifacts,
   createRegenerationArtifacts,
   createReviewItem,
-  type CompleteCurriculumSelection,
+  resolveCurriculumContext,
 } from "./pipeline";
 import type { GenerationConfig } from "@/domain/generation-config";
 
@@ -43,6 +47,11 @@ export type ReviewBatchData = {
   items: ActivityReviewItem[];
   decisionHistory: ReviewSessionDecisionHistory;
   usage: BatchTokenUsage;
+};
+
+export type PersistedPlanningContext = {
+  batchId: string;
+  selection: CompleteCurriculumSelection;
 };
 
 async function repositories() {
@@ -193,6 +202,27 @@ export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData 
     decisionHistory,
     usage: await runs.aggregateBatchUsage(batchId),
   };
+}
+
+export async function loadPersistedPlanningContext(
+  batchId: string,
+): Promise<PersistedPlanningContext | undefined> {
+  const { generations } = await repositories();
+  const batch = await generations.getBatch(batchId);
+  if (!batch || batch.status !== "ready_for_review") return undefined;
+
+  const selection = completeCurriculumSelectionSchema.safeParse(
+    batch.normalizedParameters.selection,
+  );
+  if (!selection.success) return undefined;
+
+  try {
+    resolveCurriculumContext(curriculum, selection.data);
+  } catch {
+    return undefined;
+  }
+
+  return { batchId: batch.id, selection: selection.data };
 }
 
 export async function approveActivity(input: {

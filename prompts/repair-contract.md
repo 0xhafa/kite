@@ -22,3 +22,9 @@ Produzir uma substituta para a mesma posição sem modificar o restante do lote.
 - manter objetivo e conteúdo;
 - gerar nova versão com referência à atividade substituída;
 - não alterar atividades aprovadas.
+
+## Formatação da descrição
+
+- quando essas partes existirem, usar parágrafos curtos iniciados exatamente por `Recursos:`, `Preparação:`, `Apresentação:`, `Ações:` e `Transição e encerramento:`;
+- separar as partes aplicáveis com uma linha em branco (`\n\n`);
+- omitir partes que não se aplicam, sem inventar etapas para completar a estrutura.

@@ -108,6 +108,17 @@ export function getCurrentReviewItem(
   return session.currentIndex === null ? null : session.items[session.currentIndex] ?? null;
 }
 
+export function goToReviewItem(
+  session: ReviewSessionState,
+  index: number,
+): ReviewSessionState {
+  if (!Number.isInteger(index) || index < 0 || index >= session.items.length) {
+    throw new Error("A posição informada não pertence ao lote de revisão.");
+  }
+
+  return { ...session, currentIndex: index };
+}
+
 export function decideCurrentReviewItem(
   session: ReviewSessionState,
   decision: ReviewDecisionType,

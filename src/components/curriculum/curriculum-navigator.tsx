@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Badge, Button, Card, Progress } from "@/components/ui";
@@ -22,8 +23,10 @@ import {
 
 type CurriculumNavigatorProps = {
   curriculum: Curriculum;
+  initialSelection?: CurriculumSelection;
   model: AiModelId;
   reasoningEffort: ReasoningEffort | undefined;
+  reviewBatchId?: string;
 };
 
 type SelectionOptionProps = {
@@ -60,10 +63,12 @@ function SelectionOption({
 
 export function CurriculumNavigator({
   curriculum,
+  initialSelection = emptyCurriculumSelection,
   model,
   reasoningEffort,
+  reviewBatchId,
 }: CurriculumNavigatorProps) {
-  const [selection, setSelection] = useState<CurriculumSelection>(emptyCurriculumSelection);
+  const [selection, setSelection] = useState<CurriculumSelection>(initialSelection);
   const [step, setStep] = useState<"curriculum" | "configuration">("curriculum");
 
   const skills = getAvailableSkills(curriculum, selection);
@@ -246,10 +251,20 @@ export function CurriculumNavigator({
         {selectedLesson ? (
           <Card padding="lg">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <Badge tone="success">Aula selecionada</Badge>
-              <span className="text-sm font-extrabold text-muted">
-                Aula {selectedLesson.number}
-              </span>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge tone="success">Aula selecionada</Badge>
+                <span className="text-sm font-extrabold text-muted">
+                  Aula {selectedLesson.number}
+                </span>
+              </div>
+              {reviewBatchId ? (
+                <Link
+                  className="rounded-md font-extrabold text-brand-strong underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
+                  href={`/revisar?lote=${encodeURIComponent(reviewBatchId)}`}
+                >
+                  Voltar às atividades geradas →
+                </Link>
+              ) : null}
             </div>
             <h2 className="mt-5 text-2xl font-black">Objetivo específico</h2>
             <p className="mt-3 text-lead font-bold leading-8">{selectedLesson.specificObjective}</p>

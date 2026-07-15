@@ -85,6 +85,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       </header>
 
       <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8 sm:py-14" id="conteudo">
+        {batchId && reviewState.status === "ready" && reviewState.items.length > 0 ? (
+          <Link
+            className="mb-6 inline-flex min-h-touch items-center rounded-md font-extrabold text-brand-strong underline decoration-2 underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
+            href={`/planejar?lote=${encodeURIComponent(batchId)}#aula-selecionada`}
+          >
+            ← Voltar ao exemplo da aula
+          </Link>
+        ) : null}
         <ActivityReview
           batchId={batchId}
           decisionHistory={decisionHistory}

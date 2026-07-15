@@ -8,7 +8,10 @@ import {
 } from "@/domain/ai-models";
 import { selectApplicableRuleInputs } from "@/domain/applicability";
 import type { Curriculum, Lesson } from "@/domain/curriculum";
-import type { CurriculumSelection } from "@/domain/curriculum-navigation";
+import type {
+  CompleteCurriculumSelection,
+  CurriculumSelection,
+} from "@/domain/curriculum-navigation";
 import { validateActivityGroupDeterministically } from "@/domain/deterministic-validation";
 import {
   activityGroupSchema,
@@ -34,14 +37,6 @@ import {
   type ModelRun,
 } from "@/domain/usage";
 import { createAiProvider } from "@/server/ai";
-
-export type CompleteCurriculumSelection = {
-  themeId: string;
-  skillId: string;
-  objectiveId: string;
-  weekId: string;
-  lessonId: string;
-};
 
 export type GenerationPipelineInput = {
   curriculum: Curriculum;
@@ -88,7 +83,7 @@ const catalog = loadRuleCatalog(rulesData);
 const catalogRulesByKey = new Map(
   catalog.rules.map((rule) => [`${rule.id}:${rule.version}`, rule]),
 );
-const promptVersion = "generation-1";
+const promptVersion = "generation-2";
 const ruleSetVersion = `rules-${catalog.version}`;
 const traceabilitySource = {
   id: "kite-rule-catalog",

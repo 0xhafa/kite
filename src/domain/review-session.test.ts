@@ -6,6 +6,7 @@ import {
   decideCurrentReviewItem,
   getCurrentReviewItem,
   getReviewProgress,
+  goToReviewItem,
   reviewBatchItemsSchema,
 } from "./review-session";
 
@@ -91,6 +92,35 @@ describe("sessão de revisão", () => {
       rejected: 1,
       pending: 0,
     });
+  });
+
+  it("navega entre atividades sem registrar uma decisão", () => {
+    const initialSession = createReviewSession([
+      createItem(0),
+      createItem(1),
+      createItem(2),
+    ]);
+    const secondActivity = goToReviewItem(initialSession, 1);
+    const lastActivity = goToReviewItem(secondActivity, 2);
+
+    expect(getCurrentReviewItem(secondActivity)?.activity.id).toBe("atividade-2");
+    expect(getCurrentReviewItem(lastActivity)?.activity.id).toBe("atividade-3");
+    expect(getReviewProgress(lastActivity)).toMatchObject({ reviewed: 0, pending: 3 });
+    expect(lastActivity.decisionHistory).toEqual({});
+    expect(initialSession.currentIndex).toBe(0);
+  });
+
+  it("permite rever uma atividade depois de concluir o lote", () => {
+    const initialSession = createReviewSession([createItem(0)]);
+    const completedSession = decideCurrentReviewItem(initialSession, "approved");
+
+    expect(completedSession.currentIndex).toBeNull();
+    expect(getCurrentReviewItem(goToReviewItem(completedSession, 0))?.activity.id).toBe(
+      "atividade-1",
+    );
+    expect(() => goToReviewItem(completedSession, 1)).toThrow(
+      "A posição informada não pertence ao lote de revisão.",
+    );
   });
 
   it("carrega o histórico sem alterar uma atividade aprovada nem outras atividades", () => {
