@@ -1,7 +1,10 @@
 import curriculumData from "../../../data/curriculum.json";
 import rulesData from "../../../data/rules.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
-import { aiModelSelectionSchema } from "@/domain/ai-models";
+import {
+  aiModelSelectionSchema,
+  type AiModelSelection,
+} from "@/domain/ai-models";
 import {
   completeCurriculumSelectionSchema,
   type CompleteCurriculumSelection,
@@ -46,11 +49,13 @@ export type ReviewBatchData = {
   batch: GenerationBatch;
   items: ActivityReviewItem[];
   decisionHistory: ReviewSessionDecisionHistory;
+  modelSelection: AiModelSelection;
   usage: BatchTokenUsage;
 };
 
 export type PersistedPlanningContext = {
   batchId: string;
+  modelSelection: AiModelSelection;
   selection: CompleteCurriculumSelection;
 };
 
@@ -200,6 +205,7 @@ export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData 
     batch,
     items,
     decisionHistory,
+    modelSelection: modelSelectionFromRuns(modelRuns, batch),
     usage: await runs.aggregateBatchUsage(batchId),
   };
 }
@@ -207,7 +213,7 @@ export async function loadReviewBatch(batchId: string): Promise<ReviewBatchData 
 export async function loadPersistedPlanningContext(
   batchId: string,
 ): Promise<PersistedPlanningContext | undefined> {
-  const { generations } = await repositories();
+  const { generations, runs } = await repositories();
   const batch = await generations.getBatch(batchId);
   if (!batch || batch.status !== "ready_for_review") return undefined;
 
@@ -222,7 +228,11 @@ export async function loadPersistedPlanningContext(
     return undefined;
   }
 
-  return { batchId: batch.id, selection: selection.data };
+  return {
+    batchId: batch.id,
+    modelSelection: modelSelectionFromRuns(await runs.listByBatch(batch.id), batch),
+    selection: selection.data,
+  };
 }
 
 export async function approveActivity(input: {
@@ -273,11 +283,30 @@ function modelSelectionFromBatch(batch: GenerationBatch) {
   });
 }
 
+function modelSelectionFromRuns(
+  runs: readonly ModelRun[],
+  batch: GenerationBatch,
+): AiModelSelection {
+  for (const run of [...runs].reverse()) {
+    if (run.stage !== "generate" && run.stage !== "repair") continue;
+
+    const selection = aiModelSelectionSchema.safeParse({
+      model: run.model,
+      ...(run.reasoningEffort ? { reasoningEffort: run.reasoningEffort } : {}),
+    });
+
+    if (selection.success) return selection.data;
+  }
+
+  return modelSelectionFromBatch(batch);
+}
+
 export async function rejectAndRegenerateActivity(input: {
   batchId: string;
   activityId: string;
   activityVersion: number;
   feedback?: string;
+  modelSelection?: AiModelSelection;
 }): Promise<{ item: ActivityReviewItem; usage: BatchTokenUsage }> {
   const { generations, runs, traceability } = await repositories();
   const batch = await generations.getBatch(input.batchId);
@@ -315,7 +344,9 @@ export async function rejectAndRegenerateActivity(input: {
     feedback: input.feedback,
     promptVersion: batch.promptVersion,
     ruleSetVersion: batch.ruleSetVersion,
-    modelSelection: modelSelectionFromBatch(batch),
+    modelSelection: input.modelSelection
+      ? aiModelSelectionSchema.parse(input.modelSelection)
+      : modelSelectionFromBatch(batch),
   });
 
   await runs.save(artifacts.repairRun);

@@ -10,6 +10,14 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
   const firstTitle = await activityHeading.textContent();
   const firstDuration = await activityDuration.textContent();
 
+  await page.getByRole("button", { name: "Abrir configurações" }).click();
+  const settingsDialog = page.getByRole("dialog", { name: "Configurações" });
+  await settingsDialog.getByLabel("Provedor", { exact: true }).selectOption("gemini");
+  await settingsDialog
+    .getByLabel("Esforço de raciocínio", { exact: true })
+    .selectOption("low");
+  await settingsDialog.getByRole("button", { name: "Concluir" }).click();
+
   await expect(page.getByTestId("current-activity-version")).toHaveText("Versão 1");
   await page
     .getByRole("textbox", { name: "Feedback opcional" })
@@ -21,9 +29,19 @@ test("conclui geração, revisão, regeneração isolada e recarga do lote", asy
   await expect(page.getByText("0 de 3 revisadas · 25 min")).toBeVisible();
   await expect(activityDuration).toHaveText(firstDuration ?? "");
   await expect(activityHeading).not.toHaveText(firstTitle ?? "");
+  await page.getByRole("button", { name: "Abrir configurações" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Configurações" }).getByLabel("Modelo", {
+      exact: true,
+    }),
+  ).toHaveValue("gemini-3.5-flash");
+  await page
+    .getByRole("dialog", { name: "Configurações" })
+    .getByRole("button", { name: "Concluir" })
+    .click();
   const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
   await usageSummary
-    .getByRole("button", { name: "Detalhes técnicos do consumo de tokens" })
+    .getByRole("button", { name: "Ver consumo e custo estimado do lote" })
     .click();
   await expect(
     usageSummary.getByRole("tooltip")

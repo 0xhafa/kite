@@ -22,9 +22,9 @@ const contractPaths = {
 
 const roleInstructions = {
   generation:
-    "Planeje e gere o lote sem modificar o currículo recebido e sem declarar regras como atendidas.",
+    "Abstraia os invariantes pedagógicos do currículo e crie um lote original, sem usar a aula de referência como molde, sem modificar o conteúdo ensinado e sem declarar regras como atendidas.",
   repair:
-    "Substitua somente a atividade indicada, preservando sua posição e duração e sem alterar as atividades preservadas.",
+    "Substitua somente a atividade indicada por uma dinâmica estruturalmente diferente, preservando sua posição e duração e sem alterar as atividades preservadas.",
   validation:
     "Avalie a atividade sem reescrevê-la. Registre evidência real por regra e use needs_review quando não houver confiança.",
 } as const satisfies Record<AiOperation, string>;

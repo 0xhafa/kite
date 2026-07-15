@@ -73,7 +73,11 @@ describe("fluxo integrado persistido", () => {
     const planningContext = await loadPersistedPlanningContext(batchId);
 
     expect(initial?.items).toHaveLength(3);
-    expect(planningContext).toEqual({ batchId, selection });
+    expect(planningContext).toEqual({
+      batchId,
+      modelSelection: defaultAiModelSelection,
+      selection,
+    });
     expect(initial?.items.every((item) => item.validationReport.results.length > 0)).toBe(true);
     expect(initial?.usage.byStage.generate).toBeGreaterThan(0);
     expect(initial?.usage.byStage.validate).toBeGreaterThan(0);
@@ -141,7 +145,7 @@ describe("fluxo integrado persistido", () => {
     );
   });
 
-  it("usa o provedor HTTP na geração e regeneração e persiste seus metadados reais", async () => {
+  it("permite trocar o provedor na regeneração e restaura a última seleção", async () => {
     const generationUsage = {
       prompt_tokens: 321,
       completion_tokens: 123,
@@ -187,8 +191,10 @@ describe("fluxo integrado persistido", () => {
       .mockResolvedValueOnce(completionResponse(repairOutput, repairUsage));
 
     vi.stubEnv("AI_PROVIDER", "http");
-    vi.stubEnv("OPENAI_BASE_URL", "https://ia.example.test/v1/");
-    vi.stubEnv("OPENAI_API_KEY", "segredo-que-nao-pode-ser-persistido");
+    vi.stubEnv("OPENAI_BASE_URL", "https://openai.example.test/v1/");
+    vi.stubEnv("OPENAI_API_KEY", "segredo-openai-que-nao-pode-ser-persistido");
+    vi.stubEnv("GEMINI_BASE_URL", "https://gemini.example.test/v1beta/openai/");
+    vi.stubEnv("GEMINI_API_KEY", "segredo-gemini-que-nao-pode-ser-persistido");
     vi.stubEnv("AI_TIMEOUT_MS", "1000");
     vi.stubGlobal("fetch", fetchImplementation);
 
@@ -211,16 +217,27 @@ describe("fluxo integrado persistido", () => {
       activityId: currentActivity.id,
       activityVersion: currentActivity.version,
       feedback: "Trocar a ação da criança.",
+      modelSelection: {
+        model: "gemini-3.5-flash",
+        reasoningEffort: "low",
+      },
     });
     expect(regeneration.item.activity.title).toBe("Substituta entregue por HTTP");
     expect(fetchImplementation).toHaveBeenCalledTimes(2);
-    for (const [, request] of fetchImplementation.mock.calls) {
-      const body = JSON.parse(String(request?.body)) as Record<string, unknown>;
-      expect(body).toMatchObject({
-        model: "gpt-5.6-terra",
-        reasoning_effort: "low",
-      });
-    }
+    expect(String(fetchImplementation.mock.calls[0]?.[0])).toBe(
+      "https://openai.example.test/v1/chat/completions",
+    );
+    expect(String(fetchImplementation.mock.calls[1]?.[0])).toBe(
+      "https://gemini.example.test/v1beta/openai/chat/completions",
+    );
+    expect(JSON.parse(String(fetchImplementation.mock.calls[0]?.[1]?.body))).toMatchObject({
+      model: "gpt-5.6-terra",
+      reasoning_effort: "low",
+    });
+    expect(JSON.parse(String(fetchImplementation.mock.calls[1]?.[1]?.body))).toMatchObject({
+      model: "gemini-3.5-flash",
+      reasoning_effort: "low",
+    });
 
     const { db } = await getApplicationDatabase();
     const persistedRuns = await new ModelRunRepository(db).listByBatch(batchId);
@@ -241,8 +258,8 @@ describe("fluxo integrado persistido", () => {
       latencyMilliseconds: expect.any(Number),
     });
     expect(repairRun).toMatchObject({
-      provider: "openai",
-      model: "gpt-5.6-terra",
+      provider: "gemini",
+      model: "gemini-3.5-flash",
       reasoningEffort: "low",
       rawUsage: repairUsage,
       tokenUsage: {
@@ -253,8 +270,14 @@ describe("fluxo integrado persistido", () => {
       },
       latencyMilliseconds: expect.any(Number),
     });
-    expect(JSON.stringify([generationRun, repairRun])).not.toContain(
-      "segredo-que-nao-pode-ser-persistido",
-    );
+    const persistedData = JSON.stringify([generationRun, repairRun]);
+    expect(persistedData).not.toContain("segredo-openai-que-nao-pode-ser-persistido");
+    expect(persistedData).not.toContain("segredo-gemini-que-nao-pode-ser-persistido");
+
+    const reloaded = await loadReviewBatch(batchId);
+    expect(reloaded?.modelSelection).toEqual({
+      model: "gemini-3.5-flash",
+      reasoningEffort: "low",
+    });
   });
 });

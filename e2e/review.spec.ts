@@ -8,13 +8,26 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
   const activityHeading = page.locator("article h2");
   const firstActivityTitle = await activityHeading.textContent();
   await expect(activityHeading).toBeFocused();
+
+  const settingsButton = page.getByRole("button", { name: "Abrir configurações" });
+  await expect(settingsButton).toBeVisible();
+  await settingsButton.click();
+  const settingsDialog = page.getByRole("dialog", { name: "Configurações" });
+  await expect(settingsDialog.getByLabel("Modelo", { exact: true })).toHaveValue(
+    "gpt-5.6-sol",
+  );
+  await expect(
+    settingsDialog.getByLabel("Esforço de raciocínio", { exact: true }),
+  ).toHaveValue("medium");
+  await settingsDialog.getByRole("button", { name: "Concluir" }).click();
+
   const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
   const technicalDetails = usageSummary.getByRole("tooltip");
   const technicalDetailsTrigger = usageSummary.getByRole("button", {
-    name: "Detalhes técnicos do consumo de tokens",
+    name: "Ver consumo e custo estimado do lote",
   });
-  await expect(usageSummary.getByText("Total", { exact: true }).locator("..")).toContainText("750");
   await expect(technicalDetails).toBeHidden();
+  await expect(usageSummary.getByText("Total de tokens", { exact: true })).toBeHidden();
   await expect(usageSummary.getByText("Geração", { exact: true })).toBeHidden();
   await expect(usageSummary.getByText("Validação", { exact: true })).toBeHidden();
   await expect(usageSummary.getByText("Reparos", { exact: true })).toBeHidden();
@@ -22,6 +35,7 @@ test("revisa uma atividade persistida por vez e exibe relatório e tokens", asyn
 
   await technicalDetailsTrigger.hover();
   await expect(technicalDetails).toBeVisible();
+  await expect(technicalDetails.getByText("Total de tokens", { exact: true }).locator("..")).toContainText("750");
   await expect(technicalDetails.getByText("Geração", { exact: true }).locator("..")).toContainText("480");
   await activityHeading.hover();
   await expect(technicalDetails).toBeHidden();
@@ -72,7 +86,9 @@ test("exibe estados de carregamento, erro e vazio", async ({ page }) => {
 
   await page.goto("/revisar?estado=vazio");
   await expect(page.getByText("Nenhuma atividade para revisar")).toBeVisible();
-  await expect(page.getByText("Nenhum consumo de tokens foi registrado para este lote.")).toBeVisible();
+  const emptyUsageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
+  await emptyUsageSummary.getByRole("button", { name: "Ver consumo e custo estimado do lote" }).hover();
+  await expect(emptyUsageSummary.getByText("Nenhum consumo de tokens foi registrado para este lote.")).toBeVisible();
 });
 
 test("mantém as decisões acessíveis em tela pequena", async ({ page }) => {
@@ -88,12 +104,16 @@ test("mantém as decisões acessíveis em tela pequena", async ({ page }) => {
 
   const usageSummary = page.getByRole("region", { name: "Consumo de tokens do lote" });
   const technicalDetailsTrigger = usageSummary.getByRole("button", {
-    name: "Detalhes técnicos do consumo de tokens",
+    name: "Ver consumo e custo estimado do lote",
   });
   const technicalDetails = usageSummary.getByRole("tooltip");
   await expect(technicalDetails).toBeHidden();
   await technicalDetailsTrigger.focus();
   await expect(technicalDetails).toBeVisible();
+  const technicalDetailsBox = await technicalDetails.boundingBox();
+  expect(technicalDetailsBox).not.toBeNull();
+  expect(technicalDetailsBox?.x).toBeGreaterThanOrEqual(0);
+  expect((technicalDetailsBox?.x ?? 0) + (technicalDetailsBox?.width ?? 0)).toBeLessThanOrEqual(390);
   const widthWithTechnicalDetailsOpen = await page.evaluate(
     () => document.documentElement.scrollWidth,
   );

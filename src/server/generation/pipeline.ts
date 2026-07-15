@@ -83,7 +83,7 @@ const catalog = loadRuleCatalog(rulesData);
 const catalogRulesByKey = new Map(
   catalog.rules.map((rule) => [`${rule.id}:${rule.version}`, rule]),
 );
-const promptVersion = "generation-2";
+const promptVersion = "generation-3";
 const ruleSetVersion = `rules-${catalog.version}`;
 const traceabilitySource = {
   id: "kite-rule-catalog",

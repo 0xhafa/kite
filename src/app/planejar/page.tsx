@@ -30,6 +30,7 @@ export default async function PlanPage({ searchParams }: PlanPageProps) {
   return (
     <PlanningWorkspace
       curriculum={curriculum}
+      initialModelSelection={persistedContext?.modelSelection}
       initialSelection={persistedContext?.selection}
       reviewBatchId={persistedContext?.batchId}
     />

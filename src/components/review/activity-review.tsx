@@ -6,8 +6,10 @@ import {
   approveActivityAction,
   rejectAndRegenerateActivityAction,
 } from "@/app/actions";
+import { useOptionalAiSettings } from "@/components/ai/ai-settings";
 import { Badge, Button, Card, Modal, Progress } from "@/components/ui";
 import { parseActivityDescription } from "@/domain/activity-description";
+import { defaultAiModelSelection } from "@/domain/ai-models";
 import type { ActivityReviewItem, ReviewRuleReference } from "@/domain/review";
 import {
   createReviewSession,
@@ -57,7 +59,9 @@ export function ActivityReview({
     return (
       <>
         <ReviewEmptyState />
-        <BatchUsageSummary usage={usage} />
+        <div className="relative mt-4 flex justify-end">
+          <BatchUsageSummary usage={usage} />
+        </div>
       </>
     );
   }
@@ -83,6 +87,7 @@ function ReadyActivityReview({
   items: readonly ActivityReviewItem[];
   usage: BatchTokenUsage | null;
 }) {
+  const aiSettings = useOptionalAiSettings();
   const [session, setSession] = useState(() => createReviewSession(items, decisionHistory));
   const [currentUsage, setCurrentUsage] = useState(usage);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -153,6 +158,7 @@ function ReadyActivityReview({
       activityId: rejectedItem.activity.id,
       activityVersion: rejectedItem.activity.version,
       feedback,
+      modelSelection: aiSettings?.selection ?? defaultAiModelSelection,
     });
     setActionPending(false);
 
@@ -222,12 +228,13 @@ function ReadyActivityReview({
             Leia uma proposta por vez e registre sua decisão pedagógica.
           </p>
         </div>
-        <p className="font-extrabold text-muted">
-          {progress.reviewed} de {progress.total} revisadas · {totalDurationMinutes} min
-        </p>
+        <div className="relative flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
+          <p className="font-extrabold text-muted">
+            {progress.reviewed} de {progress.total} revisadas · {totalDurationMinutes} min
+          </p>
+          <BatchUsageSummary usage={currentUsage} />
+        </div>
       </div>
-
-      <BatchUsageSummary usage={currentUsage} />
 
       <Card className="mt-7" padding="sm" raised={false} tone="outlined">
         <Progress

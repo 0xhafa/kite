@@ -7,7 +7,7 @@ import { batchTokenUsageSchema } from "@/domain/usage";
 import { BatchUsageSummary } from "./batch-usage-summary";
 
 describe("resumo de consumo do lote", () => {
-  it("mantém somente o total no cartão e relaciona os detalhes ao controle acessível", () => {
+  it("esconde consumo e custo em um tooltip acionado por um medidor acessível", () => {
     const usage = batchTokenUsageSchema.parse({
       batchId: "lote-1",
       byStage: { plan: 0, generate: 650, validate: 420, repair: 90 },
@@ -18,13 +18,14 @@ describe("resumo de consumo do lote", () => {
     });
     const html = renderToStaticMarkup(createElement(BatchUsageSummary, { usage }));
 
-    expect(html).toContain("Consumo de tokens do lote");
-    expect(html).toContain("Total");
+    expect(html).toContain('aria-label="Consumo de tokens do lote"');
+    expect(html).toContain("Total de tokens");
     expect(html).toContain("1.160");
-    expect(html).toContain("Detalhes técnicos");
+    expect(html).toContain("Consumo e custo do lote");
     expect(html).toContain("role=\"tooltip\"");
     expect(html).toContain("invisible opacity-0");
-    expect(html).toContain("aria-label=\"Detalhes técnicos do consumo de tokens\"");
+    expect(html).toContain("aria-label=\"Ver consumo e custo estimado do lote\"");
+    expect(html).toContain("aria-expanded=\"false\"");
     expect(html).toContain("Custo estimado");
     expect(html).toContain("US$");
     const describedDetailsId = html.match(/aria-describedby="([^"]+)"/)?.[1];
@@ -55,12 +56,12 @@ describe("resumo de consumo do lote", () => {
     expect(html).toContain("5");
   });
 
-  it("explicita o estado sem registros", () => {
+  it("mantém o estado sem registros dentro do mesmo tooltip compacto", () => {
     const html = renderToStaticMarkup(
       createElement(BatchUsageSummary, { usage: null }),
     );
 
-    expect(html).toContain("role=\"status\"");
+    expect(html).toContain("role=\"tooltip\"");
     expect(html).toContain("Nenhum consumo de tokens foi registrado para este lote.");
   });
 });

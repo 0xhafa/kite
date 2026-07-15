@@ -63,6 +63,7 @@ describe("pipeline integrado de geração", () => {
       artifacts.group.activities.map((activity) => activity.id),
     );
     expect(artifacts.reports.every((report) => report.results.length > 0)).toBe(true);
+    expect(artifacts.batch.promptVersion).toBe("generation-3");
 
     const usage = aggregateBatchTokenUsage(artifacts.batch.id, [
       artifacts.generationRun,

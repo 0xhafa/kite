@@ -2,7 +2,6 @@
 
 import { useId, useState } from "react";
 
-import { Card } from "@/components/ui";
 import type { BatchTokenUsage } from "@/domain/usage";
 
 export type BatchUsageSummaryProps = {
@@ -18,88 +17,73 @@ const usdFormatter = new Intl.NumberFormat("pt-BR", {
 });
 
 export function BatchUsageSummary({ usage }: BatchUsageSummaryProps) {
-  const technicalDetailsId = useId();
-  const [technicalDetailsPinned, setTechnicalDetailsPinned] = useState(false);
+  const usageTooltipId = useId();
+  const [usageTooltipPinned, setUsageTooltipPinned] = useState(false);
 
   return (
-    <section aria-labelledby="titulo-consumo-tokens" className="mt-7">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2
-            className="text-xl font-black tracking-[-0.02em]"
-            id="titulo-consumo-tokens"
-          >
-            Consumo de tokens do lote
-          </h2>
-          <p className="mt-1 text-sm font-medium text-muted">
-            Uso técnico registrado nas chamadas de geração e revisão automática.
-          </p>
-        </div>
-      </div>
+    <section
+      aria-label="Consumo de tokens do lote"
+      className="group shrink-0 sm:relative"
+    >
+      <button
+        aria-describedby={usageTooltipId}
+        aria-expanded={usageTooltipPinned}
+        aria-label="Ver consumo e custo estimado do lote"
+        className="inline-flex size-touch items-center justify-center rounded-full border-2 border-border bg-surface text-muted shadow-raised transition-[color,background-color,border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-muted hover:text-ink active:translate-y-0 active:shadow-none focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus"
+        onClick={() => setUsageTooltipPinned((current) => !current)}
+        type="button"
+      >
+        <UsageGaugeIcon />
+      </button>
 
-      {usage ? (
-        <Card className="mt-4" padding="sm" raised={false} tone="outlined">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <dl className="min-w-36 flex-1">
-              <UsageMetric label="Total" value={usage.totalTokens} />
-            </dl>
+      <div
+        className={`${
+          usageTooltipPinned ? "visible opacity-100" : "invisible opacity-0"
+        } pointer-events-none absolute right-0 top-[calc(100%+0.5rem)] z-20 w-80 max-w-[calc(100vw-2.5rem)] rounded-md border-2 border-ink bg-ink p-4 text-left text-surface shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 motion-reduce:transition-none`}
+        id={usageTooltipId}
+        role="tooltip"
+      >
+        <p className="text-base font-black">Consumo e custo do lote</p>
+        <p className="mt-1 text-xs font-medium leading-5 text-surface/75">
+          Uso técnico registrado na geração e na revisão automática.
+        </p>
 
-            <div className="group relative">
-              <button
-                aria-describedby={technicalDetailsId}
-                aria-label="Detalhes técnicos do consumo de tokens"
-                className="flex min-h-touch cursor-pointer list-none items-center rounded-md border-2 border-border bg-surface px-4 py-2 text-sm font-extrabold text-ink shadow-raised transition-[background-color,border-color,box-shadow] marker:hidden hover:border-muted focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-focus [&::-webkit-details-marker]:hidden"
-                onClick={() => setTechnicalDetailsPinned((current) => !current)}
-                type="button"
-              >
-                Detalhes técnicos
-              </button>
-              <div
-                className={`${
-                  technicalDetailsPinned ? "visible opacity-100" : "invisible opacity-0"
-                } absolute right-0 top-[calc(100%+0.5rem)] z-20 w-72 max-w-[calc(100vw-2.5rem)] rounded-md border-2 border-ink bg-ink p-4 text-surface shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 motion-reduce:transition-none`}
-                id={technicalDetailsId}
-                role="tooltip"
-              >
-                <p className="text-xs font-extrabold uppercase tracking-[0.06em] text-surface/75">
-                  Identificador do lote
-                </p>
-                <p className="mt-1 break-all text-sm font-black">{usage.batchId}</p>
-                <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
-                  <TechnicalMetric label="Geração" value={usage.byStage.generate} />
-                  <TechnicalMetric label="Validação" value={usage.byStage.validate} />
-                  <TechnicalMetric label="Reparos" value={usage.byStage.repair} />
-                  <TechnicalMetric label="Chamadas" value={usage.callCount} />
-                  <div className="col-span-2 border-t border-surface/25 pt-3">
-                    <dt className="text-xs font-extrabold uppercase tracking-[0.06em] text-surface/75">
-                      Custo estimado
-                    </dt>
-                    <dd className="mt-1 text-base font-black">
-                      {usage.estimatedCostUsd === null
-                        ? "Indisponível"
-                        : usdFormatter.format(usage.estimatedCostUsd)}
-                    </dd>
-                  </div>
-                </dl>
-                <p className="mt-3 text-xs font-medium leading-5 text-surface/75">
-                  Estimativa pela tabela padrão de preços ({usage.pricingVersion}), sem
-                  descontos de cache. O valor faturado pode variar.
-                </p>
+        {usage ? (
+          <>
+            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
+              <div className="col-span-2 rounded-md bg-surface/10 px-3 py-3">
+                <TechnicalMetric label="Total de tokens" value={usage.totalTokens} />
               </div>
-            </div>
-          </div>
-        </Card>
-      ) : (
-        <Card
-          className="mt-4 text-sm font-bold text-muted"
-          padding="sm"
-          raised={false}
-          role="status"
-          tone="outlined"
-        >
-          Nenhum consumo de tokens foi registrado para este lote.
-        </Card>
-      )}
+              <TechnicalMetric label="Geração" value={usage.byStage.generate} />
+              <TechnicalMetric label="Validação" value={usage.byStage.validate} />
+              <TechnicalMetric label="Reparos" value={usage.byStage.repair} />
+              <TechnicalMetric label="Chamadas" value={usage.callCount} />
+              <div className="col-span-2 border-t border-surface/25 pt-3">
+                <dt className="text-xs font-extrabold uppercase tracking-[0.06em] text-surface/75">
+                  Custo estimado
+                </dt>
+                <dd className="mt-1 text-base font-black">
+                  {usage.estimatedCostUsd === null
+                    ? "Indisponível"
+                    : usdFormatter.format(usage.estimatedCostUsd)}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.06em] text-surface/75">
+              Identificador do lote
+            </p>
+            <p className="mt-1 break-all text-sm font-black">{usage.batchId}</p>
+            <p className="mt-3 text-xs font-medium leading-5 text-surface/75">
+              Estimativa pela tabela padrão de preços ({usage.pricingVersion}), sem
+              descontos de cache. O valor faturado pode variar.
+            </p>
+          </>
+        ) : (
+          <p className="mt-4 text-sm font-bold leading-6">
+            Nenhum consumo de tokens foi registrado para este lote.
+          </p>
+        )}
+      </div>
     </section>
   );
 }
@@ -115,13 +99,34 @@ function TechnicalMetric({ label, value }: { label: string; value: number }) {
   );
 }
 
-function UsageMetric({ label, value }: { label: string; value: number }) {
+function UsageGaugeIcon() {
   return (
-    <div className="rounded-md bg-neutral-soft px-3 py-3">
-      <dt className="text-xs font-extrabold uppercase tracking-[0.06em] text-muted">
-        {label}
-      </dt>
-      <dd className="mt-1 text-xl font-black">{tokenNumberFormatter.format(value)}</dd>
-    </div>
+    <svg
+      aria-hidden="true"
+      className="size-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5.6 17.5a8 8 0 1 1 12.8 0"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.9"
+      />
+      <path
+        d="m12 14.5 3.1-4.1"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.9"
+      />
+      <circle cx="12" cy="14.5" fill="currentColor" r="1.5" />
+      <path
+        d="M7.2 17.5h9.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.9"
+      />
+    </svg>
   );
 }

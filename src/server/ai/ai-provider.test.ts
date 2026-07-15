@@ -338,6 +338,15 @@ describe("adaptador HTTP estruturado", () => {
     expect(body.reasoning_effort).toBe("low");
     expect(body.response_format).toEqual({ type: "json_object" });
     expect(body.messages[0].content).toContain("# Contrato do gerador");
+    expect(body.messages[0].content).toContain(
+      "nunca como roteiro, modelo editorial ou sugestão de dinâmica",
+    );
+    expect(body.messages[0].content).toContain(
+      "pelo menos três propostas substancialmente diferentes",
+    );
+    expect(body.messages[0].content).toContain(
+      "não repita a mesma ação principal ou a mesma função pedagógica",
+    );
     expect(body.messages[1].content).toBe(
       JSON.stringify(createGenerationInput()),
     );

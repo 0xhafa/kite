@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { aiModelSelectionSchema } from "@/domain/ai-models";
 import { generationConfigSchema } from "@/domain/generation-config";
 import { completeCurriculumSelectionSchema } from "@/domain/curriculum-navigation";
 import { identifierSchema, positiveIntegerSchema } from "@/domain/shared";
@@ -23,6 +24,10 @@ const reviewActionInputSchema = z.object({
   activityVersion: positiveIntegerSchema,
   feedback: z.string().optional(),
 }).strict();
+
+const regenerationActionInputSchema = reviewActionInputSchema.extend({
+  modelSelection: aiModelSelectionSchema,
+});
 
 export type ActionResult<T> =
   | { ok: true; data: T }
@@ -67,7 +72,7 @@ export async function rejectAndRegenerateActivityAction(
   input: unknown,
 ): Promise<ActionResult<Awaited<ReturnType<typeof rejectAndRegenerateActivity>>>> {
   try {
-    const parsed = reviewActionInputSchema.parse(input);
+    const parsed = regenerationActionInputSchema.parse(input);
     const result = await rejectAndRegenerateActivity(parsed);
     revalidatePath(`/revisar?lote=${parsed.batchId}`);
     return { ok: true, data: result };
