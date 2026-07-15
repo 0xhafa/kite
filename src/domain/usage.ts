@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 import {
+  AI_MODEL_PRICING_VERSION,
+  estimateAiUsageCostUsd,
+  reasoningEffortSchema,
+} from "./ai-models";
+import {
   type JsonObject,
   identifierSchema,
   jsonObjectSchema,
@@ -128,6 +133,7 @@ export const modelRunSchema = z
     stage: modelRunStageSchema,
     provider: nonEmptyTextSchema,
     model: nonEmptyTextSchema,
+    reasoningEffort: reasoningEffortSchema.optional(),
     status: modelRunStatusSchema,
     normalizedInput: z.json(),
     inputHash: nonEmptyTextSchema,
@@ -212,6 +218,8 @@ export const batchTokenUsageSchema = z
     byStage: tokenUsageByStageSchema,
     totalTokens: nonNegativeIntegerSchema,
     callCount: nonNegativeIntegerSchema,
+    estimatedCostUsd: z.number().nonnegative().nullable(),
+    pricingVersion: nonEmptyTextSchema,
   })
   .strict()
   .superRefine((usage, context) => {
@@ -239,6 +247,8 @@ export function aggregateBatchTokenUsage(
     repair: 0,
   };
   let callCount = 0;
+  let estimatedCostUsd = 0;
+  let hasUnpricedRun = false;
 
   parsedRuns.forEach((run) => {
     if (run.batchId !== parsedBatchId) {
@@ -249,6 +259,20 @@ export function aggregateBatchTokenUsage(
     if (!run.reusedFromModelRunId) {
       callCount += 1;
     }
+
+    const runCost = estimateAiUsageCostUsd({
+      provider: run.provider,
+      model: run.model,
+      inputTokens: run.tokenUsage.inputTokens,
+      outputTokens: run.tokenUsage.outputTokens,
+      otherTokens: run.tokenUsage.otherTokens,
+    });
+
+    if (runCost === undefined) {
+      hasUnpricedRun = true;
+    } else {
+      estimatedCostUsd += runCost;
+    }
   });
 
   return batchTokenUsageSchema.parse({
@@ -256,6 +280,8 @@ export function aggregateBatchTokenUsage(
     byStage,
     totalTokens: Object.values(byStage).reduce((total, value) => total + value, 0),
     callCount,
+    estimatedCostUsd: hasUnpricedRun ? null : estimatedCostUsd,
+    pricingVersion: AI_MODEL_PRICING_VERSION,
   });
 }
 

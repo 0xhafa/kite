@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { defaultAiModelSelection } from "./ai-models";
 import {
   DEFAULT_ACTIVITY_COUNT,
   DEFAULT_DURATION_MINUTES,
@@ -15,6 +16,7 @@ describe("configuração da geração", () => {
     expect(defaultGenerationConfig).toEqual({
       requestedDurationMinutes: DEFAULT_DURATION_MINUTES,
       requestedActivityCount: DEFAULT_ACTIVITY_COUNT,
+      ...defaultAiModelSelection,
     });
   });
 
@@ -23,18 +25,21 @@ describe("configuração da geração", () => {
       generationConfigSchema.safeParse({
         requestedDurationMinutes: 40,
         requestedActivityCount: 4,
+        ...defaultAiModelSelection,
       }).success,
     ).toBe(true);
     expect(
       generationConfigSchema.safeParse({
         requestedDurationMinutes: 0,
         requestedActivityCount: 3,
+        ...defaultAiModelSelection,
       }).success,
     ).toBe(false);
     expect(
       generationConfigSchema.safeParse({
         requestedDurationMinutes: 5,
         requestedActivityCount: 6,
+        ...defaultAiModelSelection,
       }).success,
     ).toBe(false);
   });
@@ -44,12 +49,14 @@ describe("configuração da geração", () => {
       generationConfigSchema.safeParse({
         requestedDurationMinutes: 25,
         requestedActivityCount: 1,
+        ...defaultAiModelSelection,
       }).success,
     ).toBe(true);
     expect(
       generationConfigSchema.safeParse({
         requestedDurationMinutes: 25,
         requestedActivityCount: MAX_ACTIVITY_COUNT + 1,
+        ...defaultAiModelSelection,
       }).success,
     ).toBe(false);
   });
@@ -58,6 +65,7 @@ describe("configuração da geração", () => {
     const distribution = estimateActivityDistribution({
       requestedDurationMinutes: 25,
       requestedActivityCount: 3,
+      ...defaultAiModelSelection,
     });
 
     expect(distribution).toEqual([
@@ -73,14 +81,39 @@ describe("configuração da geração", () => {
       serializeGenerationConfig({
         requestedDurationMinutes: 30,
         requestedActivityCount: 4,
+        ...defaultAiModelSelection,
       }),
-    ).toEqual({ requestedDurationMinutes: 30, requestedActivityCount: 4 });
+    ).toEqual({
+      requestedDurationMinutes: 30,
+      requestedActivityCount: 4,
+      ...defaultAiModelSelection,
+    });
     expect(() =>
       serializeGenerationConfig({
         requestedDurationMinutes: 30,
         requestedActivityCount: 4,
+        ...defaultAiModelSelection,
         curriculumObjective: "não pertence à configuração",
       }),
     ).toThrow();
+  });
+
+  it("valida o esforço conforme o modelo selecionado", () => {
+    expect(
+      generationConfigSchema.safeParse({
+        requestedDurationMinutes: 25,
+        requestedActivityCount: 3,
+        model: "gpt-5.6-terra",
+        reasoningEffort: "low",
+      }).success,
+    ).toBe(true);
+    expect(
+      generationConfigSchema.safeParse({
+        requestedDurationMinutes: 25,
+        requestedActivityCount: 3,
+        model: "gpt-4.1-mini",
+        reasoningEffort: "high",
+      }).success,
+    ).toBe(false);
   });
 });

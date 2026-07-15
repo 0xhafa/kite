@@ -5,6 +5,11 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from "reac
 
 import { generateBatchAction } from "@/app/actions";
 import { Badge, Button, Card } from "@/components/ui";
+import {
+  getAiModelDefinition,
+  type AiModelId,
+  type ReasoningEffort,
+} from "@/domain/ai-models";
 import type { Lesson } from "@/domain/curriculum";
 import type { CurriculumSelection } from "@/domain/curriculum-navigation";
 import {
@@ -20,7 +25,9 @@ import {
 
 type GenerationConfigFormProps = {
   lesson: Lesson;
+  model: AiModelId;
   onBack: () => void;
+  reasoningEffort: ReasoningEffort | undefined;
   selection: CurriculumSelection;
 };
 
@@ -50,7 +57,13 @@ function getDurationError(duration: number, activityCount: number) {
   }
 }
 
-export function GenerationConfigForm({ lesson, onBack, selection }: GenerationConfigFormProps) {
+export function GenerationConfigForm({
+  lesson,
+  model,
+  onBack,
+  reasoningEffort,
+  selection,
+}: GenerationConfigFormProps) {
   const router = useRouter();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [durationMinutes, setDurationMinutes] = useState(String(DEFAULT_DURATION_MINUTES));
@@ -63,9 +76,14 @@ export function GenerationConfigForm({ lesson, onBack, selection }: GenerationCo
     headingRef.current?.focus();
   }, []);
 
+  const selectedModel = getAiModelDefinition(model);
   const candidate = {
     requestedDurationMinutes: numberFromInput(durationMinutes),
     requestedActivityCount: numberFromInput(activityCount),
+    model,
+    ...(selectedModel.reasoningEfforts.length > 0 && reasoningEffort
+      ? { reasoningEffort }
+      : {}),
   };
   const validation = generationConfigSchema.safeParse(candidate);
   const distribution = validation.success

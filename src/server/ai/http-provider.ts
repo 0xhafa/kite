@@ -341,6 +341,9 @@ export class HttpAiProvider implements AiProvider {
       run: {
         provider: "http",
         model: this.config.model,
+        ...(this.config.reasoningEffort
+          ? { reasoningEffort: this.config.reasoningEffort }
+          : {}),
         ...(rawUsageResult ? { rawUsage: rawUsageResult.data } : {}),
         latencyMilliseconds: Math.max(0, Math.round(this.now() - startedAt)),
       },
@@ -367,7 +370,9 @@ export class HttpAiProvider implements AiProvider {
             model: this.config.model,
             messages,
             response_format: { type: "json_object" },
-            temperature: 0,
+            ...(this.config.reasoningEffort
+              ? { reasoning_effort: this.config.reasoningEffort }
+              : {}),
           }),
           signal: controller.signal,
         },

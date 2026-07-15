@@ -65,6 +65,7 @@ export class ModelRunRepository {
       stage: run.stage,
       provider: run.provider,
       model: run.model,
+      reasoningEffort: run.reasoningEffort,
       status: run.status,
       normalizedInput: run.normalizedInput,
       inputHash: run.inputHash,

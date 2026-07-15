@@ -19,7 +19,8 @@ const httpConfig: HttpProviderConfig = {
   provider: "http",
   baseUrl: "https://ia.example.test/v1/",
   apiKey: "segredo-do-servidor",
-  model: "modelo-configurado-no-teste",
+  model: "gpt-5.6-terra",
+  reasoningEffort: "low",
   timeoutMs: 100,
 };
 
@@ -174,13 +175,12 @@ describe("configuração do provedor de IA", () => {
     expect(loadAiProviderConfig({})).toEqual({ provider: "mock" });
   });
 
-  it("carrega endpoint, segredo, modelo e timeout somente do ambiente do servidor", () => {
+  it("carrega endpoint, segredo e timeout somente do ambiente do servidor", () => {
     expect(
       loadAiProviderConfig({
         AI_PROVIDER: "http",
         AI_BASE_URL: "https://ia.example.test/v1",
         AI_API_KEY: "chave-servidor",
-        AI_MODEL: "modelo-ambiente",
         AI_TIMEOUT_MS: "2500",
         NEXT_PUBLIC_AI_API_KEY: "nao-deve-ser-lida",
       }),
@@ -188,7 +188,6 @@ describe("configuração do provedor de IA", () => {
       provider: "http",
       baseUrl: "https://ia.example.test/v1",
       apiKey: "chave-servidor",
-      model: "modelo-ambiente",
       timeoutMs: 2500,
     });
   });
@@ -198,7 +197,6 @@ describe("configuração do provedor de IA", () => {
       loadAiProviderConfig({
         AI_PROVIDER: "http",
         AI_BASE_URL: "https://ia.example.test/v1",
-        AI_MODEL: "modelo-ambiente",
       }),
     ).toThrowError(AiConfigurationError);
 
@@ -206,7 +204,6 @@ describe("configuração do provedor de IA", () => {
       loadAiProviderConfig({
         AI_PROVIDER: "http",
         AI_BASE_URL: "https://ia.example.test/v1",
-        AI_MODEL: "modelo-ambiente",
       });
       throw new Error("A configuração incompleta deveria falhar.");
     } catch (error) {
@@ -220,7 +217,7 @@ describe("configuração do provedor de IA", () => {
 
 describe("seleção do provedor", () => {
   it("mantém o mock disponível por uma fronteira assíncrona", async () => {
-    const provider = createAiProvider({ provider: "mock" });
+    const provider = createAiProvider(undefined, { provider: "mock" });
     const output = await provider.generate(createGenerationInput());
 
     expect(provider).toBe(mockAiProvider);
@@ -235,7 +232,17 @@ describe("seleção do provedor", () => {
   });
 
   it("cria o adaptador HTTP quando ele é selecionado", () => {
-    expect(createAiProvider(httpConfig)).toBeInstanceOf(HttpAiProvider);
+    expect(
+      createAiProvider(
+        { model: "gpt-5.6-terra", reasoningEffort: "low" },
+        {
+          provider: "http",
+          baseUrl: httpConfig.baseUrl,
+          apiKey: httpConfig.apiKey,
+          timeoutMs: httpConfig.timeoutMs,
+        },
+      ),
+    ).toBeInstanceOf(HttpAiProvider);
   });
 });
 
@@ -250,7 +257,8 @@ describe("adaptador HTTP estruturado", () => {
       output: generationOutput,
       run: {
         provider: "http",
-        model: "modelo-configurado-no-teste",
+        model: "gpt-5.6-terra",
+        reasoningEffort: "low",
       },
     });
 
@@ -259,18 +267,38 @@ describe("adaptador HTTP estruturado", () => {
       model: string;
       messages: Array<{ role: string; content: string }>;
       response_format: { type: string };
+      reasoning_effort: string;
     };
 
     expect(String(url)).toBe("https://ia.example.test/v1/chat/completions");
     expect(request?.headers).toMatchObject({
       Authorization: "Bearer segredo-do-servidor",
     });
-    expect(body.model).toBe("modelo-configurado-no-teste");
+    expect(body.model).toBe("gpt-5.6-terra");
+    expect(body.reasoning_effort).toBe("low");
     expect(body.response_format).toEqual({ type: "json_object" });
     expect(body.messages[0].content).toContain("# Contrato do gerador");
     expect(body.messages[1].content).toBe(
       JSON.stringify(createGenerationInput()),
     );
+  });
+
+  it("omite reasoning_effort quando o modelo não oferece esse controle", async () => {
+    const fetchImplementation = vi.fn<typeof fetch>(async () =>
+      completionResponse(generationOutput),
+    );
+    const provider = new HttpAiProvider(
+      { ...httpConfig, model: "gpt-4.1-mini", reasoningEffort: undefined },
+      fetchImplementation,
+    );
+
+    await provider.generate(createGenerationInput());
+
+    const body = JSON.parse(
+      String(fetchImplementation.mock.calls[0][1]?.body),
+    ) as Record<string, unknown>;
+    expect(body.model).toBe("gpt-4.1-mini");
+    expect(body).not.toHaveProperty("reasoning_effort");
   });
 
   it("valida saídas estruturadas de reparo e avaliação", async () => {
@@ -310,7 +338,8 @@ describe("adaptador HTTP estruturado", () => {
       output: generationOutput,
       run: {
         provider: "http",
-        model: "modelo-configurado-no-teste",
+        model: "gpt-5.6-terra",
+        reasoningEffort: "low",
         rawUsage: usage,
         latencyMilliseconds: 42,
       },

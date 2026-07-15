@@ -24,6 +24,32 @@ test("configura duração, quantidade e distribuição antes da geração", asyn
 
   await durationInput.fill("26");
   await countSelect.selectOption("4");
+
+  await page.getByRole("button", { name: "Abrir configurações" }).click();
+  const settings = page.getByRole("dialog", { name: "Configurações" });
+  const modelSelect = settings.getByRole("combobox", { name: "Modelo" });
+  const effortSelect = settings.getByRole("combobox", { name: "Esforço de raciocínio" });
+  await expect(modelSelect).toHaveValue("gpt-5.6-sol");
+  await expect(effortSelect).toHaveValue("medium");
+
+  await settings.getByRole("button", { name: "Informações sobre o modelo selecionado" }).focus();
+  await expect(
+    settings.getByRole("tooltip", { name: /Maior capacidade para comparar a qualidade máxima/ }),
+  ).toBeVisible();
+  await settings.getByRole("button", { name: "Informações sobre o esforço de raciocínio" }).focus();
+  await expect(
+    settings.getByRole("tooltip", { name: /Mais esforço pode melhorar tarefas difíceis/ }),
+  ).toBeVisible();
+
+  await modelSelect.selectOption("gpt-4.1-mini");
+  await expect(effortSelect).toBeDisabled();
+  await expect(effortSelect).toHaveValue("not-applicable");
+  await modelSelect.selectOption("gpt-5.6-terra");
+  await effortSelect.selectOption("low");
+  await expect(effortSelect).toHaveValue("low");
+  await settings.getByRole("button", { name: "Concluir" }).click();
+  await expect(settings).not.toBeVisible();
+  await expect(durationInput).toHaveValue("26");
   await expect(page.getByTestId("distribution-total")).toHaveText("Total: 26 min");
   await expect(page.getByRole("listitem").filter({ hasText: "Atividade 1" })).toContainText(
     "7 min",

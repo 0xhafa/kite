@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Badge, Button, Card, Progress } from "@/components/ui";
 import { GenerationConfigForm } from "@/components/curriculum/generation-config";
+import type { AiModelId, ReasoningEffort } from "@/domain/ai-models";
 import type { Curriculum } from "@/domain/curriculum";
 import { parseLessonContent } from "@/domain/lesson-content";
 import {
@@ -21,6 +22,8 @@ import {
 
 type CurriculumNavigatorProps = {
   curriculum: Curriculum;
+  model: AiModelId;
+  reasoningEffort: ReasoningEffort | undefined;
 };
 
 type SelectionOptionProps = {
@@ -55,7 +58,11 @@ function SelectionOption({
   );
 }
 
-export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
+export function CurriculumNavigator({
+  curriculum,
+  model,
+  reasoningEffort,
+}: CurriculumNavigatorProps) {
   const [selection, setSelection] = useState<CurriculumSelection>(emptyCurriculumSelection);
   const [step, setStep] = useState<"curriculum" | "configuration">("curriculum");
 
@@ -104,7 +111,9 @@ export function CurriculumNavigator({ curriculum }: CurriculumNavigatorProps) {
     return (
       <GenerationConfigForm
         lesson={selectedLesson}
+        model={model}
         onBack={() => setStep("curriculum")}
+        reasoningEffort={reasoningEffort}
         selection={selection}
       />
     );

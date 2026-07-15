@@ -5,6 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import curriculumData from "../../../data/curriculum.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
+import { defaultAiModelSelection } from "@/domain/ai-models";
 import { GenerationRepository, ModelRunRepository } from "@/db/repositories";
 import { getApplicationDatabase } from "@/server/application-database";
 
@@ -61,7 +62,11 @@ describe("fluxo integrado persistido", () => {
   it("reconstrói o lote, preserva aprovação e persiste a substituta", async () => {
     const batchId = await generateAndPersistBatch({
       selection,
-      config: { requestedDurationMinutes: 25, requestedActivityCount: 3 },
+      config: {
+        requestedDurationMinutes: 25,
+        requestedActivityCount: 3,
+        ...defaultAiModelSelection,
+      },
     });
     const initial = await loadReviewBatch(batchId);
 
@@ -113,7 +118,11 @@ describe("fluxo integrado persistido", () => {
     const artifacts = await createInitialGenerationArtifacts({
       curriculum,
       selection,
-      config: { requestedDurationMinutes: 5, requestedActivityCount: 1 },
+      config: {
+        requestedDurationMinutes: 5,
+        requestedActivityCount: 1,
+        ...defaultAiModelSelection,
+      },
     });
     const { db } = await getApplicationDatabase();
     const generations = new GenerationRepository(db);
@@ -177,13 +186,17 @@ describe("fluxo integrado persistido", () => {
     vi.stubEnv("AI_PROVIDER", "http");
     vi.stubEnv("AI_BASE_URL", "https://ia.example.test/v1/");
     vi.stubEnv("AI_API_KEY", "segredo-que-nao-pode-ser-persistido");
-    vi.stubEnv("AI_MODEL", "modelo-http-integrado");
     vi.stubEnv("AI_TIMEOUT_MS", "1000");
     vi.stubGlobal("fetch", fetchImplementation);
 
     const batchId = await generateAndPersistBatch({
       selection,
-      config: { requestedDurationMinutes: 5, requestedActivityCount: 1 },
+      config: {
+        requestedDurationMinutes: 5,
+        requestedActivityCount: 1,
+        model: "gpt-5.6-terra",
+        reasoningEffort: "low",
+      },
     });
     const initial = await loadReviewBatch(batchId);
     const currentActivity = initial!.items[0].activity;
@@ -198,6 +211,13 @@ describe("fluxo integrado persistido", () => {
     });
     expect(regeneration.item.activity.title).toBe("Substituta entregue por HTTP");
     expect(fetchImplementation).toHaveBeenCalledTimes(2);
+    for (const [, request] of fetchImplementation.mock.calls) {
+      const body = JSON.parse(String(request?.body)) as Record<string, unknown>;
+      expect(body).toMatchObject({
+        model: "gpt-5.6-terra",
+        reasoning_effort: "low",
+      });
+    }
 
     const { db } = await getApplicationDatabase();
     const persistedRuns = await new ModelRunRepository(db).listByBatch(batchId);
@@ -206,7 +226,8 @@ describe("fluxo integrado persistido", () => {
 
     expect(generationRun).toMatchObject({
       provider: "http",
-      model: "modelo-http-integrado",
+      model: "gpt-5.6-terra",
+      reasoningEffort: "low",
       rawUsage: generationUsage,
       tokenUsage: {
         inputTokens: 321,
@@ -218,7 +239,8 @@ describe("fluxo integrado persistido", () => {
     });
     expect(repairRun).toMatchObject({
       provider: "http",
-      model: "modelo-http-integrado",
+      model: "gpt-5.6-terra",
+      reasoningEffort: "low",
       rawUsage: repairUsage,
       tokenUsage: {
         inputTokens: 111,

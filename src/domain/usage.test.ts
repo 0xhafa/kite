@@ -114,7 +114,26 @@ describe("observabilidade de tokens", () => {
       byStage: { plan: 0, generate: 100, validate: 50, repair: 0 },
       totalTokens: 150,
       callCount: 2,
+      estimatedCostUsd: null,
+      pricingVersion: "openai-standard-2026-07-14",
     });
+  });
+
+  it("estima o custo pelas tarifas do modelo e considera outros tokens como saída", () => {
+    const usage = aggregateBatchTokenUsage("batch-1", [
+      createRun({
+        provider: "http",
+        model: "gpt-5.6-luna",
+        tokenUsage: {
+          inputTokens: 1_000_000,
+          outputTokens: 500_000,
+          otherTokens: 500_000,
+          totalTokens: 2_000_000,
+        },
+      }),
+    ]);
+
+    expect(usage.estimatedCostUsd).toBe(7);
   });
 
   it("não contabiliza reutilização como nova chamada", () => {

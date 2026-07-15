@@ -1,6 +1,7 @@
 import curriculumData from "../../../data/curriculum.json";
 import rulesData from "../../../data/rules.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
+import { aiModelSelectionSchema } from "@/domain/ai-models";
 import {
   activityGroupSchema,
   type Activity,
@@ -233,6 +234,15 @@ function generationContextFromRuns(runs: readonly ModelRun[]) {
   return generationModelInputSchema.parse(generationRun.normalizedInput);
 }
 
+function modelSelectionFromBatch(batch: GenerationBatch) {
+  return aiModelSelectionSchema.parse({
+    model: batch.normalizedParameters.model,
+    ...(batch.normalizedParameters.reasoningEffort
+      ? { reasoningEffort: batch.normalizedParameters.reasoningEffort }
+      : {}),
+  });
+}
+
 export async function rejectAndRegenerateActivity(input: {
   batchId: string;
   activityId: string;
@@ -275,6 +285,7 @@ export async function rejectAndRegenerateActivity(input: {
     feedback: input.feedback,
     promptVersion: batch.promptVersion,
     ruleSetVersion: batch.ruleSetVersion,
+    modelSelection: modelSelectionFromBatch(batch),
   });
 
   await runs.save(artifacts.repairRun);

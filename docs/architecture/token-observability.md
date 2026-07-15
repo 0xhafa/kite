@@ -35,7 +35,10 @@ Para cada chamada ao modelo, salvar:
 
 ## Custos monetários
 
-Não codificar preços diretamente na lógica. Se a POC mostrar custo estimado, usar uma tabela versionada de preços e deixar claro que é uma estimativa.
+Os preços ficam isolados em uma tabela de domínio versionada, separada da lógica
+de agregação. A interface mostra o valor como estimativa em dólar, usando as
+tarifas padrão de entrada e saída e sem antecipar descontos de cache; o valor
+faturado pelo provedor pode variar.
 
 ## Métricas futuras
 

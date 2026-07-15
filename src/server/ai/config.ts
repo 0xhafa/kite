@@ -1,28 +1,65 @@
 import { z } from "zod";
 
+import {
+  aiModelIdSchema,
+  aiModelSelectionSchema,
+  reasoningEffortSchema,
+} from "@/domain/ai-models";
+
 const mockProviderConfigSchema = z
   .object({
     provider: z.literal("mock"),
   })
   .strict();
 
-const httpProviderConfigSchema = z
+export const httpProviderConfigSchema = z
   .object({
     provider: z.literal("http"),
     baseUrl: z.url(),
     apiKey: z.string().trim().min(1),
-    model: z.string().trim().min(1),
+    model: aiModelIdSchema,
+    reasoningEffort: reasoningEffortSchema.optional(),
+    timeoutMs: z.number().int().positive(),
+  })
+  .strict()
+  .superRefine((config, context) => {
+    const result = aiModelSelectionSchema.safeParse({
+      model: config.model,
+      ...(config.reasoningEffort
+        ? { reasoningEffort: config.reasoningEffort }
+        : {}),
+    });
+
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        context.addIssue({
+          code: "custom",
+          message: issue.message,
+          path: issue.path,
+        });
+      }
+    }
+  });
+
+const httpProviderConnectionConfigSchema = z
+  .object({
+    provider: z.literal("http"),
+    baseUrl: z.url(),
+    apiKey: z.string().trim().min(1),
     timeoutMs: z.number().int().positive(),
   })
   .strict();
 
 export const aiProviderConfigSchema = z.discriminatedUnion("provider", [
   mockProviderConfigSchema,
-  httpProviderConfigSchema,
+  httpProviderConnectionConfigSchema,
 ]);
 
 export type AiProviderConfig = z.infer<typeof aiProviderConfigSchema>;
 export type HttpProviderConfig = z.infer<typeof httpProviderConfigSchema>;
+export type HttpProviderConnectionConfig = z.infer<
+  typeof httpProviderConnectionConfigSchema
+>;
 
 export class AiConfigurationError extends Error {
   readonly name = "AiConfigurationError";
@@ -50,7 +87,6 @@ export function loadAiProviderConfig(
           provider,
           baseUrl: environment.AI_BASE_URL,
           apiKey: environment.AI_API_KEY,
-          model: environment.AI_MODEL,
           timeoutMs:
             environment.AI_TIMEOUT_MS === undefined
               ? 30_000

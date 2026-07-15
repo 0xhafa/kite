@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import curriculumData from "../../../data/curriculum.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
 import { applyActivityRegeneration } from "@/domain/generation";
+import { defaultAiModelSelection } from "@/domain/ai-models";
 import { aggregateBatchTokenUsage } from "@/domain/usage";
 
 import {
@@ -42,7 +43,11 @@ describe("pipeline integrado de geração", () => {
       {
         curriculum,
         selection,
-        config: { requestedDurationMinutes: 25, requestedActivityCount: 3 },
+        config: {
+          requestedDurationMinutes: 25,
+          requestedActivityCount: 3,
+          ...defaultAiModelSelection,
+        },
       },
       { createId, now },
     );
@@ -74,7 +79,11 @@ describe("pipeline integrado de geração", () => {
       {
         curriculum,
         selection,
-        config: { requestedDurationMinutes: 25, requestedActivityCount: 3 },
+        config: {
+          requestedDurationMinutes: 25,
+          requestedActivityCount: 3,
+          ...defaultAiModelSelection,
+        },
       },
       { createId, now },
     );
@@ -89,6 +98,7 @@ describe("pipeline integrado de geração", () => {
         feedback: "Criar uma alternativa mais visual.",
         promptVersion: initial.batch.promptVersion,
         ruleSetVersion: initial.batch.ruleSetVersion,
+        modelSelection: defaultAiModelSelection,
       },
       { createId, now },
     );

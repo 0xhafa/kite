@@ -13,6 +13,8 @@ describe("resumo de consumo do lote", () => {
       byStage: { plan: 0, generate: 650, validate: 420, repair: 90 },
       totalTokens: 1160,
       callCount: 5,
+      estimatedCostUsd: 0.01234,
+      pricingVersion: "openai-standard-2026-07-14",
     });
     const html = renderToStaticMarkup(createElement(BatchUsageSummary, { usage }));
 
@@ -23,6 +25,8 @@ describe("resumo de consumo do lote", () => {
     expect(html).toContain("role=\"tooltip\"");
     expect(html).toContain("invisible opacity-0");
     expect(html).toContain("aria-label=\"Detalhes técnicos do consumo de tokens\"");
+    expect(html).toContain("Custo estimado");
+    expect(html).toContain("US$");
     const describedDetailsId = html.match(/aria-describedby="([^"]+)"/)?.[1];
     expect(describedDetailsId).toBeTruthy();
     expect(html).toContain(`id="${describedDetailsId}"`);
@@ -34,6 +38,8 @@ describe("resumo de consumo do lote", () => {
       byStage: { plan: 0, generate: 650, validate: 420, repair: 90 },
       totalTokens: 1160,
       callCount: 5,
+      estimatedCostUsd: 0.01234,
+      pricingVersion: "openai-standard-2026-07-14",
     });
     const html = renderToStaticMarkup(createElement(BatchUsageSummary, { usage }));
 

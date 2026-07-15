@@ -1,5 +1,9 @@
 import type { AiProvider } from "@/domain/ai-provider";
 import {
+  type AiModelSelection,
+  defaultAiModelSelection,
+} from "@/domain/ai-models";
+import {
   generateMockBatch,
   generateMockRepair,
 } from "@/domain/mock-generator";
@@ -51,11 +55,12 @@ export const mockAiProvider: AiProvider = {
 };
 
 export function createAiProvider(
+  selection: AiModelSelection = defaultAiModelSelection,
   config: AiProviderConfig = loadAiProviderConfig(),
 ): AiProvider {
   if (config.provider === "mock") {
     return mockAiProvider;
   }
 
-  return new HttpAiProvider(config);
+  return new HttpAiProvider({ ...config, ...selection });
 }

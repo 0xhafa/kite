@@ -353,6 +353,8 @@ describe("repositórios libSQL", () => {
       byStage: { plan: 0, generate: 100, validate: 0, repair: 0 },
       totalTokens: 100,
       callCount: 1,
+      estimatedCostUsd: null,
+      pricingVersion: "openai-standard-2026-07-14",
     });
     expect(await runs.findCacheEntry(original.cacheKey)).toEqual(cacheEntry);
     await expect(

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  aiModelIdSchema,
+  aiModelSelectionSchema,
+  defaultAiModelSelection,
+  reasoningEffortSchema,
+} from "./ai-models";
 import { positiveIntegerSchema } from "./shared";
 
 export const DEFAULT_DURATION_MINUTES = 25;
@@ -29,6 +35,8 @@ export const generationConfigSchema = z
         MAX_ACTIVITY_COUNT,
         `A quantidade deve ser de no máximo ${MAX_ACTIVITY_COUNT} atividades.`,
       ),
+    model: aiModelIdSchema,
+    reasoningEffort: reasoningEffortSchema.optional(),
   })
   .strict()
   .superRefine((config, context) => {
@@ -38,6 +46,23 @@ export const generationConfigSchema = z
         message: "A duração deve permitir pelo menos 1 minuto por atividade.",
         path: ["requestedDurationMinutes"],
       });
+    }
+
+    const modelSelection = aiModelSelectionSchema.safeParse({
+      model: config.model,
+      ...(config.reasoningEffort
+        ? { reasoningEffort: config.reasoningEffort }
+        : {}),
+    });
+
+    if (!modelSelection.success) {
+      for (const issue of modelSelection.error.issues) {
+        context.addIssue({
+          code: "custom",
+          message: issue.message,
+          path: issue.path,
+        });
+      }
     }
   });
 
@@ -51,6 +76,7 @@ export const activityDurationEstimateSchema = z
 export const defaultGenerationConfig = generationConfigSchema.parse({
   requestedDurationMinutes: DEFAULT_DURATION_MINUTES,
   requestedActivityCount: DEFAULT_ACTIVITY_COUNT,
+  ...defaultAiModelSelection,
 });
 
 export function serializeGenerationConfig(input: unknown): GenerationConfig {

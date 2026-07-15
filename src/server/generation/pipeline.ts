@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 
 import rulesData from "../../../data/rules.json";
 import type { AiProvider, AiRunMetadata } from "@/domain/ai-provider";
+import {
+  aiModelSelectionSchema,
+  type AiModelSelection,
+} from "@/domain/ai-models";
 import { selectApplicableRuleInputs } from "@/domain/applicability";
 import type { Curriculum, Lesson } from "@/domain/curriculum";
 import type { CurriculumSelection } from "@/domain/curriculum-navigation";
@@ -70,6 +74,7 @@ export type RegenerationPipelineInput = {
   feedback?: string;
   promptVersion: string;
   ruleSetVersion: string;
+  modelSelection: AiModelSelection;
 };
 
 export type RegenerationArtifacts = {
@@ -97,11 +102,11 @@ function defaultCreateId(prefix: string): string {
   return `${prefix}-${randomUUID()}`;
 }
 
-function createRuntime(options: PipelineOptions) {
+function createRuntime(options: PipelineOptions, modelSelection: AiModelSelection) {
   return {
     createId: options.createId ?? defaultCreateId,
     now: options.now ?? (() => new Date().toISOString()),
-    provider: options.provider ?? createAiProvider(),
+    provider: options.provider ?? createAiProvider(modelSelection),
   };
 }
 
@@ -188,6 +193,9 @@ function createCompletedRun(input: {
     stage: input.stage,
     provider: input.run.provider,
     model: input.run.model,
+    ...(input.run.reasoningEffort
+      ? { reasoningEffort: input.run.reasoningEffort }
+      : {}),
     status: "completed",
     normalizedInput: input.normalizedInput,
     inputHash: stableHash(input.normalizedInput),
@@ -208,8 +216,14 @@ export async function createInitialGenerationArtifacts(
   input: GenerationPipelineInput,
   options: PipelineOptions = {},
 ): Promise<InitialGenerationArtifacts> {
-  const runtime = createRuntime(options);
   const config = generationConfigSchema.parse(input.config);
+  const modelSelection = aiModelSelectionSchema.parse({
+    model: config.model,
+    ...(config.reasoningEffort
+      ? { reasoningEffort: config.reasoningEffort }
+      : {}),
+  });
+  const runtime = createRuntime(options, modelSelection);
   const curriculumContext = resolveCurriculumContext(input.curriculum, input.selection);
   const applicableRules = applicableRulesFor(config.requestedActivityCount);
   const createdAt = runtime.now();
@@ -292,6 +306,10 @@ export async function createInitialGenerationArtifacts(
       normalizedParameters: {
         durationMinutes: config.requestedDurationMinutes,
         activityCount: config.requestedActivityCount,
+        model: config.model,
+        ...(config.reasoningEffort
+          ? { reasoningEffort: config.reasoningEffort }
+          : {}),
         selection: input.selection,
       },
       status: "ready_for_review",
@@ -343,7 +361,7 @@ export async function createRegenerationArtifacts(
   input: RegenerationPipelineInput,
   options: PipelineOptions = {},
 ): Promise<RegenerationArtifacts> {
-  const runtime = createRuntime(options);
+  const runtime = createRuntime(options, input.modelSelection);
   const createdAt = runtime.now();
   const repairRunId = runtime.createId("run-repair");
   const repairInput = {

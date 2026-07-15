@@ -10,6 +10,12 @@ export type BatchUsageSummaryProps = {
 };
 
 const tokenNumberFormatter = new Intl.NumberFormat("pt-BR");
+const usdFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 6,
+});
 
 export function BatchUsageSummary({ usage }: BatchUsageSummaryProps) {
   const technicalDetailsId = useId();
@@ -64,7 +70,21 @@ export function BatchUsageSummary({ usage }: BatchUsageSummaryProps) {
                   <TechnicalMetric label="Validação" value={usage.byStage.validate} />
                   <TechnicalMetric label="Reparos" value={usage.byStage.repair} />
                   <TechnicalMetric label="Chamadas" value={usage.callCount} />
+                  <div className="col-span-2 border-t border-surface/25 pt-3">
+                    <dt className="text-xs font-extrabold uppercase tracking-[0.06em] text-surface/75">
+                      Custo estimado
+                    </dt>
+                    <dd className="mt-1 text-base font-black">
+                      {usage.estimatedCostUsd === null
+                        ? "Indisponível"
+                        : usdFormatter.format(usage.estimatedCostUsd)}
+                    </dd>
+                  </div>
                 </dl>
+                <p className="mt-3 text-xs font-medium leading-5 text-surface/75">
+                  Estimativa pela tabela padrão de preços ({usage.pricingVersion}), sem
+                  descontos de cache. O valor faturado pode variar.
+                </p>
               </div>
             </div>
           </div>
