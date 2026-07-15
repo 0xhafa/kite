@@ -13,6 +13,7 @@ import {
   PlanNewBatchIcon,
   ReviewedActivitiesIcon,
   SettingsIcon,
+  TrailSummaryIcon,
 } from "@/components/header-icon";
 import { Button } from "@/components/ui";
 import type { AiModelSelection } from "@/domain/ai-models";
@@ -89,6 +90,15 @@ function AppShellFrame({
                 href="/atividades"
               >
                 <ReviewedActivitiesIcon />
+              </Link>
+            </HeaderIconTooltip>
+            <HeaderIconTooltip align="right" label="Resumo da trilha">
+              <Link
+                aria-label="Resumo da trilha"
+                className="inline-flex size-touch items-center justify-center rounded-md text-brand-strong transition-colors hover:bg-brand-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                href="/trilha"
+              >
+                <TrailSummaryIcon />
               </Link>
             </HeaderIconTooltip>
             <HeaderIconTooltip align="right" label="Configurações">

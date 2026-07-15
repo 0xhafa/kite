@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   HeaderIconTooltip,
   ReviewedActivitiesIcon,
+  TrailSummaryIcon,
 } from "@/components/header-icon";
 import { brandAssets } from "@/lib/brand";
 import { loadCachedReviewedActivityLibrary } from "@/server/generation/cache";
@@ -63,6 +64,15 @@ export default async function Home() {
               href="/atividades"
             >
               <ReviewedActivitiesIcon />
+            </Link>
+          </HeaderIconTooltip>
+          <HeaderIconTooltip align="right" label="Resumo da trilha">
+            <Link
+              aria-label="Resumo da trilha"
+              className="inline-flex size-11 items-center justify-center rounded-lg text-[#187b68] transition-colors hover:bg-[#dff7ef] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#176fa6]"
+              href="/trilha"
+            >
+              <TrailSummaryIcon />
             </Link>
           </HeaderIconTooltip>
           <span className="hidden rounded-full border-2 border-[#dfe5ef] bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#526078] md:inline-flex">

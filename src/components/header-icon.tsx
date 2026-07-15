@@ -62,6 +62,34 @@ export function ReviewedActivitiesIcon() {
   );
 }
 
+export function TrailSummaryIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6 5.5h5.5M12.5 18.5H18M8.75 5.5c4.8 0 6.5 2 6.5 5.2v2.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.8"
+      />
+      <circle cx="5" cy="5.5" r="2" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="18" cy="18.5" r="2" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="m13.25 12.5 2 2 2.75-3"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 export function PlanNewBatchIcon() {
   return (
     <svg

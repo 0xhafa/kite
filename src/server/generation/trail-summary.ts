@@ -1,0 +1,116 @@
+import type { Curriculum } from "@/domain/curriculum";
+
+export type TrailBatchCounts = {
+  lesson: { id: string };
+  reviewedActivities: readonly unknown[];
+  theme: { id: string };
+  totalActivities: number;
+};
+
+export type TrailLessonSummary = {
+  generatedActivities: number;
+  id: string;
+  number: number;
+  reviewedActivities: number;
+  specificObjective: string;
+};
+
+export type TrailSummary = {
+  generatedActivities: number;
+  reviewedActivities: number;
+  theme: {
+    id: string;
+    name: string;
+    skills: Array<{
+      id: string;
+      name: string;
+      objectives: Array<{
+        id: string;
+        name: string;
+        weeks: Array<{
+          id: string;
+          number: number;
+          title: string;
+          lessons: TrailLessonSummary[];
+        }>;
+      }>;
+    }>;
+  };
+  totalLessons: number;
+};
+
+type LessonCounts = {
+  generatedActivities: number;
+  reviewedActivities: number;
+};
+
+export function buildTrailSummary(
+  curriculum: Curriculum,
+  themeId: string,
+  batches: readonly TrailBatchCounts[],
+): TrailSummary {
+  const theme = curriculum.themes.find(({ id }) => id === themeId);
+  if (!theme) {
+    throw new Error(`O tema curricular “${themeId}” não foi encontrado.`);
+  }
+
+  const countsByLesson = new Map<string, LessonCounts>();
+  for (const batch of batches) {
+    if (batch.theme.id !== theme.id) continue;
+
+    const current = countsByLesson.get(batch.lesson.id) ?? {
+      generatedActivities: 0,
+      reviewedActivities: 0,
+    };
+    countsByLesson.set(batch.lesson.id, {
+      generatedActivities: current.generatedActivities + batch.totalActivities,
+      reviewedActivities:
+        current.reviewedActivities + batch.reviewedActivities.length,
+    });
+  }
+
+  let generatedActivities = 0;
+  let reviewedActivities = 0;
+  let totalLessons = 0;
+
+  const skills = theme.skills.map((skill) => ({
+    id: skill.id,
+    name: skill.name,
+    objectives: skill.objectives.map((objective) => ({
+      id: objective.id,
+      name: objective.name,
+      weeks: objective.weeks.map((week) => ({
+        id: week.id,
+        number: week.number,
+        title: week.title,
+        lessons: week.lessons.map((lesson) => {
+          const counts = countsByLesson.get(lesson.id) ?? {
+            generatedActivities: 0,
+            reviewedActivities: 0,
+          };
+          generatedActivities += counts.generatedActivities;
+          reviewedActivities += counts.reviewedActivities;
+          totalLessons += 1;
+
+          return {
+            id: lesson.id,
+            number: lesson.number,
+            specificObjective: lesson.specificObjective,
+            ...counts,
+          };
+        }),
+      })),
+    })),
+  }));
+
+  return {
+    generatedActivities,
+    reviewedActivities,
+    theme: {
+      id: theme.id,
+      name: theme.name,
+      skills,
+    },
+    totalLessons,
+  };
+}

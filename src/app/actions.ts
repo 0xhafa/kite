@@ -75,6 +75,7 @@ export async function generateBatchAction(
     invalidateReviewedActivityLibrary();
     revalidatePath("/");
     revalidatePath("/atividades");
+    revalidatePath("/trilha");
     return { ok: true, data: { batchId } };
   } catch (error) {
     return actionError(error);
@@ -103,6 +104,7 @@ export async function approveActivityAction(
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/revisar");
+    revalidatePath("/trilha");
     return { ok: true, data: {} };
   } catch (error) {
     return actionError(error);
@@ -119,6 +121,7 @@ export async function rejectActivityAction(
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/revisar");
+    revalidatePath("/trilha");
     return { ok: true, data: {} };
   } catch (error) {
     return actionError(error);
@@ -135,6 +138,7 @@ export async function rejectAndRegenerateActivityAction(
     revalidatePath("/");
     revalidatePath("/atividades");
     revalidatePath("/revisar");
+    revalidatePath("/trilha");
     return { ok: true, data: result };
   } catch (error) {
     return actionError(error);
@@ -152,6 +156,7 @@ export async function deleteBatchAction(
     revalidatePath("/atividades");
     revalidatePath("/planejar");
     revalidatePath("/revisar");
+    revalidatePath("/trilha");
     return { ok: true, data: { batchId: parsed.batchId } };
   } catch (error) {
     return actionError(error);

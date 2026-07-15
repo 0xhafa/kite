@@ -24,6 +24,14 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 type BatchStatusFilter = "all" | "completed" | "in_progress";
 
+export type ReviewedActivityLibraryInitialFilters = {
+  lessonId?: string;
+  objectiveId?: string;
+  skillId?: string;
+  themeId?: string;
+  weekId?: string;
+};
+
 type FilterOption = {
   id: string;
   label: string;
@@ -80,19 +88,23 @@ async function copyTextToClipboard(text: string): Promise<void> {
 
 export function ReviewedActivityLibrary({
   initialBatches,
+  initialFilters = {},
 }: {
   initialBatches: ReviewedActivityLibraryBatch[];
+  initialFilters?: ReviewedActivityLibraryInitialFilters;
 }) {
   const router = useRouter();
   const [batches, setBatches] = useState(initialBatches);
   const [query, setQuery] = useState("");
-  const [themeId, setThemeId] = useState("");
-  const [skillId, setSkillId] = useState("");
-  const [objectiveId, setObjectiveId] = useState("");
-  const [weekId, setWeekId] = useState("");
-  const [lessonId, setLessonId] = useState("");
+  const [themeId, setThemeId] = useState(initialFilters.themeId ?? "");
+  const [skillId, setSkillId] = useState(initialFilters.skillId ?? "");
+  const [objectiveId, setObjectiveId] = useState(initialFilters.objectiveId ?? "");
+  const [weekId, setWeekId] = useState(initialFilters.weekId ?? "");
+  const [lessonId, setLessonId] = useState(initialFilters.lessonId ?? "");
   const [status, setStatus] = useState<BatchStatusFilter>("all");
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(
+    Object.values(initialFilters).some(Boolean),
+  );
   const [deleteTarget, setDeleteTarget] = useState<ReviewedActivityLibraryBatch>();
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [deleteError, setDeleteError] = useState("");
@@ -198,6 +210,7 @@ export function ReviewedActivityLibrary({
     setWeekId("");
     setLessonId("");
     setStatus("all");
+    router.replace("/atividades", { scroll: false });
   }
 
   function openDeleteModal(batch: ReviewedActivityLibraryBatch) {
