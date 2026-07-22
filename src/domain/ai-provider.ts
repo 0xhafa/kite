@@ -17,9 +17,15 @@ export type AiRunMetadata = {
   latencyMilliseconds: number;
 };
 
+export type AiFailedAttempt = {
+  run: AiRunMetadata;
+  error: string;
+};
+
 export type AiProviderResult<TOutput> = {
   output: TOutput;
   run: AiRunMetadata;
+  failedAttempts?: readonly AiFailedAttempt[];
 };
 
 export interface GenerationProvider {

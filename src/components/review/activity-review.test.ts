@@ -5,7 +5,11 @@ import { describe, expect, it } from "vitest";
 import { activityReviewItemSchema, type ActivityReviewItem } from "@/domain/review";
 import type { ValidationStatus } from "@/domain/rules";
 
-import { ActivityReview, ValidationDetailsPanel } from "./activity-review";
+import {
+  ActivityReview,
+  feedbackAfterAdjustment,
+  ValidationDetailsPanel,
+} from "./activity-review";
 
 function createItem(status: ValidationStatus): ActivityReviewItem {
   const activityId = `atividade-${status}`;
@@ -172,6 +176,13 @@ describe("resumo da validação na atividade", () => {
 
     expect(html).toContain(">Rejeitar</button>");
     expect(html).toContain(">Ajustar atividade</button>");
+  });
+
+  it("mantém o comentário editável após falha e só o limpa no ajuste concluído", () => {
+    const feedback = { "atividade-1": "Tornar a proposta mais lúdica." };
+
+    expect(feedbackAfterAdjustment(feedback, "atividade-1", false)).toBe(feedback);
+    expect(feedbackAfterAdjustment(feedback, "atividade-1", true)).toEqual({});
   });
 
   it("apresenta as etapas reconhecidas em parágrafos com rótulos destacados", () => {

@@ -6,7 +6,11 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import curriculumData from "../../../data/curriculum.json";
 import { adaptCurriculum } from "@/domain/curriculum-adapter";
 import { defaultAiModelSelection } from "@/domain/ai-models";
-import { GenerationRepository, ModelRunRepository } from "@/db/repositories";
+import {
+  GenerationRepository,
+  ModelRunRepository,
+  TraceabilityRepository,
+} from "@/db/repositories";
 import { getApplicationDatabase } from "@/server/application-database";
 
 import {
@@ -338,6 +342,11 @@ describe("fluxo integrado persistido", () => {
       completion_tokens: 55,
       total_tokens: 166,
     };
+    const failedRepairUsage = {
+      prompt_tokens: 80,
+      completion_tokens: 20,
+      total_tokens: 100,
+    };
     const generationOutput = {
       plan: {
         totalDurationMinutes: 5,
@@ -370,6 +379,9 @@ describe("fluxo integrado persistido", () => {
     const fetchImplementation = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(completionResponse(generationOutput, generationUsage))
+      .mockResolvedValueOnce(completionResponse({
+        atividadeInvalida: "RESPOSTA_BRUTA_NAO_PERSISTIR",
+      }, failedRepairUsage))
       .mockResolvedValueOnce(completionResponse(repairOutput, repairUsage));
 
     vi.stubEnv("AI_PROVIDER", "http");
@@ -405,11 +417,14 @@ describe("fluxo integrado persistido", () => {
       },
     });
     expect(regeneration.item.activity.title).toBe("Substituta entregue por HTTP");
-    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+    expect(fetchImplementation).toHaveBeenCalledTimes(3);
     expect(String(fetchImplementation.mock.calls[0]?.[0])).toBe(
       "https://openai.example.test/v1/chat/completions",
     );
     expect(String(fetchImplementation.mock.calls[1]?.[0])).toBe(
+      "https://gemini.example.test/v1beta/openai/chat/completions",
+    );
+    expect(String(fetchImplementation.mock.calls[2]?.[0])).toBe(
       "https://gemini.example.test/v1beta/openai/chat/completions",
     );
     expect(JSON.parse(String(fetchImplementation.mock.calls[0]?.[1]?.body))).toMatchObject({
@@ -420,11 +435,16 @@ describe("fluxo integrado persistido", () => {
       model: "gemini-3.5-flash",
       reasoning_effort: "low",
     });
+    const retryRequest = String(fetchImplementation.mock.calls[2]?.[1]?.body);
+    expect(retryRequest).toContain("A resposta anterior não atendeu ao contrato de reparo");
+    expect(retryRequest).not.toContain("RESPOSTA_BRUTA_NAO_PERSISTIR");
 
     const { db } = await getApplicationDatabase();
     const persistedRuns = await new ModelRunRepository(db).listByBatch(batchId);
     const generationRun = persistedRuns.find((run) => run.stage === "generate");
-    const repairRun = persistedRuns.find((run) => run.stage === "repair");
+    const repairRuns = persistedRuns.filter((run) => run.stage === "repair");
+    const failedRepairRun = repairRuns.find((run) => run.status === "failed");
+    const repairRun = repairRuns.find((run) => run.status === "completed");
 
     expect(generationRun).toMatchObject({
       provider: "openai",
@@ -452,14 +472,115 @@ describe("fluxo integrado persistido", () => {
       },
       latencyMilliseconds: expect.any(Number),
     });
-    const persistedData = JSON.stringify([generationRun, repairRun]);
+    expect(failedRepairRun).toMatchObject({
+      provider: "gemini",
+      model: "gemini-3.5-flash",
+      status: "failed",
+      rawUsage: failedRepairUsage,
+      tokenUsage: {
+        inputTokens: 80,
+        outputTokens: 20,
+        otherTokens: 0,
+        totalTokens: 100,
+      },
+      error: expect.stringContaining("activity"),
+    });
+    expect(failedRepairRun).not.toHaveProperty("validatedResponse");
+    const persistedData = JSON.stringify([generationRun, ...repairRuns]);
     expect(persistedData).not.toContain("segredo-openai-que-nao-pode-ser-persistido");
     expect(persistedData).not.toContain("segredo-gemini-que-nao-pode-ser-persistido");
+    expect(persistedData).not.toContain("RESPOSTA_BRUTA_NAO_PERSISTIR");
 
     const reloaded = await loadReviewBatch(batchId);
     expect(reloaded?.modelSelection).toEqual({
       model: "gemini-3.5-flash",
       reasoningEffort: "low",
     });
+    expect(reloaded?.usage.byStage.repair).toBe(266);
+    expect(reloaded?.usage.callCount).toBe(5);
+
+    const versions = await new GenerationRepository(db).listActivityVersions(
+      currentActivity.logicalActivityId,
+    );
+    const decisions = await new TraceabilityRepository(db).listReviewDecisions(
+      currentActivity.id,
+    );
+    expect(versions).toHaveLength(2);
+    expect(decisions).toMatchObject([{
+      decision: "rejected",
+      feedback: "Trocar a ação da criança.",
+    }]);
+  });
+
+  it("persiste tentativas esgotadas sem alterar atividade, decisão ou duração", async () => {
+    const batchId = await generateAndPersistBatch({
+      selection,
+      config: {
+        requestedDurationMinutes: 5,
+        requestedActivityCount: 1,
+        ...defaultAiModelSelection,
+      },
+    });
+    const initial = await loadReviewBatch(batchId);
+    const currentActivity = initial!.items[0].activity;
+    const initialUsage = initial!.usage;
+    const invalidOutput = {
+      activity: {
+        slotIndex: currentActivity.slotIndex,
+        title: "Substituta com duração incorreta",
+        description: "A criança realiza outra ação.",
+        durationMinutes: currentActivity.durationMinutes + 1,
+        consideredRuleIds: [],
+      },
+      uncertainties: [],
+    };
+    const failedUsage = { prompt_tokens: 25, completion_tokens: 5, total_tokens: 30 };
+    const fetchImplementation = vi.fn<typeof fetch>(async () =>
+      completionResponse(invalidOutput, failedUsage),
+    );
+
+    vi.stubEnv("AI_PROVIDER", "http");
+    vi.stubEnv("OPENAI_BASE_URL", "https://openai.example.test/v1/");
+    vi.stubEnv("OPENAI_API_KEY", "segredo-que-nao-pode-ser-persistido");
+    vi.stubEnv("AI_TIMEOUT_MS", "1000");
+    vi.stubGlobal("fetch", fetchImplementation);
+
+    await expect(rejectAndRegenerateActivity({
+      batchId,
+      activityId: currentActivity.id,
+      activityVersion: currentActivity.version,
+      feedback: "Comentário que deve continuar editável.",
+      modelSelection: defaultAiModelSelection,
+    })).rejects.toThrow(/ajustar a atividade após 2 tentativas/i);
+
+    const { db } = await getApplicationDatabase();
+    const generations = new GenerationRepository(db);
+    const traceability = new TraceabilityRepository(db);
+    const persistedRuns = await new ModelRunRepository(db).listByBatch(batchId);
+    const failedRuns = persistedRuns.filter(
+      (run) => run.stage === "repair" && run.status === "failed",
+    );
+    const reloaded = await loadReviewBatch(batchId);
+
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+    expect(failedRuns).toHaveLength(2);
+    expect(failedRuns).toMatchObject([
+      { tokenUsage: { totalTokens: 30 }, error: expect.stringContaining("duração") },
+      { tokenUsage: { totalTokens: 30 }, error: expect.stringContaining("duração") },
+    ]);
+    expect(JSON.stringify(failedRuns)).not.toContain("segredo-que-nao-pode-ser-persistido");
+    await expect(
+      generations.listActivityVersions(currentActivity.logicalActivityId),
+    ).resolves.toEqual([currentActivity]);
+    await expect(
+      traceability.listReviewDecisions(currentActivity.id),
+    ).resolves.toEqual([]);
+    expect(reloaded?.items[0].activity).toEqual(currentActivity);
+    expect(reloaded?.items.reduce(
+      (total, item) => total + item.activity.durationMinutes,
+      0,
+    )).toBe(5);
+    expect(reloaded?.usage.byStage.repair).toBe(60);
+    expect(reloaded?.usage.callCount).toBe(initialUsage.callCount + 2);
   });
 });

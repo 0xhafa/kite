@@ -449,6 +449,20 @@ describe("repositórios libSQL", () => {
   it("agrega tokens e mantém cache ligado à execução original validada", async () => {
     const original = createRun("run-original");
     await runs.save(original);
+    const failedRepair = createRun("run-repair-failed", {
+      stage: "repair",
+      status: "failed",
+      validatedResponse: undefined,
+      rawUsage: { input_tokens: 20, output_tokens: 10 },
+      tokenUsage: {
+        inputTokens: 20,
+        outputTokens: 10,
+        otherTokens: 0,
+        totalTokens: 30,
+      },
+      error: "A resposta de reparo não preservou a duração obrigatória.",
+    });
+    await runs.save(failedRepair);
     await runs.save(
       createRun("run-reused", {
         reusedFromModelRunId: original.id,
@@ -473,12 +487,13 @@ describe("repositórios libSQL", () => {
 
     expect(await runs.aggregateBatchUsage("batch-1")).toEqual({
       batchId: "batch-1",
-      byStage: { plan: 0, generate: 100, validate: 0, repair: 0 },
-      totalTokens: 100,
-      callCount: 1,
+      byStage: { plan: 0, generate: 100, validate: 0, repair: 30 },
+      totalTokens: 130,
+      callCount: 2,
       estimatedCostUsd: null,
       pricingVersion: "multi-provider-standard-2026-07-15-v3",
     });
+    await expect(runs.get(failedRepair.id)).resolves.toEqual(failedRepair);
     expect(await runs.findCacheEntry(original.cacheKey)).toEqual(cacheEntry);
     await expect(
       runs.saveCacheEntry({ ...cacheEntry, cacheKey: "invalid-cache", modelRunId: "run-reused" }),

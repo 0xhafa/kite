@@ -40,6 +40,7 @@ import {
   createPendingGenerationBatch,
   createRegenerationArtifacts,
   createReviewItem,
+  RepairExhaustedError,
   resolveCurriculumContext,
   type InitialGenerationArtifacts,
 } from "./pipeline";
@@ -692,22 +693,33 @@ export async function rejectAndRegenerateActivity(input: {
     modelRuns,
   );
   const generationContext = generationContextFromRuns(modelRuns);
-  const artifacts = await createRegenerationArtifacts({
-    group: activityGroupSchema.parse(group),
-    currentActivity,
-    currentReport,
-    curriculumContext: generationContext.curriculum,
-    applicableRules: generationContext.applicableRules,
-    feedback: input.feedback,
-    promptVersion: batch.promptVersion,
-    ruleSetVersion: batch.ruleSetVersion,
-    modelSelection: input.modelSelection
-      ? aiModelSelectionSchema.parse(input.modelSelection)
-      : modelSelectionFromBatch(batch),
-  });
+  let artifacts;
+
+  try {
+    artifacts = await createRegenerationArtifacts({
+      group: activityGroupSchema.parse(group),
+      currentActivity,
+      currentReport,
+      curriculumContext: generationContext.curriculum,
+      applicableRules: generationContext.applicableRules,
+      feedback: input.feedback,
+      promptVersion: batch.promptVersion,
+      ruleSetVersion: batch.ruleSetVersion,
+      modelSelection: input.modelSelection
+        ? aiModelSelectionSchema.parse(input.modelSelection)
+        : modelSelectionFromBatch(batch),
+    });
+  } catch (error) {
+    if (error instanceof RepairExhaustedError) {
+      await runs.saveMany(error.failedRepairRuns);
+      throw new Error(error.message);
+    }
+
+    throw error;
+  }
   const previousDecisions = await traceability.listReviewDecisions(currentActivity.id);
 
-  await runs.save(artifacts.repairRun);
+  await runs.saveMany([...artifacts.failedRepairRuns, artifacts.repairRun]);
   await traceability.saveReviewDecision({
     activityId: currentActivity.id,
     activityVersion: currentActivity.version,

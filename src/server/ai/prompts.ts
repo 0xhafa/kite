@@ -64,6 +64,19 @@ export function createRepairMessages(input: RepairModelInput): AiMessage[] {
   return createMessages("repair", input);
 }
 
+export function createRepairCorrectionMessage(
+  details: readonly string[],
+): AiMessage {
+  return {
+    role: "user",
+    content: [
+      "A resposta anterior não atendeu ao contrato de reparo.",
+      "Corrija somente os problemas listados e devolva um novo objeto JSON completo, sem markdown ou comentários.",
+      ...details.map((detail) => `- ${detail}`),
+    ].join("\n"),
+  };
+}
+
 export function createValidationMessages(
   input: ValidationModelInput,
 ): AiMessage[] {

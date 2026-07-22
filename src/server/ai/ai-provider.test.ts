@@ -157,6 +157,11 @@ const validationOutput = {
   summary: { blockingFailures: 0, needsHumanReview: 0 },
 };
 
+const repairOutput = {
+  activity: generationOutput.activities[0],
+  uncertainties: [],
+};
+
 function completionResponse(
   content: unknown,
   status = 200,
@@ -475,6 +480,71 @@ describe("adaptador HTTP estruturado", () => {
     expect(fetchImplementation).not.toHaveBeenCalled();
   });
 
+  it("repete um reparo cuja primeira resposta falha na validação estrutural", async () => {
+    const firstUsage = { prompt_tokens: 90, completion_tokens: 15 };
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(completionResponse(
+        { marcadorBruto: "NAO_REENVIAR", activities: [] },
+        200,
+        firstUsage,
+      ))
+      .mockResolvedValueOnce(completionResponse(repairOutput));
+    const provider = new HttpAiProvider(httpConfig, fetchImplementation);
+
+    const result = await provider.repair(createRepairInput());
+
+    expect(result).toMatchObject({
+      output: repairOutput,
+      failedAttempts: [{
+        run: {
+          provider: "openai",
+          model: "gpt-5.6-terra",
+          rawUsage: firstUsage,
+          latencyMilliseconds: expect.any(Number),
+        },
+        error: expect.stringContaining("activity"),
+      }],
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+    const retryBody = JSON.parse(
+      String(fetchImplementation.mock.calls[1]?.[1]?.body),
+    ) as { messages: Array<{ content: string }> };
+    expect(retryBody.messages.at(-1)?.content).toContain(
+      "A resposta anterior não atendeu ao contrato de reparo.",
+    );
+    expect(retryBody.messages.at(-1)?.content).toContain("activity");
+    expect(JSON.stringify(retryBody)).not.toContain("NAO_REENVIAR");
+  });
+
+  it("repete um reparo que viola posição e duração e esgota em duas tentativas", async () => {
+    const invalidRepair = {
+      activity: {
+        ...generationOutput.activities[0],
+        slotIndex: 2,
+        durationMinutes: 6,
+      },
+      uncertainties: [],
+    };
+    const fetchImplementation = vi.fn<typeof fetch>(async () =>
+      completionResponse(invalidRepair, 200, { input_tokens: 12 }),
+    );
+    const provider = new HttpAiProvider(httpConfig, fetchImplementation);
+
+    await expect(provider.repair(createRepairInput())).rejects.toMatchObject({
+      code: "invalid_response",
+      details: [
+        "A atividade reparada não preserva a posição original.",
+        "A atividade reparada não preserva a duração obrigatória.",
+      ],
+      attempts: [
+        { run: { rawUsage: { input_tokens: 12 } } },
+        { run: { rawUsage: { input_tokens: 12 } } },
+      ],
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+  });
+
   it("rejeita JSON do modelo que não passa pelo schema de saída", async () => {
     const fetchImplementation = vi.fn<typeof fetch>(async () =>
       completionResponse({ activities: [] }),
@@ -487,6 +557,7 @@ describe("adaptador HTTP estruturado", () => {
       operation: "generation",
       details: expect.arrayContaining([expect.stringContaining("plan")]),
     });
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
   });
 
   it("rejeita reparo estruturalmente válido que altera posição ou duração", async () => {
@@ -552,6 +623,21 @@ describe("adaptador HTTP estruturado", () => {
       message:
         "O provedor de IA atingiu o limite de uso. Aguarde um instante e tente novamente.",
     });
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+  });
+
+  it("não repete erro permanente de autenticação no reparo", async () => {
+    const fetchImplementation = vi.fn<typeof fetch>(async () =>
+      new Response(null, { status: 401 }),
+    );
+    const provider = new HttpAiProvider(httpConfig, fetchImplementation);
+
+    await expect(provider.repair(createRepairInput())).rejects.toMatchObject({
+      code: "http_error",
+      statusCode: 401,
+      attempts: [{ run: { provider: "openai" } }],
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
   });
 
   it("converte rejeição de rede não relacionada a abort em erro tipado", async () => {

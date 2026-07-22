@@ -49,6 +49,18 @@ type DecisionFeedback = {
   tone: "success" | "danger";
 };
 
+export function feedbackAfterAdjustment(
+  feedbackByActivity: Readonly<Record<string, string>>,
+  activityId: string,
+  succeeded: boolean,
+): Record<string, string> {
+  if (!succeeded) return feedbackByActivity;
+
+  const nextFeedback = { ...feedbackByActivity };
+  delete nextFeedback[activityId];
+  return nextFeedback;
+}
+
 export function ActivityReview({
   batchId,
   decisionHistory = {},
@@ -212,6 +224,8 @@ function ReadyActivityReview({
 
     if (!result.ok) {
       setActionError(result.message);
+      setFeedbackByActivity((currentFeedback) =>
+        feedbackAfterAdjustment(currentFeedback, rejectedItem.activity.id, false));
       return;
     }
 
@@ -232,11 +246,8 @@ function ReadyActivityReview({
       message: `“${rejectedItem.activity.title}” foi ajustada em uma nova versão, sem alterar as demais.`,
       tone: "success",
     });
-    setFeedbackByActivity((currentFeedback) => {
-      const nextFeedback = { ...currentFeedback };
-      delete nextFeedback[rejectedItem.activity.id];
-      return nextFeedback;
-    });
+    setFeedbackByActivity((currentFeedback) =>
+      feedbackAfterAdjustment(currentFeedback, rejectedItem.activity.id, true));
     setDetailsOpen(false);
   }
 

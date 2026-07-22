@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import type { AiProvider, AiProviderResult } from "@/domain/ai-provider";
+import type {
+  AiFailedAttempt,
+  AiProvider,
+  AiProviderResult,
+  AiRunMetadata,
+} from "@/domain/ai-provider";
 import {
   type GenerationModelInput,
   type GenerationModelOutput,
@@ -24,6 +29,7 @@ import {
   type AiMessage,
   type AiOperation,
   createGenerationMessages,
+  createRepairCorrectionMessage,
   createRepairMessages,
   createValidationMessages,
 } from "./prompts";
@@ -57,6 +63,7 @@ export class AiProviderError extends Error {
     readonly details: readonly string[] = [],
     readonly statusCode?: number,
     message: string = errorMessages[code],
+    readonly attempts: readonly AiFailedAttempt[] = [],
   ) {
     super(message);
   }
@@ -69,6 +76,7 @@ type StructuredRequest<TInput, TOutput> = {
   outputSchema: z.ZodType<TOutput>;
   messages: (input: TInput) => AiMessage[];
   validateOutput?: (input: TInput, output: TOutput) => string[];
+  retryInvalidResponse?: boolean;
 };
 
 type ChatCompletionEnvelope = {
@@ -79,6 +87,8 @@ type ChatCompletionEnvelope = {
   }>;
   usage?: unknown;
 };
+
+const MAX_STRUCTURED_REQUEST_ATTEMPTS = 2;
 
 const supportedStrictJsonSchemaKeys = new Set([
   "type",
@@ -214,7 +224,15 @@ function validateConsideredRules(
 
   return unknownRuleIds.length === 0
     ? []
-    : [`A saída referencia regras não aplicáveis: ${[...new Set(unknownRuleIds)].join(", ")}.`];
+    : ["A saída referencia regras que não fazem parte das regras aplicáveis."];
+}
+
+function safeAttemptError(error: AiProviderError): string {
+  return [
+    error.message,
+    ...(error.code === "invalid_response" ? error.details : []),
+    ...(error.statusCode ? [`Status HTTP ${error.statusCode}.`] : []),
+  ].join(" ");
 }
 
 function validateGenerationOutput(
@@ -334,6 +352,7 @@ export class HttpAiProvider implements AiProvider {
       outputSchema: repairModelOutputSchema,
       messages: createRepairMessages,
       validateOutput: validateRepairOutput,
+      retryInvalidResponse: true,
     });
   }
 
@@ -357,6 +376,7 @@ export class HttpAiProvider implements AiProvider {
     outputSchema,
     messages,
     validateOutput,
+    retryInvalidResponse = false,
   }: StructuredRequest<TInput, TOutput>): Promise<AiProviderResult<TOutput>> {
     const inputResult = inputSchema.safeParse(input);
 
@@ -368,27 +388,76 @@ export class HttpAiProvider implements AiProvider {
       );
     }
 
-    let envelope: ChatCompletionEnvelope;
-    const renderedMessages = messages(inputResult.data);
-    const maxAttempts = 2;
-    const startedAt = this.now();
+    let renderedMessages = messages(inputResult.data);
+    const failedAttempts: AiFailedAttempt[] = [];
 
     for (let attempt = 1; ; attempt += 1) {
+      const startedAt = this.now();
+      let envelope: ChatCompletionEnvelope | undefined;
+
       try {
         envelope = await this.requestEnvelope(
           operation,
           renderedMessages,
           outputSchema,
         );
-        break;
+        const output = this.parseStructuredOutput(
+          operation,
+          inputResult.data,
+          envelope,
+          outputSchema,
+          validateOutput,
+        );
+
+        return {
+          output,
+          run: this.createRunMetadata(envelope, startedAt),
+          ...(failedAttempts.length > 0 ? { failedAttempts } : {}),
+        };
       } catch (error) {
-        if (attempt < maxAttempts && isTransientProviderError(error)) {
+        if (!(error instanceof AiProviderError)) {
+          throw error;
+        }
+
+        failedAttempts.push({
+          run: this.createRunMetadata(envelope, startedAt),
+          error: safeAttemptError(error),
+        });
+        const shouldRetryInvalidResponse =
+          retryInvalidResponse && error.code === "invalid_response";
+
+        if (
+          attempt < MAX_STRUCTURED_REQUEST_ATTEMPTS &&
+          (isTransientProviderError(error) || shouldRetryInvalidResponse)
+        ) {
+          if (shouldRetryInvalidResponse) {
+            renderedMessages = [
+              ...messages(inputResult.data),
+              createRepairCorrectionMessage(error.details),
+            ];
+          }
           continue;
         }
 
-        throw error;
+        throw new AiProviderError(
+          error.code,
+          error.operation,
+          error.details,
+          error.statusCode,
+          error.message,
+          failedAttempts,
+        );
       }
     }
+  }
+
+  private parseStructuredOutput<TInput, TOutput>(
+    operation: AiOperation,
+    input: TInput,
+    envelope: ChatCompletionEnvelope,
+    outputSchema: z.ZodType<TOutput>,
+    validateOutput?: (input: TInput, output: TOutput) => string[],
+  ): TOutput {
 
     const content = envelope.choices?.[0]?.message?.content;
 
@@ -419,7 +488,7 @@ export class HttpAiProvider implements AiProvider {
     }
 
     const contractDetails = validateOutput?.(
-      inputResult.data,
+      input,
       outputResult.data,
     );
 
@@ -442,17 +511,25 @@ export class HttpAiProvider implements AiProvider {
       ]);
     }
 
+    return outputResult.data;
+  }
+
+  private createRunMetadata(
+    envelope: ChatCompletionEnvelope | undefined,
+    startedAt: number,
+  ): AiRunMetadata {
+    const rawUsageResult = envelope?.usage === undefined
+      ? undefined
+      : jsonObjectSchema.safeParse(envelope.usage);
+
     return {
-      output: outputResult.data,
-      run: {
-        provider: this.config.providerId,
-        model: this.config.model,
-        ...(this.config.reasoningEffort
-          ? { reasoningEffort: this.config.reasoningEffort }
-          : {}),
-        ...(rawUsageResult ? { rawUsage: rawUsageResult.data } : {}),
-        latencyMilliseconds: Math.max(0, Math.round(this.now() - startedAt)),
-      },
+      provider: this.config.providerId,
+      model: this.config.model,
+      ...(this.config.reasoningEffort
+        ? { reasoningEffort: this.config.reasoningEffort }
+        : {}),
+      ...(rawUsageResult?.success ? { rawUsage: rawUsageResult.data } : {}),
+      latencyMilliseconds: Math.max(0, Math.round(this.now() - startedAt)),
     };
   }
 

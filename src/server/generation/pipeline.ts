@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
 
 import rulesData from "../../../data/rules.json";
-import type { AiProvider, AiRunMetadata } from "@/domain/ai-provider";
+import type {
+  AiFailedAttempt,
+  AiProvider,
+  AiRunMetadata,
+} from "@/domain/ai-provider";
 import {
   aiModelSelectionSchema,
   getAiModelDefinition,
@@ -37,7 +41,7 @@ import {
   normalizeTokenUsage,
   type ModelRun,
 } from "@/domain/usage";
-import { createAiProvider } from "@/server/ai";
+import { AiProviderError, createAiProvider } from "@/server/ai";
 
 export type GenerationPipelineInput = {
   curriculum: Curriculum;
@@ -78,9 +82,21 @@ export type RegenerationPipelineInput = {
 export type RegenerationArtifacts = {
   replacement: Activity;
   report: ValidationReport;
+  failedRepairRuns: ModelRun[];
   repairRun: ModelRun;
   validationRun: ModelRun;
 };
+
+export class RepairExhaustedError extends Error {
+  readonly name = "RepairExhaustedError";
+
+  constructor(
+    message: string,
+    readonly failedRepairRuns: readonly ModelRun[],
+  ) {
+    super(message);
+  }
+}
 
 const catalog = loadRuleCatalog(rulesData);
 const catalogRulesByKey = new Map(
@@ -251,6 +267,56 @@ function createCompletedRun(input: {
   });
 }
 
+function createFailedRun(input: {
+  id: string;
+  batchId: string;
+  activityId: string;
+  normalizedInput: unknown;
+  attempt: AiFailedAttempt;
+  createdAt: string;
+  promptVersion: string;
+  ruleSetVersion: string;
+}): ModelRun {
+  return modelRunSchema.parse({
+    id: input.id,
+    batchId: input.batchId,
+    activityId: input.activityId,
+    stage: "repair",
+    provider: input.attempt.run.provider,
+    model: input.attempt.run.model,
+    ...(input.attempt.run.reasoningEffort
+      ? { reasoningEffort: input.attempt.run.reasoningEffort }
+      : {}),
+    status: "failed",
+    normalizedInput: input.normalizedInput,
+    inputHash: stableHash(input.normalizedInput),
+    promptTemplateId: `${input.attempt.run.provider}-repair`,
+    promptVersion: input.promptVersion,
+    renderedPrompt: `Execução estruturada da etapa repair pelo provedor ${input.attempt.run.provider}.`,
+    ruleSetVersion: input.ruleSetVersion,
+    cacheKey: `${input.attempt.run.provider}:repair:${input.batchId}:${input.activityId}:${input.id}`,
+    ...(input.attempt.run.rawUsage ? { rawUsage: input.attempt.run.rawUsage } : {}),
+    tokenUsage: normalizeTokenUsage(input.attempt.run.rawUsage),
+    latencyMilliseconds: input.attempt.run.latencyMilliseconds,
+    error: input.attempt.error,
+    createdAt: input.createdAt,
+  });
+}
+
+function repairFailureMessage(error: AiProviderError): string {
+  if (error.code !== "invalid_response") {
+    return `Não foi possível ajustar a atividade. ${error.message}`;
+  }
+
+  const reason = error.details[0] ?? "A resposta não atendeu ao contrato esperado.";
+  const attemptLabel = error.attempts.length === 1 ? "tentativa" : "tentativas";
+  return [
+    `Não foi possível ajustar a atividade após ${error.attempts.length} ${attemptLabel}.`,
+    reason,
+    "Revise o feedback ou o modelo configurado e tente novamente.",
+  ].join(" ");
+}
+
 export async function createInitialGenerationArtifacts(
   input: GenerationPipelineInput,
   options: PipelineOptions = {},
@@ -397,7 +463,34 @@ export async function createRegenerationArtifacts(
     curriculum: input.curriculumContext,
     applicableRules: input.applicableRules,
   };
-  const repairResult = await runtime.provider.repair(repairInput);
+  const createFailedRepairRuns = (
+    attempts: readonly AiFailedAttempt[],
+  ): ModelRun[] => attempts.map((attempt, index) =>
+    createFailedRun({
+      id: runtime.createId(`run-repair-failed-${index + 1}`),
+      batchId: input.group.batchId,
+      activityId: input.currentActivity.id,
+      normalizedInput: repairInput,
+      attempt,
+      createdAt,
+      promptVersion: input.promptVersion,
+      ruleSetVersion: input.ruleSetVersion,
+    }));
+  let repairResult;
+
+  try {
+    repairResult = await runtime.provider.repair(repairInput);
+  } catch (error) {
+    if (error instanceof AiProviderError && error.attempts.length > 0) {
+      throw new RepairExhaustedError(
+        repairFailureMessage(error),
+        createFailedRepairRuns(error.attempts),
+      );
+    }
+
+    throw error;
+  }
+
   const generated = repairResult.output;
   const replacement: Activity = {
     id: runtime.createId(`activity-${input.currentActivity.slotIndex + 1}-v${input.currentActivity.version + 1}`),
@@ -424,6 +517,9 @@ export async function createRegenerationArtifacts(
   return {
     replacement,
     report,
+    failedRepairRuns: createFailedRepairRuns(
+      repairResult.failedAttempts ?? [],
+    ),
     repairRun: createCompletedRun({
       id: repairRunId,
       batchId: input.group.batchId,

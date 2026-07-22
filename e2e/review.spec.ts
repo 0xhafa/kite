@@ -176,3 +176,39 @@ test("navega sem decidir e retorna ao exemplo sem perder o lote gerado", async (
   await expect(page.getByRole("heading", { name: "Revise o lote" })).toBeVisible();
   await expect(page.getByText("0 de 3 revisadas · 25 min")).toBeVisible();
 });
+
+test("mantém o comentário após falha de ajuste em viewport móvel", async ({
+  context,
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await generateReviewBatch(page);
+  const reviewUrl = page.url();
+  const feedback = page.getByRole("textbox", { name: "Feedback opcional" });
+  await feedback.fill("Comentário que deve continuar editável após a falha.");
+
+  const concurrentPage = await context.newPage();
+  await concurrentPage.goto(reviewUrl);
+  await concurrentPage
+    .getByRole("button", { name: "Ajustar atividade" })
+    .click();
+  await expect(
+    concurrentPage.getByText(/foi ajustada em uma nova versão, sem alterar as demais/),
+  ).toBeVisible();
+  await concurrentPage.close();
+
+  await page.getByRole("button", { name: "Ajustar atividade" }).click();
+
+  await expect(
+    page.getByRole("alert").filter({
+      hasText: "A atividade mudou desde que a revisão foi carregada.",
+    }),
+  ).toBeVisible();
+  await expect(feedback).toHaveValue(
+    "Comentário que deve continuar editável após a falha.",
+  );
+  const documentWidth = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(documentWidth).toBeLessThanOrEqual(390);
+});
